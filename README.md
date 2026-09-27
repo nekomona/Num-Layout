@@ -63,7 +63,8 @@ width.
 Select one rectangle outside Move or Stretch, then press J. Enter a positive
 offset, or measure an edge or the spacing between parallel edges. Press Enter,
 Space, or J to advance. Click inside a pivot rectangle, or select four edges
-that form one rectangle's bounding box, and confirm the pivot. Move the cursor
+that define two distinct X and two distinct Y boundaries, and confirm the
+pivot. The edge segments may stop short of the corners. Move the cursor
 inside or outside the pivot to preview the result, then click or confirm again
 to resize and move the initially selected rectangle. The offset applies to
 all four sides. If an inset would collapse either dimension, only outside is

@@ -438,45 +438,29 @@ procedure(vbnContourRectAtPoint(win pt)
 )
 
 procedure(vbnContourBoxFromEdges(edges)
-  let((minX maxX minY maxY tolerance left right top bottom valid
-       a b ax bx ay by)
+  let((horizontal vertical tolerance a b left right top bottom)
     when(length(edges) == 4
-      minX = nil maxX = nil minY = nil maxY = nil
-      foreach(edge edges
-        foreach(pt edge
-          minX = if(numberp(minX) then min(minX vbnX(pt)) else vbnX(pt))
-          maxX = if(numberp(maxX) then max(maxX vbnX(pt)) else vbnX(pt))
-          minY = if(numberp(minY) then min(minY vbnY(pt)) else vbnY(pt))
-          maxY = if(numberp(maxY) then max(maxY vbnY(pt)) else vbnY(pt))
-        )
-      )
+      ; The four edge lines define the box even when their segments do not
+      ; extend all the way to the corners.
       tolerance = 2.0*vbnGrid()
-      valid = maxX-minX > tolerance && maxY-minY > tolerance
       foreach(edge edges
         a = car(edge) b = cadr(edge)
-        ax = vbnX(a) bx = vbnX(b) ay = vbnY(a) by = vbnY(b)
-        cond(
-          ((abs(ax-minX) <= tolerance && abs(bx-minX) <= tolerance &&
-            abs(min(ay by)-minY) <= tolerance &&
-            abs(max(ay by)-maxY) <= tolerance && !left)
-            left = t)
-          ((abs(ax-maxX) <= tolerance && abs(bx-maxX) <= tolerance &&
-            abs(min(ay by)-minY) <= tolerance &&
-            abs(max(ay by)-maxY) <= tolerance && !right)
-            right = t)
-          ((abs(ay-minY) <= tolerance && abs(by-minY) <= tolerance &&
-            abs(min(ax bx)-minX) <= tolerance &&
-            abs(max(ax bx)-maxX) <= tolerance && !bottom)
-            bottom = t)
-          ((abs(ay-maxY) <= tolerance && abs(by-maxY) <= tolerance &&
-            abs(min(ax bx)-minX) <= tolerance &&
-            abs(max(ax bx)-maxX) <= tolerance && !top)
-            top = t)
-          (t valid = nil)
-        )
+        when(vbnEdgeLength(edge) > tolerance
+          cond(
+            (abs(vbnY(a)-vbnY(b)) <= tolerance
+              horizontal = cons((vbnY(a)+vbnY(b))/2.0 horizontal))
+            (abs(vbnX(a)-vbnX(b)) <= tolerance
+              vertical = cons((vbnX(a)+vbnX(b))/2.0 vertical))
+          ))
       )
-      when(valid && left && right && top && bottom
-        list(vbnPoint(minX minY) vbnPoint(maxX maxY)))
+      when(length(horizontal) == 2 && length(vertical) == 2
+        left = min(car(vertical) cadr(vertical))
+        right = max(car(vertical) cadr(vertical))
+        bottom = min(car(horizontal) cadr(horizontal))
+        top = max(car(horizontal) cadr(horizontal))
+        when(right-left > tolerance && top-bottom > tolerance
+          list(vbnPoint(vbnSnap(left) vbnSnap(bottom))
+               vbnPoint(vbnSnap(right) vbnSnap(top)))))
     )
   )
 )
@@ -969,7 +953,8 @@ procedure(vbnClick()
 
 procedure(vbnEnteredStartPoint()
   let((points entry)
-    points = hiGetCurrentEnterFunPoints()
+    when(vbnWindow && hiGetCurrentCmd(vbnWindow)
+      points = hiGetCurrentEnterFunPoints())
     when(points
       entry = car(last(points))
       if(numberp(car(entry)) then entry else car(entry))
@@ -1290,7 +1275,8 @@ procedure(vbnToolbarLoop(generation)
   let((cv)
    when(vbnInstalled && generation == vbnToolbarGeneration
     foreach(win hiGetWindowList()
-      cv = geGetWindowCellView(win)
+      cv = when(geIsGraphicalWindow(win t)
+        geGetWindowCellView(win))
       when(cv && cv~>viewName == "layout" &&
            !member(win vbnToolbarWindows)
         when(hiPlaceToolbar(win vbnToolbar 'top)
