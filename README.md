@@ -7,20 +7,22 @@ See [test instructions](test/README.md) for isolated live checks.
 
 ## Use
 
-Start a native **Path**, **Wire**, **Stretch**, or **Move** command, or select one
-rectangle to contour it.
+Start a native **Path**, **Wire**, **Measurement (K)**, **Stretch**, or **Move**
+command, or select one rectangle to contour it.
 
 | Active command | Key | Confirmed number means |
 | --- | --- | --- |
 | Path | J | Width of the active path |
 | Wire | J | Width of the current wire segment |
+| Measurement (K) | J | Length of a new two-point ruler |
 | Stretch | J | Final length along the stretch direction |
 | Stretch | Shift+J | Stretch displacement magnitude |
 | Move | J | Move displacement magnitude |
 | Move | Shift+J | Move displacement magnitude |
 
-After the hotkey, type `0`–`9`, `.`, or Backspace. The current input appears next
-to the cursor. The result contour appears while a valid number is pending.
+After the hotkey, type `0`–`9`, `.`, or Backspace. The current input and mode
+appear next to the cursor. The result contour appears while a valid number is
+pending.
 Click a shape edge instead to use its length. A second parallel
 edge changes the number to the distance between the edges. A perpendicular
 second edge or any third edge begins a new single-edge measurement. Ruler edges
@@ -57,6 +59,12 @@ For Wire, J updates the native Create Wire form's `wireWidth` field. The
 current segment contour uses that width before confirmation. The native Wire
 command remains active after confirmation, so subsequent points use the new
 width.
+
+For **Measurement (K)**, place its first point, move the cursor toward the
+desired direction, and press J. Enter or pick a number and confirm to create a
+saved ruler at that length. A line previews the result before confirmation.
+The active Measurement command then ends. Its endpoint is snapped to the
+manufacturing grid, so diagonal lengths can have a small grid approximation.
 
 ## Contour a rectangle
 

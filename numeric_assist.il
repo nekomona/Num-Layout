@@ -40,8 +40,12 @@ vbnLastValue = nil
 vbnLastEdges = nil
 vbnLastSnapMode = nil
 vbnLastScreenPoint = nil
+vbnLastView = nil
 vbnPixelScale = nil
 vbnPixelScaleView = nil
+vbnContourPixelScale = nil
+vbnContourPixelView = nil
+vbnMeasureFinishForm = nil
 vbnRememberedNumber = if(boundp('vbnRememberedNumber) then
   vbnRememberedNumber else nil)
 vbnPrefilled = nil
@@ -497,6 +501,33 @@ procedure(vbnContourTarget(side)
   )
 )
 
+procedure(vbnContourCursorPoint()
+  let((point screen view ll ur scaleX scaleY)
+    point = hiGetPoint(vbnWindow)
+    when(vbnKind == 'contour && vbnPhase == 3
+      screen = hiGetScreenPoint(vbnWindow)
+      view = hiGetViewBBox(vbnWindow)
+      unless(screen point = nil)
+      when(screen && view
+        ll = car(view) ur = cadr(view)
+        unless(equal(view vbnContourPixelView)
+          vbnContourPixelView = view
+          vbnContourPixelScale = nil)
+        unless(numberp(vbnContourPixelScale)
+          when(point && vbnX(screen) > 20 && vbnY(screen) > 20
+            scaleX = (vbnX(point)-vbnX(ll))/vbnX(screen)
+            scaleY = (vbnY(ur)-vbnY(point))/vbnY(screen)
+            when(scaleX > 0.0 && scaleY > 0.0 &&
+                 abs(scaleX-scaleY) < 0.1*max(scaleX scaleY)
+              vbnContourPixelScale = (scaleX+scaleY)/2.0)))
+        when(numberp(vbnContourPixelScale)
+          point = vbnPoint(vbnX(ll)+vbnX(screen)*vbnContourPixelScale
+                           vbnY(ur)-vbnY(screen)*vbnContourPixelScale))
+      ))
+    point
+  )
+)
+
 procedure(vbnCurrentValue()
   if(vbnKind == 'contour && vbnPhase && vbnPhase > 1 then
     vbnContourOffset
@@ -507,27 +538,38 @@ procedure(vbnCurrentValue()
   ))
 )
 
-procedure(vbnDisplayText()
-  let((value side)
+procedure(vbnModeText()
+  cond(
+    (vbnKind == 'contour "CONTOUR OFFSET")
+    (vbnKind == 'width "PATH WIDTH")
+    (vbnKind == 'wire "WIRE WIDTH")
+    (vbnKind == 'length "STRETCH LENGTH")
+    (vbnKind == 'measurement "MEASUREMENT LENGTH")
+    (vbnCommand == "Move" "MOVE DISTANCE")
+    (t "STRETCH DISTANCE")
+  )
+)
+
+procedure(vbnDisplayText(pt)
+  let((value side numberText)
     value = vbnCurrentValue()
     cond(
       ((vbnKind == 'contour && vbnPhase == 2)
         sprintf(nil "PIVOT  %0.6g  [%d/4 edges]"
                 vbnContourOffset length(vbnContourEdges)))
       ((vbnKind == 'contour && vbnPhase == 3)
-        side = vbnContourDirection(hiGetPoint(vbnWindow))
+        side = vbnContourDirection(pt)
         sprintf(nil "CONTOUR %s  %0.6g"
                 if(side == 'inside then "INSIDE"
                 else if(side == 'outside then "OUTSIDE" else "OUTSIDE ONLY"))
                 vbnContourOffset))
-      (vbnEdges
-        sprintf(nil "%0.6g  [%d edge%s]" value length(vbnEdges)
-          if(length(vbnEdges) == 1 then "" else "s")))
-      (vbnDigits != "" vbnDigits)
-      (t if(vbnKind == 'contour then "CONTOUR OFFSET"
-         else if(vbnKind == 'width then "WIDTH"
-         else if(vbnKind == 'length then "LENGTH"
-         else if(vbnKind == 'wire then "WIRE WIDTH" else "DISTANCE")))))
+      (t
+        numberText = if(vbnEdges then
+          sprintf(nil "%0.6g [%d edge%s]" value length(vbnEdges)
+                  if(length(vbnEdges) == 1 then "" else "s"))
+        else vbnDigits)
+        if(numberText == "" then vbnModeText()
+        else sprintf(nil "%s  |  %s" numberText vbnModeText())))
     )
   )
 )
@@ -561,6 +603,11 @@ procedure(vbnDrawPreview(pt value)
         (vbnKind == 'wire
           when(start && pt
             vbnPreviewObjects = cons(vbnSegmentContour(vbnPreviewSet start pt value)
+                                      vbnPreviewObjects)))
+        (vbnKind == 'measurement && start && pt
+          target = vbnLinearTarget(start pt pt value)
+          when(target
+            vbnPreviewObjects = cons(vbnLine(vbnPreviewSet list(start target))
                                       vbnPreviewObjects)))
         (vbnKind == 'distance && direction
           selection = geGetSelSet(vbnWindow)
@@ -668,20 +715,21 @@ procedure(vbnDrawEdges(pt)
 procedure(vbnUpdateDisplay()
   let((pt screen view ll ur height origin labelText value)
     when(vbnActive && vbnWindow && vbnHilight
-      pt = hiGetPoint(vbnWindow)
+      pt = vbnContourCursorPoint()
       screen = hiGetScreenPoint(vbnWindow)
-      labelText = vbnDisplayText()
+      view = hiGetViewBBox(vbnWindow)
+      labelText = vbnDisplayText(pt)
       value = vbnCurrentValue()
       when(pt && (!equal(pt vbnLastPoint) ||
                   !equal(screen vbnLastScreenPoint) || labelText != vbnLastText ||
                   !equal(value vbnLastValue) || !equal(vbnEdges vbnLastEdges) ||
-                  vbnSnapMode() != vbnLastSnapMode)
+                  vbnSnapMode() != vbnLastSnapMode ||
+                  !equal(view vbnLastView))
         when(vbnHilightLabel geDeleteHilightObject(vbnHilightLabel))
         vbnClearObjects(vbnHoverObjects)
         vbnClearObjects(vbnSelectedObjects)
         vbnClearObjects(vbnPreviewObjects)
         vbnHoverObjects = nil vbnSelectedObjects = nil vbnPreviewObjects = nil
-        view = hiGetViewBBox(vbnWindow)
         ll = car(view) ur = cadr(view)
         height = max(0.02 (vbnY(ur)-vbnY(ll))/35.0)
         origin = vbnPoint(vbnX(pt)+height/2.0 vbnY(pt)+height/2.0)
@@ -689,6 +737,7 @@ procedure(vbnUpdateDisplay()
           "lowerLeft" "R0" "stick" height nil)
         vbnLastPoint = pt
         vbnLastScreenPoint = screen
+        vbnLastView = view
         vbnLastText = labelText
         vbnLastValue = value
         vbnLastEdges = vbnEdges
@@ -707,7 +756,8 @@ procedure(vbnTick()
        hiGetCurrentWindow() == vbnWindow &&
        hiGetCurrentCmd(vbnWindow) == vbnCommand then
       vbnUpdateDisplay()
-      hiRegTimer("vbnTick()" 2)
+      hiRegTimer("vbnTick()"
+        if(vbnKind == 'contour && vbnPhase == 3 then 1 else 2))
     else
       vbnStop()
     )
@@ -777,6 +827,8 @@ procedure(vbnStop()
   vbnContourEdges = nil
   vbnContourPivot = nil
   vbnContourSide = nil
+  vbnContourPixelScale = nil
+  vbnContourPixelView = nil
   t
 )
 
@@ -804,8 +856,11 @@ procedure(vbnStart(kind)
     vbnLastEdges = nil
     vbnLastSnapMode = nil
     vbnLastScreenPoint = nil
+    vbnLastView = nil
     vbnPixelScale = nil
     vbnPixelScaleView = nil
+    vbnContourPixelScale = nil
+    vbnContourPixelView = nil
     cv = geGetEditCellView(vbnWindow)
     lpp = leGetEntryLayer()
     when(cv && lpp
@@ -1150,6 +1205,36 @@ procedure(vbnApplyLength(value)
   )
 )
 
+procedure(vbnFinishMeasurement()
+  when(vbnMeasureFinishForm
+    cancelEnterFun(vbnMeasureFinishForm)
+    vbnMeasureFinishForm = nil)
+)
+
+procedure(vbnApplyMeasurement(value)
+  let((start current target ruler)
+    start = vbnEnteredStartPoint()
+    current = hiGetPoint(vbnWindow)
+    if(!start || !current then
+      warn("Numeric Assist: place the first measurement point before confirming.\n")
+      nil
+    else
+      target = vbnLinearTarget(start current current value)
+      if(!target then
+        warn("Numeric Assist: point from the start toward the measurement direction.\n")
+        nil
+      else
+        ruler = leCreateMeasurement(geGetEditCellView(vbnWindow)
+                                    list(start target))
+        when(ruler
+          vbnMeasureFinishForm = vbnForm
+          hiRegTimer("vbnFinishMeasurement()" 1)
+          t)
+      )
+    )
+  )
+)
+
 procedure(vbnConfirmContour()
   let((value side target)
     cond(
@@ -1173,10 +1258,12 @@ procedure(vbnConfirmContour()
           nil
         else
           vbnPhase = 3
+          vbnContourPixelScale = nil
+          vbnContourPixelView = nil
           vbnUpdateDisplay()
           t))
       ((vbnPhase == 3)
-        side = vbnContourDirection(hiGetPoint(vbnWindow))
+        side = vbnContourDirection(vbnContourCursorPoint())
         target = vbnContourTarget(side)
         if(!target || !dbIsId(vbnContourSource) then
           warn("Numeric Assist: choose a valid inside or outside point.\n")
@@ -1207,6 +1294,7 @@ procedure(vbnConfirm()
             vbnSetFormField(vbnForm~>pathWidth value)
             t)
           (vbnKind == 'length vbnApplyLength(value))
+          (vbnKind == 'measurement vbnApplyMeasurement(value))
           (vbnKind == 'wire
             vbnSetFormField(vbnForm~>wireWidth value)
             t)
@@ -1229,6 +1317,7 @@ procedure(vbnHotkey(shift)
     kind = cond(
       ((command == "Path") && !shift 'width)
       ((command == "Wire") && !shift 'wire)
+      ((command == "Ruler") && !shift 'measurement)
       ((command == "Stretch") && !shift 'length)
       ((command == "Move") || ((command == "Stretch") && shift) 'distance)
       ((!shift && command != "Move" && command != "Stretch" &&
@@ -1237,7 +1326,7 @@ procedure(vbnHotkey(shift)
       (t nil)
     )
     if(!kind then
-      warn("Numeric Assist: start Path, Wire, Stretch, Move, or select one rectangle for contour.\n")
+      warn("Numeric Assist: start Path, Wire, Measurement, Stretch, Move, or select one rectangle for contour.\n")
       nil
     else
       if(vbnActive && win == vbnWindow && kind == vbnKind then
@@ -1248,6 +1337,7 @@ procedure(vbnHotkey(shift)
         if((kind != 'contour && !form) ||
            (command == "Path" && form~>_formName != "Create Path") ||
            (command == "Wire" && form~>_formName != "Create Wire") ||
+           (command == "Ruler" && form~>_formName != "Create Measurement") ||
            (command == "Stretch" && form~>_formName != "Stretch") ||
            (command == "Move" && form~>_formName != "Move") then
           warn("Numeric Assist: native command form is unavailable.\n")
