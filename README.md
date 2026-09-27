@@ -22,7 +22,8 @@ command, or select one rectangle to contour it.
 
 After the hotkey, type `0`–`9`, `.`, or Backspace. The current input and mode
 appear next to the cursor. The result contour appears while a valid number is
-pending.
+pending. Numeric Assist captures Virtuoso's physical dot binding during input
+and restores its original magnifier binding when the assist closes.
 Click a shape edge instead to use its length. A second parallel
 edge changes the number to the distance between the edges. A perpendicular
 second edge or any third edge begins a new single-edge measurement. Ruler edges
