@@ -12,9 +12,10 @@ Start a native **Path**, **Wire**, **Stretch**, or **Move** command first.
 | Active command | Key | Confirmed number means |
 | --- | --- | --- |
 | Path | J | Width of the active path |
-| Wire | J | Length of the last wire segment |
+| Wire | J | Width of the current wire segment |
 | Stretch | J | Final length along the stretch direction |
 | Stretch | Shift+J | Stretch displacement magnitude |
+| Move | J | Move displacement magnitude |
 | Move | Shift+J | Move displacement magnitude |
 
 After the hotkey, type `0`–`9`, `.`, or Backspace. The current input appears next
@@ -38,12 +39,16 @@ Virtuoso, so Numeric Assist refuses an absolute length in that state. A ruler
 or straight path uses the distance between its endpoints. Other shapes use
 their X or Y bounding extent, according to the stretch direction. Shift+J
 uses the direction from the native command's reference point to the cursor.
-For Wire, place at least one native wire point first. If two or more points are
-already entered, confirmation replaces the last point and changes the last
-segment. With one point entered, it adds a segment of the requested length.
-Point the cursor toward the intended segment direction.
-Confirmation commits that wire through the entered endpoint; the native Wire
-command stays active, ready for another wire.
+For Wire, J updates the native Create Wire form's `wireWidth` field. The
+current segment contour uses that width before confirmation. The native Wire
+command remains active after confirmation, so subsequent points use the new
+width.
+
+Move J and Shift+J, and Stretch Shift+J, follow the native command's current
+segment snap mode when choosing displacement direction: orthogonal, diagonal
+(45-degree increments), or any angle. Horizontal and vertical modes are also
+respected when offered by the form. Change the snap mode in the native form;
+Numeric Assist reads it when drawing the preview and applying the number.
 
 The assist snaps target coordinates to the technology manufacturing grid. It
 sets rectangle extents, selected path points, and straight path/ruler endpoints

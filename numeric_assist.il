@@ -1,6 +1,6 @@
 ; Numeric layout assist for Virtuoso IC23.1.
-; J sets Path width or absolute Stretch extent. Shift-J sets the
-; displacement magnitude of Move/Stretch. load() installs the bindings.
+; J sets Path/Wire width, Stretch extent, or Move displacement.
+; Shift-J sets the displacement magnitude of Move/Stretch.
 
 when(boundp('vbnInstalled) && vbnInstalled
   vbnUninstall()
@@ -37,6 +37,7 @@ vbnSelectedObjects = nil
 vbnPreviewObjects = nil
 vbnLastValue = nil
 vbnLastEdges = nil
+vbnLastSnapMode = nil
 
 procedure(vbnX(p) car(p))
 procedure(vbnY(p) cadr(p))
@@ -60,14 +61,11 @@ procedure(vbnSnap(x)
 
 procedure(vbnLinearTarget(fixed moving current value)
   let((dx dy oldDx oldDy magnitude)
+    current = vbnConstrainPoint(fixed current)
     dx = vbnX(current)-vbnX(fixed)
     dy = vbnY(current)-vbnY(fixed)
     oldDx = vbnX(moving)-vbnX(fixed)
     oldDy = vbnY(moving)-vbnY(fixed)
-    when(abs(oldDy) <= 0.01*abs(oldDx) && abs(dy) <= 0.05*abs(dx)
-      dy = 0.0)
-    when(abs(oldDx) <= 0.01*abs(oldDy) && abs(dx) <= 0.05*abs(dy)
-      dx = 0.0)
     magnitude = sqrt(dx*dx+dy*dy)
     when(magnitude <= 0.0
       dx = oldDx dy = oldDy
@@ -84,7 +82,14 @@ procedure(vbnClearObjects(objects)
 )
 
 procedure(vbnLine(set points)
-  when(set geAddHilightLine(set points))
+  let((box ll ur stroke)
+    when(set
+      box = hiGetViewBBox(vbnWindow)
+      ll = car(box) ur = cadr(box)
+      stroke = max(2.0*vbnGrid()
+                   max(vbnX(ur)-vbnX(ll) vbnY(ur)-vbnY(ll))/300.0)
+      geAddHilightPath(set points stroke))
+  )
 )
 
 procedure(vbnSegmentContour(set a b width)
@@ -259,7 +264,7 @@ procedure(vbnDisplayText()
       (vbnDigits != "" vbnDigits)
       (t if(vbnKind == 'width then "WIDTH"
          else if(vbnKind == 'length then "LENGTH"
-         else if(vbnKind == 'wire then "WIRE SEGMENT" else "DISTANCE"))))
+         else if(vbnKind == 'wire then "WIRE WIDTH" else "DISTANCE"))))
     )
   )
 )
@@ -285,11 +290,8 @@ procedure(vbnDrawPreview(pt value)
               vbnPreviewObjects)
           ))
         (vbnKind == 'wire
-          start = vbnWireAnchor()
-          target = vbnWireTarget(value)
-          when(start && target
-            vbnPreviewObjects = cons(vbnSegmentContour(vbnPreviewSet start target
-                                           vbnForm~>wireWidth~>value)
+          when(start && pt
+            vbnPreviewObjects = cons(vbnSegmentContour(vbnPreviewSet start pt value)
                                       vbnPreviewObjects)))
         (vbnKind == 'distance && direction
           selection = geGetSelSet(vbnWindow)
@@ -320,6 +322,7 @@ procedure(vbnDrawPreview(pt value)
             else
               box = fig~>bBox ll = car(box) ur = cadr(box)
               points = fig~>points
+              pt = vbnConstrainPoint(start pt)
               axis = if(abs(vbnX(pt)-vbnX(start)) >=
                         abs(vbnY(pt)-vbnY(start)) then 'x else 'y)
               if(axis == 'x then
@@ -379,7 +382,8 @@ procedure(vbnUpdateDisplay()
       labelText = vbnDisplayText()
       value = vbnCurrentValue()
       when(pt && (!equal(pt vbnLastPoint) || labelText != vbnLastText ||
-                  !equal(value vbnLastValue) || !equal(vbnEdges vbnLastEdges))
+                  !equal(value vbnLastValue) || !equal(vbnEdges vbnLastEdges) ||
+                  vbnSnapMode() != vbnLastSnapMode)
         when(vbnHilightLabel geDeleteHilightObject(vbnHilightLabel))
         vbnClearObjects(vbnHoverObjects)
         vbnClearObjects(vbnSelectedObjects)
@@ -395,6 +399,7 @@ procedure(vbnUpdateDisplay()
         vbnLastText = labelText
         vbnLastValue = value
         vbnLastEdges = vbnEdges
+        vbnLastSnapMode = vbnSnapMode()
         vbnDrawEdges(pt)
         vbnDrawPreview(pt value)
         geRefreshWindow(vbnWindow)
@@ -479,6 +484,7 @@ procedure(vbnStart(kind)
     vbnLastText = nil
     vbnLastValue = nil
     vbnLastEdges = nil
+    vbnLastSnapMode = nil
     cv = geGetEditCellView(vbnWindow)
     lpp = leGetEntryLayer()
     when(cv && lpp
@@ -583,54 +589,34 @@ procedure(vbnEnteredStartPoint()
   )
 )
 
-procedure(vbnWireAnchor()
-  let((points entry)
-    points = hiGetCurrentEnterFunPoints()
-    when(points
-      entry = if(cdr(points) then nth(length(points)-2 points) else car(points))
-      if(numberp(car(entry)) then entry else car(entry))
-    )
+procedure(vbnSnapMode()
+  let((field mode)
+    field = when(vbnForm vbnForm~>segSnapMode)
+    mode = when(field field~>value)
+    if(mode then mode else "anyAngle")
   )
 )
 
-procedure(vbnWireTarget(value)
-  let((anchor current dx dy magnitude points lastPoint)
-    anchor = vbnWireAnchor()
-    current = hiGetPoint(vbnWindow)
-    points = hiGetCurrentEnterFunPoints()
-    when(anchor && current
-      dx = vbnX(current)-vbnX(anchor)
-      dy = vbnY(current)-vbnY(anchor)
-      magnitude = sqrt(dx*dx+dy*dy)
-      when(magnitude <= 0.0 && cdr(points)
-        lastPoint = car(last(points))
-        unless(numberp(car(lastPoint)) lastPoint = car(lastPoint))
-        dx = vbnX(lastPoint)-vbnX(anchor)
-        dy = vbnY(lastPoint)-vbnY(anchor)
-        magnitude = sqrt(dx*dx+dy*dy)
-      )
-      when(magnitude > 0.0
-        vbnPoint(vbnSnap(vbnX(anchor)+value*dx/magnitude)
-                 vbnSnap(vbnY(anchor)+value*dy/magnitude))
-      )
+procedure(vbnConstrainPoint(start current)
+  let((dx dy mode ax ay)
+    dx = vbnX(current)-vbnX(start)
+    dy = vbnY(current)-vbnY(start)
+    ax = abs(dx) ay = abs(dy)
+    mode = vbnSnapMode()
+    cond(
+      ((mode == "orthogonal" || mode == "horizontal" || mode == "vertical")
+        if(mode == "horizontal" ||
+           (mode == "orthogonal" && ax >= ay) then dy = 0.0
+        else dx = 0.0))
+      (mode == "diagonal"
+        cond(
+          (ay <= 0.4142135624*ax dy = 0.0)
+          (ax <= 0.4142135624*ay dx = 0.0)
+          (t
+            if(ax <= ay then dx = if(dx < 0.0 then -ay else ay)
+            else dy = if(dy < 0.0 then -ax else ax)))))
     )
-  )
-)
-
-procedure(vbnApplyWire(value)
-  let((points target)
-    points = hiGetCurrentEnterFunPoints()
-    target = vbnWireTarget(value)
-    if(!points || !target then
-      warn("Numeric Assist: place a wire point and point toward the segment first.\n")
-      nil
-    else
-      when(cdr(points) deletePoint())
-      addPoint(target)
-      ; Commit exactly the entered endpoint.  Native Return otherwise adds
-      ; a rubberband segment from that endpoint to the cursor.
-      applyEnterFun()
-    )
+    vbnPoint(vbnX(start)+dx vbnY(start)+dy)
   )
 )
 
@@ -639,6 +625,7 @@ procedure(vbnDirection()
     start = vbnEnteredStartPoint()
     current = hiGetPoint(vbnWindow)
     when(start && current
+      current = vbnConstrainPoint(start current)
       dx = vbnX(current)-vbnX(start)
       dy = vbnY(current)-vbnY(start)
       magnitude = sqrt(dx*dx+dy*dy)
@@ -751,6 +738,7 @@ procedure(vbnApplyLength(value)
       box = fig~>bBox
       originalPoints = fig~>points
       ll = car(box) ur = cadr(box)
+      current = vbnConstrainPoint(start current)
       axis = if(abs(vbnX(current)-vbnX(start)) >=
                 abs(vbnY(current)-vbnY(start)) then 'x else 'y)
       if(axis == 'x then
@@ -803,7 +791,9 @@ procedure(vbnConfirm()
           vbnSetFormField(vbnForm~>pathWidth value)
           t)
         (vbnKind == 'length vbnApplyLength(value))
-        (vbnKind == 'wire vbnApplyWire(value))
+        (vbnKind == 'wire
+          vbnSetFormField(vbnForm~>wireWidth value)
+          t)
         (vbnKind == 'distance vbnApplyDistance(value))
       )
       when(ok vbnStop())
@@ -821,7 +811,7 @@ procedure(vbnHotkey(shift)
       ((command == "Path") && !shift 'width)
       ((command == "Wire") && !shift 'wire)
       ((command == "Stretch") && !shift 'length)
-      (((command == "Move") || (command == "Stretch")) && shift 'distance)
+      ((command == "Move") || ((command == "Stretch") && shift) 'distance)
       (t nil)
     )
     if(!kind then
