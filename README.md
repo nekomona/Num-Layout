@@ -25,6 +25,13 @@ edge changes the number to the distance between the edges. A perpendicular
 second edge or any third edge begins a new single-edge measurement. Ruler edges
 are available too.
 
+For a wire path segment, clicking its centerline or terminal uses the wire's
+physical width. Clicking a side uses that side's length; clicking a second
+parallel side uses the spacing between the sides. The yellow hover line and
+magenta selection arrow show the exact feature being measured. Numeric Assist
+uses the raw mouse position for wire picking so native Wire snapping does not
+turn a side click into a centerline click.
+
 The edge under the cursor is yellow. Selected edges and a length arrow are
 magenta. Press **Enter**, **Space**, the same hotkey again, or click empty canvas
 to confirm. Escape while

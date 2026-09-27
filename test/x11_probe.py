@@ -2,7 +2,7 @@
 
 Run on the remote GUI host with: python3 x11_probe.py WINDOW_ID ACTION...
 Actions are key:KEYSYM, chord:MODIFIER:KEYSYM, move:X:Y, click:X:Y,
-or wait:MILLISECONDS.
+where, or wait:MILLISECONDS.
 This sends UI events only; it does not evaluate SKILL.
 """
 
@@ -40,6 +40,13 @@ def main():
     xlib.XKeysymToKeycode.argtypes = [ctypes.c_void_p, ctypes.c_ulong]
     xlib.XKeysymToKeycode.restype = ctypes.c_uint
     xlib.XFlush.argtypes = [ctypes.c_void_p]
+    xlib.XQueryPointer.argtypes = [
+        ctypes.c_void_p, ctypes.c_ulong,
+        ctypes.POINTER(ctypes.c_ulong), ctypes.POINTER(ctypes.c_ulong),
+        ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+        ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+        ctypes.POINTER(ctypes.c_uint),
+    ]
     xtst.XTestFakeKeyEvent.argtypes = [ctypes.c_void_p, ctypes.c_uint, ctypes.c_int, ctypes.c_ulong]
     xtst.XTestFakeButtonEvent.argtypes = [ctypes.c_void_p, ctypes.c_uint, ctypes.c_int, ctypes.c_ulong]
     xtst.XTestFakeMotionEvent.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_ulong]
@@ -79,6 +86,20 @@ def main():
                 xtst.XTestFakeButtonEvent(display, 1, 0, 0)
         elif parts[0] == "wait":
             time.sleep(int(parts[1]) / 1000)
+        elif parts[0] == "where":
+            root = ctypes.c_ulong()
+            child = ctypes.c_ulong()
+            root_x = ctypes.c_int()
+            root_y = ctypes.c_int()
+            win_x = ctypes.c_int()
+            win_y = ctypes.c_int()
+            mask = ctypes.c_uint()
+            xlib.XQueryPointer(
+                display, win, ctypes.byref(root), ctypes.byref(child),
+                ctypes.byref(root_x), ctypes.byref(root_y),
+                ctypes.byref(win_x), ctypes.byref(win_y), ctypes.byref(mask),
+            )
+            print("pointer", root_x.value, root_y.value, win_x.value, win_y.value)
         else:
             raise ValueError(action)
         xlib.XFlush(display)

@@ -38,6 +38,9 @@ vbnPreviewObjects = nil
 vbnLastValue = nil
 vbnLastEdges = nil
 vbnLastSnapMode = nil
+vbnLastScreenPoint = nil
+vbnPixelScale = nil
+vbnPixelScaleView = nil
 
 procedure(vbnX(p) car(p))
 procedure(vbnY(p) cadr(p))
@@ -193,29 +196,106 @@ procedure(vbnBoxEdges(box)
   )
 )
 
+procedure(vbnPolygonEdges(points)
+  let((work edges)
+    work = points
+    edges = nil
+    while(cdr(work)
+      edges = cons(list(car(work) cadr(work)) edges)
+      work = cdr(work)
+    )
+    when(points && cdr(points) && !equal(car(last(points)) car(points))
+      edges = cons(list(car(last(points)) car(points)) edges)
+    )
+    edges
+  )
+)
+
+procedure(vbnWireWidthEdge(fig pt)
+  let((begin end boundary dx dy magnitude nx ny offset low high projection u center)
+    begin = fig~>beginPt end = fig~>endPt
+    boundary = fig~>boundary
+    when(begin && end && boundary
+      dx = vbnX(end)-vbnX(begin)
+      dy = vbnY(end)-vbnY(begin)
+      magnitude = sqrt(dx*dx+dy*dy)
+      when(magnitude > 0.0
+        nx = -dy/magnitude ny = dx/magnitude
+        low = nil high = nil
+        foreach(vertex boundary
+          offset = (vbnX(vertex)-vbnX(begin))*nx +
+                   (vbnY(vertex)-vbnY(begin))*ny
+          low = if(numberp(low) then min(low offset) else offset)
+          high = if(numberp(high) then max(high offset) else offset)
+        )
+        when(numberp(low) && numberp(high) && high > low
+          projection = ((vbnX(pt)-vbnX(begin))*dx +
+                        (vbnY(pt)-vbnY(begin))*dy)/(magnitude*magnitude)
+          u = max(0.0 min(1.0 projection))
+          center = vbnPoint(vbnX(begin)+u*dx vbnY(begin)+u*dy)
+          list(vbnPoint(vbnX(center)+low*nx vbnY(center)+low*ny)
+               vbnPoint(vbnX(center)+high*nx vbnY(center)+high*ny))
+        )
+      )
+    )
+  )
+)
+
+procedure(vbnRawPointForWire(win adjusted fig)
+  let((screen view ll ur dx dy denom numerator scale bbox screenWidth)
+    screen = hiGetScreenPoint(win)
+    view = hiGetViewBBox(win)
+    when(screen && view
+      ll = car(view) ur = cadr(view)
+      dx = vbnX(fig~>endPt)-vbnX(fig~>beginPt)
+      dy = vbnY(fig~>endPt)-vbnY(fig~>beginPt)
+      denom = vbnX(screen)*dx-vbnY(screen)*dy
+      numerator = (vbnX(adjusted)-vbnX(ll))*dx +
+                  (vbnY(adjusted)-vbnY(ur))*dy
+      scale = when(abs(denom) > 0.01
+        numerator/denom)
+      bbox = hiGetAbsWindowScreenBBox(win)
+      screenWidth = vbnX(cadr(bbox))-vbnX(car(bbox))
+      when(!numberp(scale) || scale <= 0.0 ||
+           scale < (vbnX(ur)-vbnX(ll))/screenWidth ||
+           (equal(view vbnPixelScaleView) && numberp(vbnPixelScale) &&
+            abs(scale-vbnPixelScale) > 0.2*vbnPixelScale)
+        scale = if(equal(view vbnPixelScaleView) then vbnPixelScale else nil))
+      when(numberp(scale)
+        vbnPixelScale = scale
+        vbnPixelScaleView = view
+        vbnPoint(vbnX(ll)+vbnX(screen)*scale
+                 vbnY(ur)-vbnY(screen)*scale))
+    )
+  )
+)
+
 procedure(vbnFigureEdges(fig)
   let((typ points work edges)
     typ = fig~>objType
-    if(typ == "path" || typ == "polygon" || typ == "ruler" then
-      points = fig~>points
-      work = points
-      edges = nil
-      while(cdr(work)
-        edges = cons(list(car(work) cadr(work)) edges)
-        work = cdr(work)
-      )
-      when(typ == "polygon" && points && cdr(points)
-        edges = cons(list(car(last(points)) car(points)) edges)
-      )
-      if(edges then edges else vbnBoxEdges(fig~>bBox))
-    else
-      vbnBoxEdges(fig~>bBox)
+    cond(
+      ((typ == "pathSeg" && fig~>boundary)
+        vbnPolygonEdges(fig~>boundary))
+      ((typ == "path" || typ == "polygon" || typ == "ruler")
+        points = fig~>points
+        if(typ == "polygon" then
+          edges = vbnPolygonEdges(points)
+        else
+          work = points
+          while(cdr(work)
+            edges = cons(list(car(work) cadr(work)) edges)
+            work = cdr(work)
+          )
+        )
+        if(edges then edges else vbnBoxEdges(fig~>bBox)))
+      (t vbnBoxEdges(fig~>bBox))
     )
   )
 )
 
 procedure(vbnPickEdge(win pt)
-  let((cv view ll ur tolerance region figures best bestDistance distance)
+  let((cv view ll ur tolerance region figures best bestDistance distance
+       centerPick centerDistance widthEdge width pickPoint)
     cv = geGetEditCellView(win)
     view = hiGetViewBBox(win)
     ll = car(view) ur = cadr(view)
@@ -231,10 +311,30 @@ procedure(vbnPickEdge(win pt)
     )
     best = nil
     bestDistance = tolerance
+    centerPick = nil
+    centerDistance = tolerance
     foreach(fig figures
       when(dbIsId(fig) && fig~>bBox
+        pickPoint = pt
+        when(fig~>objType == "pathSeg"
+          pickPoint = vbnRawPointForWire(win pt fig)
+          unless(pickPoint pickPoint = pt)
+          widthEdge = vbnWireWidthEdge(fig pickPoint)
+          when(widthEdge
+            width = vbnEdgeLength(widthEdge)
+            distance = vbnDistanceToSegment(pickPoint
+                         list(fig~>beginPt fig~>endPt))
+            when(distance <= min(tolerance
+                                 max(0.3*width
+                                     if(numberp(vbnPixelScale) then
+                                       0.5*vbnPixelScale else 0.0))) &&
+                 distance <= centerDistance
+              centerPick = widthEdge
+              centerDistance = distance)
+          )
+        )
         foreach(edge vbnFigureEdges(fig)
-          distance = vbnDistanceToSegment(pt edge)
+          distance = vbnDistanceToSegment(pickPoint edge)
           when(vbnEdgeLength(edge) > 0.0 && distance <= bestDistance
             best = edge
             bestDistance = distance
@@ -242,7 +342,7 @@ procedure(vbnPickEdge(win pt)
         )
       )
     )
-    best
+    if(centerPick then centerPick else best)
   )
 )
 
@@ -376,12 +476,14 @@ procedure(vbnDrawEdges(pt)
 )
 
 procedure(vbnUpdateDisplay()
-  let((pt view ll ur height origin labelText value)
+  let((pt screen view ll ur height origin labelText value)
     when(vbnActive && vbnWindow && vbnHilight
       pt = hiGetPoint(vbnWindow)
+      screen = hiGetScreenPoint(vbnWindow)
       labelText = vbnDisplayText()
       value = vbnCurrentValue()
-      when(pt && (!equal(pt vbnLastPoint) || labelText != vbnLastText ||
+      when(pt && (!equal(pt vbnLastPoint) ||
+                  !equal(screen vbnLastScreenPoint) || labelText != vbnLastText ||
                   !equal(value vbnLastValue) || !equal(vbnEdges vbnLastEdges) ||
                   vbnSnapMode() != vbnLastSnapMode)
         when(vbnHilightLabel geDeleteHilightObject(vbnHilightLabel))
@@ -396,6 +498,7 @@ procedure(vbnUpdateDisplay()
         vbnHilightLabel = geAddHilightLabel(vbnHilight origin labelText
           "lowerLeft" "R0" "stick" height nil)
         vbnLastPoint = pt
+        vbnLastScreenPoint = screen
         vbnLastText = labelText
         vbnLastValue = value
         vbnLastEdges = vbnEdges
@@ -485,6 +588,9 @@ procedure(vbnStart(kind)
     vbnLastValue = nil
     vbnLastEdges = nil
     vbnLastSnapMode = nil
+    vbnLastScreenPoint = nil
+    vbnPixelScale = nil
+    vbnPixelScaleView = nil
     cv = geGetEditCellView(vbnWindow)
     lpp = leGetEntryLayer()
     when(cv && lpp
