@@ -745,6 +745,11 @@ procedure(vbnUpdateDisplay()
         vbnDrawEdges(pt)
         vbnDrawPreview(pt value)
         geRefreshWindow(vbnWindow)
+        ; A queued graphics refresh can leave hilight geometry on screen until
+        ; the next hit-test event. Force the phase-3 contour preview to paint
+        ; when the cursor moves through otherwise empty canvas.
+        when(vbnKind == 'contour && vbnPhase == 3
+          hiRedraw(vbnWindow))
       )
     )
   )
