@@ -24,6 +24,7 @@ vbnLastPoint = nil
 vbnLastText = nil
 vbnSavedKeys = nil
 vbnMainOld = nil
+vbnIdleOld = nil
 vbnShiftOld = nil
 vbnEnabled = t
 vbnToolbar = nil
@@ -41,6 +42,15 @@ vbnLastSnapMode = nil
 vbnLastScreenPoint = nil
 vbnPixelScale = nil
 vbnPixelScaleView = nil
+vbnRememberedNumber = if(boundp('vbnRememberedNumber) then
+  vbnRememberedNumber else nil)
+vbnPrefilled = nil
+vbnPhase = nil
+vbnContourSource = nil
+vbnContourOffset = nil
+vbnContourEdges = nil
+vbnContourPivot = nil
+vbnContourSide = nil
 
 procedure(vbnX(p) car(p))
 procedure(vbnY(p) cadr(p))
@@ -270,6 +280,61 @@ procedure(vbnRawPointForWire(win adjusted fig)
   )
 )
 
+procedure(vbnRawPointForCommand(win adjusted)
+  let((screen view ll ur sx sy scaleX scaleY scale anchor dx dy denom
+       mode bbox screenWidth)
+    when(vbnKind == 'wire || vbnKind == 'width
+      screen = hiGetScreenPoint(win)
+      view = hiGetViewBBox(win)
+      when(screen && view
+        ll = car(view) ur = cadr(view)
+        sx = vbnX(screen) sy = vbnY(screen)
+        scaleX = when(sx > 0 (vbnX(adjusted)-vbnX(ll))/sx)
+        scaleY = when(sy > 0 (vbnY(ur)-vbnY(adjusted))/sy)
+        anchor = vbnEnteredStartPoint()
+        mode = when(vbnForm vbnForm~>snapMode~>value)
+        cond(
+          ((anchor && mode == "orthogonal")
+            if(abs(vbnX(adjusted)-vbnX(anchor)) <= vbnGrid() then
+              scale = scaleY
+            else if(abs(vbnY(adjusted)-vbnY(anchor)) <= vbnGrid() then
+              scale = scaleX
+            else
+              scale = if(numberp(vbnPixelScale) then vbnPixelScale
+                      else (scaleX+scaleY)/2.0))))
+          ((anchor && mode == "diagonal")
+            dx = vbnX(adjusted)-vbnX(anchor)
+            dy = vbnY(adjusted)-vbnY(anchor)
+            denom = sx*dx-sy*dy
+            when(abs(denom) > 0.01
+              scale = ((vbnX(adjusted)-vbnX(ll))*dx +
+                       (vbnY(adjusted)-vbnY(ur))*dy)/denom))
+          (t
+            when(numberp(scaleX) && numberp(scaleY)
+              scale = if(numberp(vbnPixelScale) &&
+                         abs(scaleX-vbnPixelScale) <
+                         abs(scaleY-vbnPixelScale) then scaleX
+                      else if(numberp(vbnPixelScale) &&
+                              abs(scaleY-vbnPixelScale) <
+                              abs(scaleX-vbnPixelScale) then scaleY
+                      else (scaleX+scaleY)/2.0))))
+        )
+        bbox = hiGetAbsWindowScreenBBox(win)
+        screenWidth = vbnX(cadr(bbox))-vbnX(car(bbox))
+        when(!numberp(scale) || scale <= 0.0 ||
+             scale < (vbnX(ur)-vbnX(ll))/screenWidth ||
+             (equal(view vbnPixelScaleView) && numberp(vbnPixelScale) &&
+              abs(scale-vbnPixelScale) > 0.2*vbnPixelScale)
+          scale = if(equal(view vbnPixelScaleView) then vbnPixelScale else nil))
+        when(numberp(scale)
+          vbnPixelScale = scale
+          vbnPixelScaleView = view
+          vbnPoint(vbnX(ll)+sx*scale vbnY(ur)-sy*scale))
+      )
+    )
+  )
+)
+
 procedure(vbnFigureEdges(fig)
   let((typ points work edges)
     typ = fig~>objType
@@ -295,11 +360,13 @@ procedure(vbnFigureEdges(fig)
 
 procedure(vbnPickEdge(win pt)
   let((cv view ll ur tolerance region figures best bestDistance distance
-       centerPick centerDistance widthEdge width pickPoint)
+       centerPick centerDistance widthEdge width pickPoint rawPoint)
     cv = geGetEditCellView(win)
     view = hiGetViewBBox(win)
     ll = car(view) ur = cadr(view)
     tolerance = max(0.01 (vbnX(ur)-vbnX(ll))/100.0)
+    rawPoint = vbnRawPointForCommand(win pt)
+    when(rawPoint pt = rawPoint)
     region = list(vbnPoint(vbnX(pt)-tolerance vbnY(pt)-tolerance)
                   vbnPoint(vbnX(pt)+tolerance vbnY(pt)+tolerance))
     ; Rulers are markers, not shapes returned by dbGetOverlaps.
@@ -317,8 +384,9 @@ procedure(vbnPickEdge(win pt)
       when(dbIsId(fig) && fig~>bBox
         pickPoint = pt
         when(fig~>objType == "pathSeg"
+          unless(rawPoint
           pickPoint = vbnRawPointForWire(win pt fig)
-          unless(pickPoint pickPoint = pt)
+          unless(pickPoint pickPoint = pt))
           widthEdge = vbnWireWidthEdge(fig pickPoint)
           when(widthEdge
             width = vbnEdgeLength(widthEdge)
@@ -346,36 +414,153 @@ procedure(vbnPickEdge(win pt)
   )
 )
 
-procedure(vbnCurrentValue()
-  if(vbnEdges then vbnNumber
-  else
-    if(vbnDigits == "" || vbnDigits == "." then nil
-    else atof(vbnDigits))
+procedure(vbnContourRectAtPoint(win pt)
+  let((cv tolerance region result bestArea box ll ur area)
+    cv = geGetEditCellView(win)
+    tolerance = vbnGrid()
+    region = list(vbnPoint(vbnX(pt)-tolerance vbnY(pt)-tolerance)
+                  vbnPoint(vbnX(pt)+tolerance vbnY(pt)+tolerance))
+    bestArea = nil
+    foreach(fig dbGetOverlaps(cv region)
+      when(dbIsId(fig) && fig~>objType == "rect" &&
+           fig != vbnContourSource
+        box = fig~>bBox ll = car(box) ur = cadr(box)
+        when(vbnX(pt) >= vbnX(ll) && vbnX(pt) <= vbnX(ur) &&
+             vbnY(pt) >= vbnY(ll) && vbnY(pt) <= vbnY(ur)
+          area = (vbnX(ur)-vbnX(ll))*(vbnY(ur)-vbnY(ll))
+          when(!numberp(bestArea) || area < bestArea
+            result = fig bestArea = area)
+        )
+      )
+    )
+    result
   )
 )
 
+procedure(vbnContourBoxFromEdges(edges)
+  let((minX maxX minY maxY tolerance left right top bottom valid
+       a b ax bx ay by)
+    when(length(edges) == 4
+      minX = nil maxX = nil minY = nil maxY = nil
+      foreach(edge edges
+        foreach(pt edge
+          minX = if(numberp(minX) then min(minX vbnX(pt)) else vbnX(pt))
+          maxX = if(numberp(maxX) then max(maxX vbnX(pt)) else vbnX(pt))
+          minY = if(numberp(minY) then min(minY vbnY(pt)) else vbnY(pt))
+          maxY = if(numberp(maxY) then max(maxY vbnY(pt)) else vbnY(pt))
+        )
+      )
+      tolerance = 2.0*vbnGrid()
+      valid = maxX-minX > tolerance && maxY-minY > tolerance
+      foreach(edge edges
+        a = car(edge) b = cadr(edge)
+        ax = vbnX(a) bx = vbnX(b) ay = vbnY(a) by = vbnY(b)
+        cond(
+          ((abs(ax-minX) <= tolerance && abs(bx-minX) <= tolerance &&
+            abs(min(ay by)-minY) <= tolerance &&
+            abs(max(ay by)-maxY) <= tolerance && !left)
+            left = t)
+          ((abs(ax-maxX) <= tolerance && abs(bx-maxX) <= tolerance &&
+            abs(min(ay by)-minY) <= tolerance &&
+            abs(max(ay by)-maxY) <= tolerance && !right)
+            right = t)
+          ((abs(ay-minY) <= tolerance && abs(by-minY) <= tolerance &&
+            abs(min(ax bx)-minX) <= tolerance &&
+            abs(max(ax bx)-maxX) <= tolerance && !bottom)
+            bottom = t)
+          ((abs(ay-maxY) <= tolerance && abs(by-maxY) <= tolerance &&
+            abs(min(ax bx)-minX) <= tolerance &&
+            abs(max(ax bx)-maxX) <= tolerance && !top)
+            top = t)
+          (t valid = nil)
+        )
+      )
+      when(valid && left && right && top && bottom
+        list(vbnPoint(minX minY) vbnPoint(maxX maxY)))
+    )
+  )
+)
+
+procedure(vbnContourDirection(pt)
+  let((box ll ur inside width height)
+    box = vbnContourPivot
+    when(box && pt
+      ll = car(box) ur = cadr(box)
+      inside = vbnX(pt) > vbnX(ll) && vbnX(pt) < vbnX(ur) &&
+               vbnY(pt) > vbnY(ll) && vbnY(pt) < vbnY(ur)
+      width = vbnX(ur)-vbnX(ll)
+      height = vbnY(ur)-vbnY(ll)
+      if(inside then
+        when(2.0*vbnContourOffset < width &&
+             2.0*vbnContourOffset < height 'inside)
+      else 'outside)
+    )
+  )
+)
+
+procedure(vbnContourTarget(side)
+  let((box ll ur offset)
+    box = vbnContourPivot
+    when(box && side
+      ll = car(box) ur = cadr(box)
+      offset = if(side == 'outside then vbnContourOffset
+               else -vbnContourOffset)
+      list(vbnPoint(vbnSnap(vbnX(ll)-offset)
+                    vbnSnap(vbnY(ll)-offset))
+           vbnPoint(vbnSnap(vbnX(ur)+offset)
+                    vbnSnap(vbnY(ur)+offset)))
+    )
+  )
+)
+
+procedure(vbnCurrentValue()
+  if(vbnKind == 'contour && vbnPhase && vbnPhase > 1 then
+    vbnContourOffset
+  else if(vbnEdges then vbnNumber
+  else
+    if(vbnDigits == "" || vbnDigits == "." then nil
+    else atof(vbnDigits))
+  ))
+)
+
 procedure(vbnDisplayText()
-  let((value)
+  let((value side)
     value = vbnCurrentValue()
     cond(
+      ((vbnKind == 'contour && vbnPhase == 2)
+        sprintf(nil "PIVOT  %0.6g  [%d/4 edges]"
+                vbnContourOffset length(vbnContourEdges)))
+      ((vbnKind == 'contour && vbnPhase == 3)
+        side = vbnContourDirection(hiGetPoint(vbnWindow))
+        sprintf(nil "CONTOUR %s  %0.6g"
+                if(side == 'inside then "INSIDE"
+                else if(side == 'outside then "OUTSIDE" else "OUTSIDE ONLY"))
+                vbnContourOffset))
       (vbnEdges
         sprintf(nil "%0.6g  [%d edge%s]" value length(vbnEdges)
           if(length(vbnEdges) == 1 then "" else "s")))
       (vbnDigits != "" vbnDigits)
-      (t if(vbnKind == 'width then "WIDTH"
+      (t if(vbnKind == 'contour then "CONTOUR OFFSET"
+         else if(vbnKind == 'width then "WIDTH"
          else if(vbnKind == 'length then "LENGTH"
-         else if(vbnKind == 'wire then "WIRE WIDTH" else "DISTANCE"))))
+         else if(vbnKind == 'wire then "WIRE WIDTH" else "DISTANCE")))))
     )
   )
 )
 
 procedure(vbnDrawPreview(pt value)
   let((start direction dx dy a b nx ny half selection fig box ll ur axis sign
-       fixed moving points selectedPoints target)
+       fixed moving points selectedPoints target side)
     when(numberp(value)
       start = vbnEnteredStartPoint()
       direction = vbnDirection()
       cond(
+        (vbnKind == 'contour && vbnPhase == 3 && vbnContourPivot
+          side = vbnContourDirection(pt)
+          target = vbnContourTarget(side)
+          when(target
+            vbnPreviewObjects = append(vbnBoxLine(vbnPreviewSet target)
+                                       vbnPreviewObjects)))
         (vbnKind == 'width && start && pt
           dx = vbnX(pt)-vbnX(start) dy = vbnY(pt)-vbnY(start)
           half = sqrt(dx*dx+dy*dy)
@@ -447,7 +632,27 @@ procedure(vbnDrawPreview(pt value)
 )
 
 procedure(vbnDrawEdges(pt)
-  let((hover first second a b p q dx dy mag midpoint projection)
+  let((hover hoverRect first second a b p q dx dy mag midpoint projection)
+    when(vbnKind == 'contour && vbnPhase > 1
+      when(vbnPhase == 2
+        hoverRect = vbnContourRectAtPoint(vbnWindow pt)
+        if(hoverRect then
+          vbnHoverObjects = append(vbnBoxLine(vbnHoverSet hoverRect~>bBox)
+                                   vbnHoverObjects)
+        else
+          hover = when(pt vbnPickEdge(vbnWindow pt))
+          when(hover
+            vbnHoverObjects = cons(vbnLine(vbnHoverSet hover)
+                                   vbnHoverObjects)))
+        foreach(edge vbnContourEdges
+          vbnSelectedObjects = cons(vbnLine(vbnSelectedSet edge)
+                                    vbnSelectedObjects))
+      )
+      when(vbnContourPivot
+        vbnSelectedObjects = append(vbnBoxLine(vbnSelectedSet vbnContourPivot)
+                                    vbnSelectedObjects))
+    )
+    unless(vbnKind == 'contour && vbnPhase > 1
     hover = when(pt vbnPickEdge(vbnWindow pt))
     when(hover
       vbnHoverObjects = cons(vbnLine(vbnHoverSet hover) vbnHoverObjects))
@@ -471,6 +676,7 @@ procedure(vbnDrawEdges(pt)
           vbnPoint((vbnX(p)+vbnX(q))/2.0-projection*dx
                    (vbnY(p)+vbnY(q))/2.0-projection*dy))
       else vbnArrow(car(first) cadr(first)))
+    )
     )
   )
 )
@@ -536,14 +742,23 @@ procedure(vbnCaptureInput()
       digit = sprintf(nil "%d" i)
       key = sprintf(nil "<Key>%s EF" digit)
       vbnCaptureKey(key sprintf(nil "vbnDigit(\"%s\")" digit))
+      vbnCaptureKey(sprintf(nil "<Key>%s" digit)
+                    sprintf(nil "vbnDigit(\"%s\")" digit))
     )
     vbnCaptureKey("<Key>period EF" "vbnDigit(\".\")")
+    vbnCaptureKey("<Key>period" "vbnDigit(\".\")")
     vbnCaptureKey("<Key>BackSpace EF" "vbnBackspace()")
+    vbnCaptureKey("<Key>BackSpace" "vbnBackspace()")
     vbnCaptureKey("<Key>Escape EF" "vbnEscape()")
+    vbnCaptureKey("<Key>Escape" "vbnEscape()")
     vbnCaptureKey("<Key>Return EF" "vbnConfirm()")
+    vbnCaptureKey("<Key>Return" "vbnConfirm()")
     vbnCaptureKey("<Key>KP_Enter EF" "vbnConfirm()")
+    vbnCaptureKey("<Key>KP_Enter" "vbnConfirm()")
     vbnCaptureKey("<Key>space EF" "vbnConfirm()")
+    vbnCaptureKey("<Key>space" "vbnConfirm()")
     vbnCaptureKey("None<Btn1Down> EF" "vbnClick()")
+    vbnCaptureKey("None<Btn1Down>" "vbnClick()")
   )
 )
 
@@ -571,6 +786,13 @@ procedure(vbnStop()
   vbnEdges = nil
   vbnNumber = nil
   vbnDigits = ""
+  vbnPrefilled = nil
+  vbnPhase = nil
+  vbnContourSource = nil
+  vbnContourOffset = nil
+  vbnContourEdges = nil
+  vbnContourPivot = nil
+  vbnContourSide = nil
   t
 )
 
@@ -580,7 +802,16 @@ procedure(vbnStart(kind)
     vbnCommand = hiGetCurrentCmd(vbnWindow)
     vbnForm = hiGetCurrentForm()
     vbnKind = kind
-    vbnDigits = ""
+    vbnPhase = if(kind == 'contour then 1 else nil)
+    vbnContourSource = if(kind == 'contour then
+      car(geGetSelSet(vbnWindow)) else nil)
+    vbnContourOffset = nil
+    vbnContourEdges = nil
+    vbnContourPivot = nil
+    vbnContourSide = nil
+    vbnDigits = if(numberp(vbnRememberedNumber) then
+      sprintf(nil "%0.12g" vbnRememberedNumber) else "")
+    vbnPrefilled = numberp(vbnRememberedNumber)
     vbnNumber = nil
     vbnEdges = nil
     vbnLastPoint = nil
@@ -611,7 +842,10 @@ procedure(vbnStart(kind)
 )
 
 procedure(vbnDigit(char)
-  when(vbnActive
+  when(vbnActive && (vbnKind != 'contour || vbnPhase == 1)
+    when(vbnPrefilled
+      vbnDigits = ""
+      vbnPrefilled = nil)
     when(vbnEdges
       vbnEdges = nil
       vbnNumber = nil
@@ -625,7 +859,8 @@ procedure(vbnDigit(char)
 )
 
 procedure(vbnBackspace()
-  when(vbnActive
+  when(vbnActive && (vbnKind != 'contour || vbnPhase == 1)
+    vbnPrefilled = nil
     if(vbnEdges then
       vbnEdges = nil
       vbnNumber = nil
@@ -641,6 +876,18 @@ procedure(vbnBackspace()
 procedure(vbnEscape()
   when(vbnActive
     cond(
+      ((vbnKind == 'contour && vbnPhase == 3)
+        vbnPhase = 2
+        vbnContourSide = nil
+        vbnUpdateDisplay())
+      ((vbnKind == 'contour && vbnPhase == 2)
+        vbnPhase = 1
+        vbnDigits = sprintf(nil "%0.12g" vbnContourOffset)
+        vbnPrefilled = t
+        vbnContourOffset = nil
+        vbnContourEdges = nil
+        vbnContourPivot = nil
+        vbnUpdateDisplay())
       (vbnEdges
         vbnEdges = nil
         vbnNumber = nil
@@ -648,6 +895,7 @@ procedure(vbnEscape()
         vbnUpdateDisplay())
       (vbnDigits != ""
         vbnDigits = ""
+        vbnPrefilled = nil
         vbnUpdateDisplay())
       (t vbnStop())
     )
@@ -668,8 +916,32 @@ procedure(vbnSelectEdge(edge)
     )
   )
   vbnDigits = ""
+  vbnPrefilled = nil
   vbnUpdateDisplay()
   vbnNumber
+)
+
+procedure(vbnContourSelectPivot(pt)
+  let((rect edge box)
+    rect = vbnContourRectAtPoint(vbnWindow pt)
+    if(rect then
+      vbnContourEdges = nil
+      vbnContourPivot = rect~>bBox
+    else
+      edge = vbnPickEdge(vbnWindow pt)
+      when(edge
+        unless(member(edge vbnContourEdges)
+          vbnContourEdges = if(length(vbnContourEdges) >= 4 then list(edge)
+                            else append(vbnContourEdges list(edge)))
+        )
+        box = vbnContourBoxFromEdges(vbnContourEdges)
+        vbnContourPivot = when(box &&
+          !equal(box vbnContourSource~>bBox) box)
+      )
+    )
+    vbnUpdateDisplay()
+    vbnContourPivot
+  )
 )
 
 procedure(vbnClick()
@@ -677,9 +949,19 @@ procedure(vbnClick()
     when(vbnActive
       pt = hiGetPoint(vbnWindow)
       when(pt
-        edge = vbnPickEdge(vbnWindow pt)
-        if(edge then vbnSelectEdge(edge)
-        else when(vbnCurrentValue() vbnConfirm()))
+        cond(
+          ((vbnKind == 'contour && vbnPhase == 2)
+            edge = vbnPickEdge(vbnWindow pt)
+            if(!edge && !vbnContourRectAtPoint(vbnWindow pt) &&
+               vbnContourPivot then vbnConfirm()
+            else vbnContourSelectPivot(pt)))
+          ((vbnKind == 'contour && vbnPhase == 3)
+            vbnConfirm())
+          (t
+            edge = vbnPickEdge(vbnWindow pt)
+            if(edge then vbnSelectEdge(edge)
+            else when(vbnCurrentValue() vbnConfirm())))
+        )
       )
     )
   )
@@ -883,53 +1165,102 @@ procedure(vbnApplyLength(value)
   )
 )
 
+procedure(vbnConfirmContour()
+  let((value side target)
+    cond(
+      ((vbnPhase == 1)
+        value = vbnCurrentValue()
+        if(!numberp(value) || value <= 0.0 then
+          warn("Numeric Assist: enter a positive contour offset.\n")
+          nil
+        else
+          vbnContourOffset = value
+          vbnDigits = ""
+          vbnPrefilled = nil
+          vbnNumber = nil
+          vbnEdges = nil
+          vbnPhase = 2
+          vbnUpdateDisplay()
+          t))
+      ((vbnPhase == 2)
+        if(!vbnContourPivot then
+          warn("Numeric Assist: select one pivot rectangle or four bounding edges.\n")
+          nil
+        else
+          vbnPhase = 3
+          vbnUpdateDisplay()
+          t))
+      ((vbnPhase == 3)
+        side = vbnContourDirection(hiGetPoint(vbnWindow))
+        target = vbnContourTarget(side)
+        if(!target || !dbIsId(vbnContourSource) then
+          warn("Numeric Assist: choose a valid inside or outside point.\n")
+          nil
+        else
+          vbnContourSource~>bBox = target
+          vbnRememberedNumber = vbnContourOffset
+          vbnStop()
+          t))
+    )
+  )
+)
+
 procedure(vbnConfirm()
   let((value ok)
-    value = vbnCurrentValue()
-    if(!numberp(value) || value < 0.0 ||
-       (vbnKind != 'distance && value == 0.0) then
-      warn("Numeric Assist: enter a positive number.\n")
-      nil
+    if(vbnKind == 'contour then
+      vbnConfirmContour()
     else
-      ok = cond(
-        (vbnKind == 'width
-          vbnSetFormField(vbnForm~>fixedWidthPaths t)
-          vbnSetFormField(vbnForm~>pathWidth value)
-          t)
-        (vbnKind == 'length vbnApplyLength(value))
-        (vbnKind == 'wire
-          vbnSetFormField(vbnForm~>wireWidth value)
-          t)
-        (vbnKind == 'distance vbnApplyDistance(value))
+      value = vbnCurrentValue()
+      if(!numberp(value) || value < 0.0 ||
+         (vbnKind != 'distance && value == 0.0) then
+        warn("Numeric Assist: enter a positive number.\n")
+        nil
+      else
+        ok = cond(
+          (vbnKind == 'width
+            vbnSetFormField(vbnForm~>fixedWidthPaths t)
+            vbnSetFormField(vbnForm~>pathWidth value)
+            t)
+          (vbnKind == 'length vbnApplyLength(value))
+          (vbnKind == 'wire
+            vbnSetFormField(vbnForm~>wireWidth value)
+            t)
+          (vbnKind == 'distance vbnApplyDistance(value))
+        )
+        when(ok vbnRememberedNumber = value)
+        when(ok vbnStop())
+        ok
       )
-      when(ok vbnStop())
-      ok
     )
   )
 )
 
 procedure(vbnHotkey(shift)
-  let((win command kind form)
+  let((win command kind form selection)
     when(vbnEnabled
     win = hiGetCurrentWindow()
     command = hiGetCurrentCmd(win)
+    selection = geGetSelSet(win)
     kind = cond(
       ((command == "Path") && !shift 'width)
       ((command == "Wire") && !shift 'wire)
       ((command == "Stretch") && !shift 'length)
       ((command == "Move") || ((command == "Stretch") && shift) 'distance)
+      ((!shift && command != "Move" && command != "Stretch" &&
+        length(selection) == 1 && car(selection)~>objType == "rect")
+        'contour)
       (t nil)
     )
     if(!kind then
-      warn("Numeric Assist: start native Path, Wire, Stretch, or Move first.\n")
+      warn("Numeric Assist: start Path, Wire, Stretch, Move, or select one rectangle for contour.\n")
       nil
     else
       if(vbnActive && win == vbnWindow && kind == vbnKind then
-        when(vbnCurrentValue() vbnConfirm())
+        when(vbnKind == 'contour || vbnCurrentValue() vbnConfirm())
       else
         when(vbnActive vbnStop())
         form = hiGetCurrentForm()
-        if(!form ||
+        if((kind != 'contour && !form) ||
            (command == "Path" && form~>_formName != "Create Path") ||
            (command == "Wire" && form~>_formName != "Create Wire") ||
            (command == "Stretch" && form~>_formName != "Stretch") ||
@@ -971,8 +1302,10 @@ procedure(vbnToolbarLoop(generation)
 
 procedure(vbnInstall()
   unless(vbnInstalled
+    vbnIdleOld = hiGetBindKey("Layout" "<Key>j")
     vbnMainOld = hiGetBindKey("Layout" "<Key>j EF")
     vbnShiftOld = hiGetBindKey("Layout" "Shift<Key>j EF")
+    hiSetBindKey("Layout" "<Key>j" "vbnHotkey(nil)")
     hiSetBindKey("Layout" "<Key>j EF" "vbnHotkey(nil)")
     hiSetBindKey("Layout" "Shift<Key>j EF" "vbnHotkey(t)")
     vbnAction = hiCreateAction(?name 'vbnToggleAction
@@ -993,6 +1326,8 @@ procedure(vbnUninstall()
     foreach(win vbnToolbarWindows
       when(member(win hiGetWindowList()) hiDeleteToolbar(win 'vbnToolbar)))
     vbnToolbarWindows = nil
+    hiSetBindKey("Layout" "<Key>j"
+      if(vbnIdleOld then vbnIdleOld else ""))
     hiSetBindKey("Layout" "<Key>j EF"
       if(vbnMainOld then vbnMainOld else ""))
     hiSetBindKey("Layout" "Shift<Key>j EF"

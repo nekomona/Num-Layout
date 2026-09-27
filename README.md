@@ -7,7 +7,8 @@ See [test instructions](test/README.md) for isolated live checks.
 
 ## Use
 
-Start a native **Path**, **Wire**, **Stretch**, or **Move** command first.
+Start a native **Path**, **Wire**, **Stretch**, or **Move** command, or select one
+rectangle to contour it.
 
 | Active command | Key | Confirmed number means |
 | --- | --- | --- |
@@ -32,6 +33,12 @@ magenta selection arrow show the exact feature being measured. Numeric Assist
 uses the raw mouse position for wire picking so native Wire snapping does not
 turn a side click into a centerline click.
 
+The last confirmed J number is prefilled the next time J opens. Confirm it to
+reuse it, or type a digit to replace it. Escape clears the prefilled number
+before closing the assist. Wire and Path picking use the mouse position before
+native snapping; clicking anywhere along a wire's longitudinal centerline,
+including its terminals, picks its width.
+
 The edge under the cursor is yellow. Selected edges and a length arrow are
 magenta. Press **Enter**, **Space**, the same hotkey again, or click empty canvas
 to confirm. Escape while
@@ -50,6 +57,18 @@ For Wire, J updates the native Create Wire form's `wireWidth` field. The
 current segment contour uses that width before confirmation. The native Wire
 command remains active after confirmation, so subsequent points use the new
 width.
+
+## Contour a rectangle
+
+Select one rectangle outside Move or Stretch, then press J. Enter a positive
+offset, or measure an edge or the spacing between parallel edges. Press Enter,
+Space, or J to advance. Click inside a pivot rectangle, or select four edges
+that form one rectangle's bounding box, and confirm the pivot. Move the cursor
+inside or outside the pivot to preview the result, then click or confirm again
+to resize and move the initially selected rectangle. The offset applies to
+all four sides. If an inset would collapse either dimension, only outside is
+available. Each Escape returns one phase; from the number phase, Escape
+clears the number before exiting.
 
 Move J and Shift+J, and Stretch Shift+J, follow the native command's current
 segment snap mode when choosing displacement direction: orthogonal, diagonal
