@@ -24,7 +24,7 @@ vbnLastPoint = nil
 vbnLastText = nil
 vbnSavedKeys = nil
 vbnMainOld = nil
-vbnIdleOld = nil
+vbnContourOld = nil
 vbnShiftOld = nil
 vbnEnabled = t
 vbnToolbar = nil
@@ -1327,13 +1327,13 @@ procedure(vbnHotkey(shift)
       ((command == "Ruler") && !shift 'measurement)
       ((command == "Stretch") && !shift 'length)
       ((command == "Move") || ((command == "Stretch") && shift) 'distance)
-      ((!shift && command != "Move" && command != "Stretch" &&
+      ((shift && !command &&
         length(selection) == 1 && car(selection)~>objType == "rect")
         'contour)
       (t nil)
     )
     if(!kind then
-      warn("Numeric Assist: start Path, Wire, Measurement, Stretch, Move, or select one rectangle for contour.\n")
+      warn("Numeric Assist: start Path, Wire, Measurement, Stretch, Move, or select one rectangle and press Shift+J for contour.\n")
       nil
     else
       if(vbnActive && win == vbnWindow && kind == vbnKind then
@@ -1385,14 +1385,14 @@ procedure(vbnToolbarLoop(generation)
 
 procedure(vbnInstall()
   unless(vbnInstalled
-    vbnIdleOld = hiGetBindKey("Layout" "<Key>j")
+    vbnContourOld = hiGetBindKey("Layout" "Shift<Key>j")
     vbnMainOld = hiGetBindKey("Layout" "<Key>j EF")
     vbnShiftOld = hiGetBindKey("Layout" "Shift<Key>j EF")
-    hiSetBindKey("Layout" "<Key>j" "vbnHotkey(nil)")
+    hiSetBindKey("Layout" "Shift<Key>j" "vbnHotkey(t)")
     hiSetBindKey("Layout" "<Key>j EF" "vbnHotkey(nil)")
     hiSetBindKey("Layout" "Shift<Key>j EF" "vbnHotkey(t)")
     vbnAction = hiCreateAction(?name 'vbnToggleAction
-      ?iconText "Numeric J" ?toolTip "Toggle Numeric Assist (J / Shift+J)"
+      ?iconText "Numeric J" ?toolTip "Toggle Numeric Assist (J in commands, Shift+J for contour)"
       ?callback "vbnToggle()" ?checkable t ?checked t)
     vbnToolbar = hiCreateToolbar(?name 'vbnToolbar
       ?title "Numeric Assist" ?toolButtonStyle 'textOnly
@@ -1409,8 +1409,8 @@ procedure(vbnUninstall()
     foreach(win vbnToolbarWindows
       when(member(win hiGetWindowList()) hiDeleteToolbar(win 'vbnToolbar)))
     vbnToolbarWindows = nil
-    hiSetBindKey("Layout" "<Key>j"
-      if(vbnIdleOld then vbnIdleOld else ""))
+    hiSetBindKey("Layout" "Shift<Key>j"
+      if(vbnContourOld then vbnContourOld else ""))
     hiSetBindKey("Layout" "<Key>j EF"
       if(vbnMainOld then vbnMainOld else ""))
     hiSetBindKey("Layout" "Shift<Key>j EF"

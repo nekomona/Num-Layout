@@ -1,6 +1,6 @@
 # Numeric Assist for Virtuoso Layout
 
-Numeric Assist adds a value picker to native Virtuoso layout editing. Press **J** while drawing a path or wire, creating a measurement, stretching, or moving. With one rectangle selected outside those commands, **J** starts Contour. The **Numeric J** toolbar button enables or disables the assist.
+Numeric Assist adds a value picker to native Virtuoso layout editing. Press **J** while drawing a path or wire, creating a measurement, stretching, or moving. With one rectangle selected and no command active, **Shift+J** starts Contour. Idle J keeps Virtuoso's selection command, and Ctrl+J keeps Flip. The **Numeric J** toolbar button enables or disables the assist.
 
 ## Start a session
 
@@ -34,7 +34,7 @@ For a wire, clicking its longitudinal centerline or terminal uses its physical w
 | Stretch | J | Final extent along the stretch direction |
 | Stretch | Shift+J | Stretch displacement magnitude |
 | Move | J or Shift+J | Move displacement magnitude |
-| One rectangle selected, outside Move/Stretch | J | Contour offset |
+| One rectangle selected, no active command | Shift+J | Contour offset |
 
 ### Path and Wire widths
 
@@ -52,7 +52,7 @@ Press K to start a native measurement, place its first point, and move toward th
 
 ## Contour a rectangle
 
-Select exactly one source rectangle while no Move or Stretch command is active, then press J. Contour has three phases:
+Select exactly one source rectangle while no command is active, then press Shift+J. Contour has three phases:
 
 1. **Offset:** Type a positive number or pick it from one or two edges. Confirm to advance.
 2. **Pivot:** Click a pivot rectangle, or select four edges that define two X and two Y boundaries. The segments may stop short of the corners. Confirm the pivot.
@@ -68,7 +68,7 @@ Each Escape returns to the preceding phase. If the inset would collapse either p
 | Backspace | Remove the last entered character |
 | Click an edge | Pick its length or wire width |
 | Click a second parallel edge | Pick the spacing between edges |
-| Enter, Space, J | Confirm the current value or contour phase |
+| Enter, Space, active hotkey | Confirm the current value or contour phase |
 | Escape | Clear the current value or return one contour phase |
 | Numeric J toolbar button | Enable or disable the assist |
 

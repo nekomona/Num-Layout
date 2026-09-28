@@ -19,6 +19,7 @@ command, or select one rectangle to contour it.
 | Stretch | Shift+J | Stretch displacement magnitude |
 | Move | J | Move displacement magnitude |
 | Move | Shift+J | Move displacement magnitude |
+| One selected rectangle, no command | Shift+J | Start Contour |
 
 After the hotkey, type `0`–`9`, `.`, or Backspace. The current input and mode
 appear next to the cursor. The result contour appears while a valid number is
@@ -69,9 +70,9 @@ manufacturing grid, so diagonal lengths can have a small grid approximation.
 
 ## Contour a rectangle
 
-Select one rectangle outside Move or Stretch, then press J. Enter a positive
+Select one rectangle outside Move or Stretch, then press Shift+J. Enter a positive
 offset, or measure an edge or the spacing between parallel edges. Press Enter,
-Space, or J to advance. Click inside a pivot rectangle, or select four edges
+Space, or Shift+J to advance. Click inside a pivot rectangle, or select four edges
 that define two distinct X and two distinct Y boundaries, and confirm the
 pivot. The edge segments may stop short of the corners. Move the cursor
 inside or outside the pivot to preview the result, then click or confirm again
