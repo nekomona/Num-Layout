@@ -1,6 +1,6 @@
 ; Numeric layout assist for Virtuoso IC23.1.
-; J sets Path/Wire width, Stretch extent, or Move displacement.
-; Shift-J sets the displacement magnitude of Move/Stretch.
+; J sets Path/Wire width, Stretch extent, or Move/Copy displacement.
+; Shift-J sets the displacement magnitude of Move/Copy/Stretch.
 
 when(boundp('vbnInstalled) && vbnInstalled
   vbnUninstall()
@@ -55,6 +55,7 @@ vbnContourOffset = nil
 vbnContourEdges = nil
 vbnContourPivot = nil
 vbnContourSide = nil
+vbnContourPickMode = nil
 
 procedure(vbnX(p) car(p))
 procedure(vbnY(p) cadr(p))
@@ -580,6 +581,7 @@ procedure(vbnModeText()
     (vbnKind == 'length "STRETCH LENGTH")
     (vbnKind == 'measurement "MEASUREMENT LENGTH")
     (vbnCommand == "Move" "MOVE DISTANCE")
+    (vbnCommand == "Copy" "COPY DISTANCE")
     (t "STRETCH DISTANCE")
   )
 )
@@ -589,7 +591,8 @@ procedure(vbnDisplayText(pt)
     value = vbnCurrentValue()
     cond(
       ((vbnKind == 'contour && vbnPhase == 2)
-        sprintf(nil "PIVOT  %0.6g  [%d/4 edges]"
+        sprintf(nil "PIVOT %s  %0.6g  [%d/4 edges]"
+                if(vbnContourPickMode == 'rect then "RECT" else "EDGE")
                 vbnContourOffset length(vbnContourEdges)))
       ((vbnKind == 'contour && vbnPhase == 3)
         side = vbnContourDirection(pt)
@@ -700,7 +703,8 @@ procedure(vbnDrawEdges(pt)
   let((hover hoverRect first second a b p q dx dy mag midpoint projection)
     when(vbnKind == 'contour && vbnPhase > 1
       when(vbnPhase == 2
-        hoverRect = vbnContourRectAtPoint(vbnWindow pt)
+        hoverRect = when(vbnContourPickMode == 'rect
+          vbnContourRectAtPoint(vbnWindow pt))
         if(hoverRect then
           vbnHoverObjects = append(vbnBoxLine(vbnHoverSet hoverRect)
                                    vbnHoverObjects)
@@ -834,6 +838,8 @@ procedure(vbnCaptureInput()
     vbnCaptureKey("<Key>space" "vbnConfirm()")
     vbnCaptureKey("None<Btn1Down> EF" "vbnClick()")
     vbnCaptureKey("None<Btn1Down>" "vbnClick()")
+    when(vbnKind == 'contour
+      vbnCaptureKey("<Key>j" "vbnHotkey(nil)"))
   )
 )
 
@@ -868,6 +874,7 @@ procedure(vbnStop()
   vbnContourEdges = nil
   vbnContourPivot = nil
   vbnContourSide = nil
+  vbnContourPickMode = nil
   vbnContourPixelScale = nil
   vbnContourPixelView = nil
   t
@@ -886,6 +893,7 @@ procedure(vbnStart(kind)
     vbnContourEdges = nil
     vbnContourPivot = nil
     vbnContourSide = nil
+    vbnContourPickMode = 'edge
     vbnDigits = if(numberp(vbnRememberedNumber) then
       sprintf(nil "%0.12g" vbnRememberedNumber) else "")
     vbnPrefilled = numberp(vbnRememberedNumber)
@@ -1003,7 +1011,8 @@ procedure(vbnSelectEdge(edge)
 
 procedure(vbnContourSelectPivot(pt)
   let((rect edge box)
-    rect = vbnContourRectAtPoint(vbnWindow pt)
+    rect = when(vbnContourPickMode == 'rect
+      vbnContourRectAtPoint(vbnWindow pt))
     if(rect then
       vbnContourEdges = nil
       vbnContourPivot = rect
@@ -1031,10 +1040,7 @@ procedure(vbnClick()
       when(pt
         cond(
           ((vbnKind == 'contour && vbnPhase == 2)
-            edge = vbnPickEdge(vbnWindow pt)
-            if(!edge && !vbnContourRectAtPoint(vbnWindow pt) &&
-               vbnContourPivot then vbnConfirm()
-            else vbnContourSelectPivot(pt)))
+            vbnContourSelectPivot(pt))
           ((vbnKind == 'contour && vbnPhase == 3)
             vbnConfirm())
           (t
@@ -1066,6 +1072,24 @@ procedure(vbnSnapMode()
   )
 )
 
+procedure(vbnCopyAnchor()
+  let((left bottom right top box ll ur)
+    ; Native Copy can apply X/Y values without recording an enterfunction point.
+    foreach(fig geGetSelSet(vbnWindow)
+      box = fig~>bBox
+      when(box
+        ll = car(box) ur = cadr(box)
+        left = if(numberp(left) then min(left vbnX(ll)) else vbnX(ll))
+        bottom = if(numberp(bottom) then min(bottom vbnY(ll)) else vbnY(ll))
+        right = if(numberp(right) then max(right vbnX(ur)) else vbnX(ur))
+        top = if(numberp(top) then max(top vbnY(ur)) else vbnY(ur))
+      )
+    )
+    when(numberp(left)
+      vbnPoint((left+right)/2.0 (bottom+top)/2.0))
+  )
+)
+
 procedure(vbnConstrainPoint(start current)
   let((dx dy mode ax ay)
     dx = vbnX(current)-vbnX(start)
@@ -1092,6 +1116,8 @@ procedure(vbnConstrainPoint(start current)
 procedure(vbnDirection()
   let((start current dx dy magnitude)
     start = vbnEnteredStartPoint()
+    when(!start && vbnCommand == "Copy"
+      start = vbnCopyAnchor())
     current = hiGetPoint(vbnWindow)
     when(start && current
       current = vbnConstrainPoint(start current)
@@ -1137,7 +1163,7 @@ procedure(vbnApplyDistance(value)
   let((direction dx dy)
     direction = vbnDirection()
     if(!direction then
-      warn("Numeric Assist: point from native Move/Stretch start to cursor before confirming.\n")
+      warn("Numeric Assist: point from the command start toward the copy, move, or stretch direction.\n")
       nil
     else
       dx = vbnSnap(value*car(direction))
@@ -1146,11 +1172,15 @@ procedure(vbnApplyDistance(value)
         vbnSetFormField(vbnForm~>moveXField dx)
         vbnSetFormField(vbnForm~>moveYField dy)
         evalstring(vbnForm~>submitXY2~>_callback)
+      else if(vbnCommand == "Copy" then
+        vbnSetFormField(vbnForm~>copyXField dx)
+        vbnSetFormField(vbnForm~>copyYField dy)
+        evalstring(vbnForm~>copyApply~>_callback)
       else
         vbnSetFormField(vbnForm~>DeltaXField dx)
         vbnSetFormField(vbnForm~>DeltaYField dy)
         evalstring(vbnForm~>submitXY~>_callback)
-      )
+      ))
       t
     )
   )
@@ -1291,6 +1321,7 @@ procedure(vbnConfirmContour()
           vbnNumber = nil
           vbnEdges = nil
           vbnPhase = 2
+          vbnContourPickMode = 'edge
           vbnUpdateDisplay()
           t))
       ((vbnPhase == 2)
@@ -1353,6 +1384,12 @@ procedure(vbnHotkey(shift)
   let((win command kind form selection)
     when(vbnEnabled
     win = hiGetCurrentWindow()
+    if(vbnActive && vbnKind == 'contour && win == vbnWindow then
+      when(vbnPhase == 2
+        vbnContourPickMode = if(shift then 'rect else 'edge)
+        vbnLastPoint = nil
+        vbnUpdateDisplay())
+    else
     command = hiGetCurrentCmd(win)
     selection = geGetSelSet(win)
     kind = cond(
@@ -1360,14 +1397,15 @@ procedure(vbnHotkey(shift)
       ((command == "Wire") && !shift 'wire)
       ((command == "Ruler") && !shift 'measurement)
       ((command == "Stretch") && !shift 'length)
-      ((command == "Move") || ((command == "Stretch") && shift) 'distance)
+      ((command == "Move" || command == "Copy") ||
+       ((command == "Stretch") && shift) 'distance)
       ((shift && !command &&
         length(selection) == 1 && car(selection)~>objType == "rect")
         'contour)
       (t nil)
     )
     if(!kind then
-      warn("Numeric Assist: start Path, Wire, Measurement, Stretch, Move, or select one rectangle and press Shift+J for contour.\n")
+      warn("Numeric Assist: start Path, Wire, Measurement, Stretch, Move, Copy, or select one rectangle and press Shift+J for contour.\n")
       nil
     else
       if(vbnActive && win == vbnWindow && kind == vbnKind then
@@ -1380,11 +1418,13 @@ procedure(vbnHotkey(shift)
            (command == "Wire" && form~>_formName != "Create Wire") ||
            (command == "Ruler" && form~>_formName != "Create Measurement") ||
            (command == "Stretch" && form~>_formName != "Stretch") ||
-           (command == "Move" && form~>_formName != "Move") then
+           (command == "Move" && form~>_formName != "Move") ||
+           (command == "Copy" && form~>_formName != "Copy") then
           warn("Numeric Assist: native command form is unavailable.\n")
           nil
         else vbnStart(kind))
       )
+    )
     )
     )
   )

@@ -1,6 +1,6 @@
 # Numeric Assist for Virtuoso Layout
 
-Numeric Assist adds a value picker to native Virtuoso layout editing. Press **J** while drawing a path or wire, creating a measurement, stretching, or moving. With one rectangle selected and no command active, **Shift+J** starts Contour. Idle J keeps Virtuoso's selection command, and Ctrl+J keeps Flip. The **Numeric J** toolbar button enables or disables the assist.
+Numeric Assist adds a value picker to native Virtuoso layout editing. Press **J** while drawing a path or wire, creating a measurement, stretching, moving, or copying. With one rectangle selected and no command active, **Shift+J** starts Contour. Idle J keeps Virtuoso's selection command, and Ctrl+J keeps Flip. The **Numeric J** toolbar button enables or disables the assist.
 
 ## Start a session
 
@@ -38,15 +38,16 @@ For a wire, clicking its longitudinal centerline or terminal uses its physical w
 | Stretch | J | Final extent along the stretch direction |
 | Stretch | Shift+J | Stretch displacement magnitude |
 | Move | J or Shift+J | Move displacement magnitude |
+| Copy | J or Shift+J | Copy displacement magnitude |
 | One rectangle selected, no active command | Shift+J | Contour offset |
 
 ### Path and Wire widths
 
 Start the native Path or Wire command, press J, enter or pick the width, then confirm. The preview shows the new contour before confirmation. In Wire, the confirmed value updates the Create Wire form's `wireWidth` for the current and subsequent segments.
 
-### Stretch and Move
+### Stretch, Move, and Copy
 
-For an absolute Stretch length, select one edge or endpoint with native Stretch before pressing J. A whole-shape selection translates the shape in Virtuoso, so it cannot specify one final extent. Shift+J in Stretch, and either J or Shift+J in Move, sets the displacement magnitude in the direction from the command's start point toward the pointer. The current native snap mode controls that direction: orthogonal, 45-degree, or any angle.
+For an absolute Stretch length, select one edge or endpoint with native Stretch before pressing J. A whole-shape selection translates the shape in Virtuoso, so it cannot specify one final extent. Shift+J in Stretch, and either J or Shift+J in Move or Copy, sets the displacement magnitude toward the pointer. Copy uses the native reference point when available, or the center of the selected objects' combined bounding box. The current native snap mode controls the direction: orthogonal, 45-degree, or any angle. Copy confirmation applies the native Copy form's current settings.
 
 The plugin places supported rectangle extents and straight path or ruler endpoints at absolute grid coordinates after native Stretch completes. This avoids the observed half-grid error where a requested `20.000` could land at `19.995`. Diagonal results can still differ slightly because the manufacturing grid has discrete coordinates.
 
@@ -58,9 +59,9 @@ Press K to start a native measurement, place its first point, and move toward th
 
 Select exactly one source rectangle while no command is active, then press Shift+J. Contour has three phases:
 
-1. **Offset:** Type a positive number or pick it from one or two edges. Confirm to advance.
-2. **Pivot:** Click a pivot rectangle, or select four edges that define two X and two Y boundaries. The segments may stop short of the corners. Confirm the pivot.
-3. **Side:** Move the pointer inside or outside the pivot. A magenta contour previews the chosen result, and the cursor label says INSIDE or OUTSIDE. Click or press a confirmation key to move and resize the source rectangle.
+1. **Offset:** Type a positive number or pick it from one or two edges. Press Enter or Space to advance.
+2. **Pivot:** J selects only edges; Shift+J selects a rectangle before an edge at the same pointer location. The phase starts in edge mode. Click one rectangle or four edges that define two X and two Y boundaries. Switching modes keeps the current selection. The segments may stop short of the corners. Press Enter or Space to confirm the pivot; clicking empty canvas does not advance.
+3. **Side:** Move the pointer inside or outside the pivot. A magenta contour previews the chosen result, and the cursor label says INSIDE or OUTSIDE. Click, Enter, or Space to move and resize the source rectangle.
 
 Each Escape returns to the preceding phase. If the inset would collapse either pivot dimension, only OUTSIDE is available. The direction preview repaints as the pointer moves through empty canvas, including across a boundary with no object under the cursor.
 
@@ -72,7 +73,9 @@ Each Escape returns to the preceding phase. If the inset would collapse either p
 | Backspace | Remove the last entered character |
 | Click an edge | Pick its length or wire width |
 | Click a second parallel edge | Pick the spacing between edges |
-| Enter, Space, active hotkey | Confirm the current value or contour phase |
+| Enter, Space | Confirm the current value or contour phase |
+| Active hotkey outside Contour | Confirm the current value |
+| J / Shift+J in Contour pivot phase | Pick edge mode / rectangle priority mode |
 | Escape | Clear the current value or return one contour phase |
 | Numeric J toolbar button | Enable or disable the assist |
 

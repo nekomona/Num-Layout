@@ -7,7 +7,7 @@ See [test instructions](test/README.md) for isolated live checks.
 
 ## Use
 
-Start a native **Path**, **Wire**, **Measurement (K)**, **Stretch**, or **Move**
+Start a native **Path**, **Wire**, **Measurement (K)**, **Stretch**, **Move**, or **Copy**
 command, or select one rectangle to contour it.
 
 | Active command | Key | Confirmed number means |
@@ -19,6 +19,7 @@ command, or select one rectangle to contour it.
 | Stretch | Shift+J | Stretch displacement magnitude |
 | Move | J | Move displacement magnitude |
 | Move | Shift+J | Move displacement magnitude |
+| Copy | J or Shift+J | Copy displacement magnitude |
 | One selected rectangle, no command | Shift+J | Start Contour |
 
 After the hotkey, type `0`–`9`, `.`, or Backspace. The current input and mode
@@ -50,8 +51,8 @@ native snapping; clicking anywhere along a wire's longitudinal centerline,
 including its terminals, picks its width.
 
 The edge under the cursor is yellow. Selected edges and a length arrow are
-magenta. Press **Enter**, **Space**, the same hotkey again, or click empty canvas
-to confirm. Escape while
+magenta. Outside Contour, press **Enter**, **Space**, the same hotkey again, or
+click empty canvas to confirm. Escape while
 edges are selected returns to number entry. Escape with digits clears them;
 Escape with an empty entry closes Numeric Assist and leaves the native command
 active. A click used to pick an edge or confirm a number is consumed by Numeric
@@ -74,20 +75,31 @@ saved ruler at that length. A line previews the result before confirmation.
 The active Measurement command then ends. Its endpoint is snapped to the
 manufacturing grid, so diagonal lengths can have a small grid approximation.
 
+For **Copy**, select objects and start native Copy. Press J or Shift+J, then
+enter or pick the displacement magnitude. The cursor direction follows the
+Copy form's snap mode. If Copy has no entered reference point, Numeric Assist
+uses the center of the selected objects' combined bounding box as the direction
+origin. Confirmation uses the native Copy form's X/Y fields and Apply action,
+including its current Single, Step, or Array settings.
+
 ## Contour a rectangle
 
-Select one rectangle outside Move or Stretch, then press Shift+J. Enter a positive
-offset, or measure an edge or the spacing between parallel edges. Press Enter,
-Space, or Shift+J to advance. Click inside a pivot rectangle, or select four edges
-that define two distinct X and two distinct Y boundaries, and confirm the
-pivot. The edge segments may stop short of the corners. Move the cursor
+Select one rectangle with no active command, then press Shift+J. Enter a positive
+offset, or measure an edge or the spacing between parallel edges. Press Enter
+or Space to advance. Phase two starts in **edge** mode: click four edges that
+define two distinct X and two distinct Y boundaries. Press **Shift+J** for
+**rectangle** mode; a rectangle takes priority over its edge at the pointer.
+Press **J** to return to edge-only picking. Switching modes preserves the
+current edge or pivot selection. A new rectangle pick replaces the edge set.
+The edge segments may stop short of the corners. Only Enter or Space advances
+to phase three after a valid pivot is selected. Move the cursor
 inside or outside the pivot to preview the result, then click or confirm again
 to resize and move the initially selected rectangle. The offset applies to
 all four sides. If an inset would collapse either dimension, only outside is
 available. Each Escape returns one phase; from the number phase, Escape
 clears the number before exiting.
 
-Move J and Shift+J, and Stretch Shift+J, follow the native command's current
+Move and Copy J or Shift+J, and Stretch Shift+J, follow the native command's current
 segment snap mode when choosing displacement direction: orthogonal, diagonal
 (45-degree increments), or any angle. Horizontal and vertical modes are also
 respected when offered by the form. Change the snap mode in the native form;
