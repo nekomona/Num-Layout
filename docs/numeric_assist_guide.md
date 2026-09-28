@@ -22,6 +22,10 @@ You can also take a value from geometry:
 2. Click once to use that edge's length. The selected edge and length arrow turn **magenta**.
 3. Click a parallel edge to use the spacing between the two edges. A perpendicular second edge starts a new single-edge pick; a third edge also starts over.
 
+Edges inside instances, PCells, and arrays can be picked. Numeric Assist
+transforms each picked shape into the edited cellview's coordinates before
+measuring it. Contour can use an internal rectangle as its pivot.
+
 For a wire, clicking its longitudinal centerline or terminal uses its physical width. A side click uses the side length. The plugin uses the raw pointer position for Path and Wire picking, even if native wire drawing snaps the working cursor elsewhere.
 
 ## What J changes
@@ -72,4 +76,4 @@ Each Escape returns to the preceding phase. If the inset would collapse either p
 | Escape | Clear the current value or return one contour phase |
 | Numeric J toolbar button | Enable or disable the assist |
 
-The physical dot key is captured for decimal input while Numeric Assist runs. Its original Virtuoso magnifier binding returns when the assist closes. Edge picking searches top-level shapes and saved ruler markers in the edited cellview; it does not transform geometry inside placed instances. The cursor label uses a temporary highlight on the current entry layer, which must be visible.
+The physical dot key is captured for decimal input while Numeric Assist runs. Its original Virtuoso magnifier binding returns when the assist closes. Edge picking searches shapes through the instance hierarchy and saved ruler markers in the edited cellview. The cursor label uses a temporary highlight on the current entry layer, which must be visible.

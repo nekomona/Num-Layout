@@ -37,6 +37,12 @@ magenta selection arrow show the exact feature being measured. Numeric Assist
 uses the raw mouse position for wire picking so native Wire snapping does not
 turn a side click into a centerline click.
 
+Edge picking follows instance hierarchy into leaf shapes, including PCell
+geometry and array elements. Edges are measured in the edited cellview's
+coordinates after each instance transform. Contour can also use a rectangle
+inside an instance as its pivot; the selected source rectangle remains in the
+edited cellview.
+
 The last confirmed J number is prefilled the next time J opens. Confirm it to
 reuse it, or type a digit to replace it. Escape clears the prefilled number
 before closing the assist. Wire and Path picking use the mouse position before
@@ -99,8 +105,8 @@ coordinates.
 
 The native form fields and callbacks were checked against a running Virtuoso
 IC23.1 instance. Recheck them on another release before loading there. Edge
-selection searches top-level shapes and saved ruler markers in the edited
-cellview; it does not transform edges inside placed instances. Absolute Stretch
+selection searches shapes through the instance hierarchy and saved ruler
+markers in the edited cellview. Absolute Stretch
 length requires exactly one native selection with a subset of its points
 selected. The cursor label uses a temporary highlight set on the current entry
 layer, so that layer needs to be visible.

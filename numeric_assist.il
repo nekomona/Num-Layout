@@ -225,10 +225,14 @@ procedure(vbnPolygonEdges(points)
   )
 )
 
-procedure(vbnWireWidthEdge(fig pt)
+procedure(vbnWireWidthEdge(fig pt transform)
   let((begin end boundary dx dy magnitude nx ny offset low high projection u center)
     begin = fig~>beginPt end = fig~>endPt
     boundary = fig~>boundary
+    when(transform && begin && end && boundary
+      begin = dbTransformPoint(begin transform)
+      end = dbTransformPoint(end transform)
+      boundary = dbTransformPointList(boundary transform))
     when(begin && end && boundary
       dx = vbnX(end)-vbnX(begin)
       dy = vbnY(end)-vbnY(begin)
@@ -255,14 +259,14 @@ procedure(vbnWireWidthEdge(fig pt)
   )
 )
 
-procedure(vbnRawPointForWire(win adjusted fig)
+procedure(vbnRawPointForWire(win adjusted begin end)
   let((screen view ll ur dx dy denom numerator scale bbox screenWidth)
     screen = hiGetScreenPoint(win)
     view = hiGetViewBBox(win)
     when(screen && view
       ll = car(view) ur = cadr(view)
-      dx = vbnX(fig~>endPt)-vbnX(fig~>beginPt)
-      dy = vbnY(fig~>endPt)-vbnY(fig~>beginPt)
+      dx = vbnX(end)-vbnX(begin)
+      dy = vbnY(end)-vbnY(begin)
       denom = vbnX(screen)*dx-vbnY(screen)*dy
       numerator = (vbnX(adjusted)-vbnX(ll))*dx +
                   (vbnY(adjusted)-vbnY(ur))*dy
@@ -362,9 +366,26 @@ procedure(vbnFigureEdges(fig)
   )
 )
 
+procedure(vbnOverlapFigure(hit)
+  if(dbIsId(hit) then hit
+  else when(listp(hit) && hit vbnOverlapFigure(car(last(hit)))))
+)
+
+procedure(vbnOverlapTransform(hit)
+  when(listp(hit) dbGetHierPathTransform(hit))
+)
+
+procedure(vbnTransformEdge(edge transform)
+  if(transform then
+    list(dbTransformPoint(car(edge) transform)
+         dbTransformPoint(cadr(edge) transform))
+  else edge)
+)
+
 procedure(vbnPickEdge(win pt)
-  let((cv view ll ur tolerance region figures best bestDistance distance
-       centerPick centerDistance widthEdge width pickPoint rawPoint)
+  let((cv view ll ur tolerance region hits best bestDistance distance hit fig
+       transform edge localEdge begin end centerPick centerDistance widthEdge width
+       pickPoint rawPoint)
     cv = geGetEditCellView(win)
     view = hiGetViewBBox(win)
     ll = car(view) ur = cadr(view)
@@ -373,29 +394,37 @@ procedure(vbnPickEdge(win pt)
     when(rawPoint pt = rawPoint)
     region = list(vbnPoint(vbnX(pt)-tolerance vbnY(pt)-tolerance)
                   vbnPoint(vbnX(pt)+tolerance vbnY(pt)+tolerance))
-    ; Rulers are markers, not shapes returned by dbGetOverlaps.
-    figures = dbGetOverlaps(cv region)
+    ; True overlaps return child shapes with their instance path. Instance
+    ; bBoxes are deliberately ignored: only actual shape geometry is picked.
+    hits = dbGetTrueOverlaps(cv region t dbGetMaxHierDepth() t)
     foreach(marker cv~>markers
       when(marker~>objType == "ruler"
-        figures = cons(marker figures)
+        hits = cons(marker hits)
       )
     )
     best = nil
     bestDistance = tolerance
     centerPick = nil
     centerDistance = tolerance
-    foreach(fig figures
-      when(dbIsId(fig) && fig~>bBox
+    foreach(hit hits
+      fig = vbnOverlapFigure(hit)
+      when(fig && fig~>bBox && fig~>objType != "inst" &&
+           fig~>objType != "mosaic"
+        transform = vbnOverlapTransform(hit)
         pickPoint = pt
         when(fig~>objType == "pathSeg"
+          begin = if(transform then dbTransformPoint(fig~>beginPt transform)
+                  else fig~>beginPt)
+          end = if(transform then dbTransformPoint(fig~>endPt transform)
+                else fig~>endPt)
           unless(rawPoint
-          pickPoint = vbnRawPointForWire(win pt fig)
-          unless(pickPoint pickPoint = pt))
-          widthEdge = vbnWireWidthEdge(fig pickPoint)
+            pickPoint = vbnRawPointForWire(win pt begin end)
+            unless(pickPoint pickPoint = pt))
+          widthEdge = vbnWireWidthEdge(fig pickPoint transform)
           when(widthEdge
             width = vbnEdgeLength(widthEdge)
             distance = vbnDistanceToSegment(pickPoint
-                         list(fig~>beginPt fig~>endPt))
+                         list(begin end))
             when(distance <= min(tolerance
                                  max(0.3*width
                                      if(numberp(vbnPixelScale) then
@@ -405,7 +434,8 @@ procedure(vbnPickEdge(win pt)
               centerDistance = distance)
           )
         )
-        foreach(edge vbnFigureEdges(fig)
+        foreach(localEdge vbnFigureEdges(fig)
+          edge = vbnTransformEdge(localEdge transform)
           distance = vbnDistanceToSegment(pickPoint edge)
           when(vbnEdgeLength(edge) > 0.0 && distance <= bestDistance
             best = edge
@@ -419,21 +449,25 @@ procedure(vbnPickEdge(win pt)
 )
 
 procedure(vbnContourRectAtPoint(win pt)
-  let((cv tolerance region result bestArea box ll ur area)
+  let((cv tolerance region result bestArea box ll ur area hit fig transform)
     cv = geGetEditCellView(win)
     tolerance = vbnGrid()
     region = list(vbnPoint(vbnX(pt)-tolerance vbnY(pt)-tolerance)
                   vbnPoint(vbnX(pt)+tolerance vbnY(pt)+tolerance))
     bestArea = nil
-    foreach(fig dbGetOverlaps(cv region)
-      when(dbIsId(fig) && fig~>objType == "rect" &&
+    foreach(hit dbGetTrueOverlaps(cv region t dbGetMaxHierDepth() t)
+      fig = vbnOverlapFigure(hit)
+      when(fig && fig~>objType == "rect" &&
            fig != vbnContourSource
-        box = fig~>bBox ll = car(box) ur = cadr(box)
+        transform = vbnOverlapTransform(hit)
+        box = if(transform then dbTransformBBox(fig~>bBox transform)
+              else fig~>bBox)
+        ll = car(box) ur = cadr(box)
         when(vbnX(pt) >= vbnX(ll) && vbnX(pt) <= vbnX(ur) &&
              vbnY(pt) >= vbnY(ll) && vbnY(pt) <= vbnY(ur)
           area = (vbnX(ur)-vbnX(ll))*(vbnY(ur)-vbnY(ll))
           when(!numberp(bestArea) || area < bestArea
-            result = fig bestArea = area)
+            result = box bestArea = area)
         )
       )
     )
@@ -668,7 +702,7 @@ procedure(vbnDrawEdges(pt)
       when(vbnPhase == 2
         hoverRect = vbnContourRectAtPoint(vbnWindow pt)
         if(hoverRect then
-          vbnHoverObjects = append(vbnBoxLine(vbnHoverSet hoverRect~>bBox)
+          vbnHoverObjects = append(vbnBoxLine(vbnHoverSet hoverRect)
                                    vbnHoverObjects)
         else
           hover = when(pt vbnPickEdge(vbnWindow pt))
@@ -972,7 +1006,7 @@ procedure(vbnContourSelectPivot(pt)
     rect = vbnContourRectAtPoint(vbnWindow pt)
     if(rect then
       vbnContourEdges = nil
-      vbnContourPivot = rect~>bBox
+      vbnContourPivot = rect
     else
       edge = vbnPickEdge(vbnWindow pt)
       when(edge

@@ -14,6 +14,7 @@ Run offline `test_*.py` checks with
 
 Available scripts:
 
+- `test/create_hierarchy_testbench.py`
 - `test/create_testbench.py`
 - `test/run_x11_probe.py`
 - `test/x11_probe.py`
