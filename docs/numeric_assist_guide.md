@@ -35,7 +35,7 @@ For a wire, clicking its longitudinal centerline or terminal uses its physical w
 | Path | J | Active path width |
 | Wire | J | Current wire segment width |
 | Measurement (K) | J | New measurement length |
-| Stretch | J | Final extent along the stretch direction |
+| Stretch | J | Final extent for one edge/endpoint; displacement for a whole object or multiple objects |
 | Stretch | Shift+J | Stretch displacement magnitude |
 | Move | J or Shift+J | Move displacement magnitude |
 | Copy | J or Shift+J | Copy displacement magnitude |
@@ -47,7 +47,7 @@ Start the native Path or Wire command, press J, enter or pick the width, then co
 
 ### Stretch, Move, and Copy
 
-For an absolute Stretch length, select one edge or endpoint with native Stretch before pressing J. A whole-shape selection translates the shape in Virtuoso, so it cannot specify one final extent. Shift+J in Stretch, and either J or Shift+J in Move or Copy, sets the displacement magnitude toward the pointer. Copy uses the native reference point when available, or the center of the selected objects' combined bounding box. The current native snap mode controls the direction: orthogonal, 45-degree, or any angle. Copy confirmation applies the native Copy form's current settings.
+For an absolute Stretch length, select one edge or endpoint with native Stretch before pressing J. With a whole object or multiple objects selected, J instead sets displacement magnitude toward the pointer, just like Move. Shift+J in Stretch always uses displacement magnitude, as does either J or Shift+J in Move or Copy. Copy uses the native reference point when available, or the center of the selected objects' combined bounding box. The current native snap mode controls the direction: orthogonal, 45-degree, or any angle. Copy confirmation applies the native Copy form's current settings.
 
 The plugin places supported rectangle extents and straight path or ruler endpoints at absolute grid coordinates after native Stretch completes. This avoids the observed half-grid error where a requested `20.000` could land at `19.995`. Diagonal results can still differ slightly because the manufacturing grid has discrete coordinates.
 

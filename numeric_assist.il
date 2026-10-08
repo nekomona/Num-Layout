@@ -1380,6 +1380,15 @@ procedure(vbnConfirm()
   )
 )
 
+procedure(vbnStretchKind(selection)
+  let((selectedPoints)
+    selectedPoints = when(length(selection) == 1
+      geGetSelSetFigPoint(car(selection)))
+    if(length(selection) == 1 && member(t selectedPoints) &&
+       member(nil selectedPoints) then 'length else 'distance)
+  )
+)
+
 procedure(vbnHotkey(shift)
   let((win command kind form selection)
     when(vbnEnabled
@@ -1396,7 +1405,7 @@ procedure(vbnHotkey(shift)
       ((command == "Path") && !shift 'width)
       ((command == "Wire") && !shift 'wire)
       ((command == "Ruler") && !shift 'measurement)
-      ((command == "Stretch") && !shift 'length)
+      ((command == "Stretch") && !shift vbnStretchKind(selection))
       ((command == "Move" || command == "Copy") ||
        ((command == "Stretch") && shift) 'distance)
       ((shift && !command &&

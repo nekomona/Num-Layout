@@ -15,7 +15,7 @@ command, or select one rectangle to contour it.
 | Path | J | Width of the active path |
 | Wire | J | Width of the current wire segment |
 | Measurement (K) | J | Length of a new two-point ruler |
-| Stretch | J | Final length along the stretch direction |
+| Stretch | J | Final length for one selected edge/endpoint; displacement for a whole object or multiple objects |
 | Stretch | Shift+J | Stretch displacement magnitude |
 | Move | J | Move displacement magnitude |
 | Move | Shift+J | Move displacement magnitude |
@@ -59,8 +59,9 @@ active. A click used to pick an edge or confirm a number is consumed by Numeric
 Assist and does not add a point to the native command.
 
 For absolute Stretch length, select one **edge or endpoint** with native
-Stretch before pressing J. Selecting the entire shape translates it in
-Virtuoso, so Numeric Assist refuses an absolute length in that state. A ruler
+Stretch before pressing J. With a whole object or multiple objects selected,
+J uses displacement magnitude, with the same number entry, preview, and snap
+direction as Move. A ruler
 or straight path uses the distance between its endpoints. Other shapes use
 their X or Y bounding extent, according to the stretch direction. Shift+J
 uses the direction from the native command's reference point to the cursor.
@@ -99,7 +100,7 @@ all four sides. If an inset would collapse either dimension, only outside is
 available. Each Escape returns one phase; from the number phase, Escape
 clears the number before exiting.
 
-Move and Copy J or Shift+J, and Stretch Shift+J, follow the native command's current
+Move and Copy J or Shift+J, and both Stretch displacement modes, follow the native command's current
 segment snap mode when choosing displacement direction: orthogonal, diagonal
 (45-degree increments), or any angle. Horizontal and vertical modes are also
 respected when offered by the form. Change the snap mode in the native form;
