@@ -29,7 +29,7 @@ vbnShiftOld = nil
 vbnEnabled = t
 vbnToolbar = nil
 vbnAction = nil
-vbnToolbarWindows = nil
+vbnToolbarSessions = nil
 vbnHoverSet = nil
 vbnSelectedSet = nil
 vbnPreviewSet = nil
@@ -1443,15 +1443,19 @@ procedure(vbnToggle()
 procedure(vbnToolbarTick() nil)
 
 procedure(vbnToolbarLoop(generation)
-  let((cv)
+  let((cv session app key)
    when(vbnInstalled && generation == vbnToolbarGeneration
     foreach(win hiGetWindowList()
       cv = when(geIsGraphicalWindow(win t)
         geGetWindowCellView(win))
-      when(cv && cv~>viewName == "layout" &&
-           !member(win vbnToolbarWindows)
-        when(hiPlaceToolbar(win vbnToolbar 'top)
-          vbnToolbarWindows = cons(win vbnToolbarWindows)))
+      when(cv && cv~>viewName == "layout"
+        session = hiGetSessionWindow(win)
+        app = hiGetAppType(win)
+        key = list(session app)
+        when(session && app && !member(key vbnToolbarSessions)
+          when(deManageToolbar(session vbnToolbar app)
+            when(hiPlaceToolbar(session vbnToolbar 'top)
+              vbnToolbarSessions = cons(key vbnToolbarSessions)))))
     )
     hiRegTimer(sprintf(nil "vbnToolbarLoop(%d)" generation) 20)
    ))
@@ -1471,6 +1475,7 @@ procedure(vbnInstall()
     vbnToolbar = hiCreateToolbar(?name 'vbnToolbar
       ?title "Numeric Assist" ?toolButtonStyle 'textOnly
       ?items list(vbnAction))
+    hiSetToolbarObjName(vbnToolbar "vbnNumericAssistToolbar")
     vbnInstalled = t
     vbnToolbarLoop(vbnToolbarGeneration)
   )
@@ -1480,9 +1485,14 @@ procedure(vbnInstall()
 procedure(vbnUninstall()
   when(vbnActive vbnStop())
   when(vbnInstalled
-    foreach(win vbnToolbarWindows
-      when(member(win hiGetWindowList()) hiDeleteToolbar(win 'vbnToolbar)))
-    vbnToolbarWindows = nil
+    foreach(key vbnToolbarSessions
+      when(windowp(car(key))
+        deUnmanageToolbar(car(key) 'vbnToolbar cadr(key))
+        hiDeleteToolbar(car(key) 'vbnToolbar)))
+    vbnToolbarSessions = nil
+    foreach(win hiGetWindowList()
+      when(member('vbnToolbar hiGetWindowToolbars(win))
+        hiDeleteToolbar(win 'vbnToolbar)))
     hiSetBindKey("Layout" "Shift<Key>j"
       if(vbnContourOld then vbnContourOld else ""))
     hiSetBindKey("Layout" "<Key>j EF"
