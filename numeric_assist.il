@@ -29,7 +29,13 @@ vbnShiftOld = nil
 vbnEnabled = t
 vbnToolbar = nil
 vbnAction = nil
+vbnSteinerAction = nil
 vbnToolbarSessions = nil
+vbnIconDirectory = let((source suffix)
+  source = simplifyFilename(get_filename(piport))
+  suffix = rindex(source "/")
+  strcat(substring(source 1 strlen(source)-strlen(suffix)+1) "icons/")
+)
 vbnHoverSet = nil
 vbnSelectedSet = nil
 vbnPreviewSet = nil
@@ -1447,6 +1453,23 @@ procedure(vbnToggle()
   vbnEnabled
 )
 
+procedure(vbnRemoveSteiners()
+  let((win cv count)
+    win = hiGetCurrentWindow()
+    cv = when(geIsGraphicalWindow(win t) geGetEditCellView(win))
+    if(!cv || cv~>viewName != "layout" || cv~>mode == "r" then
+      warn("Numeric Assist: open an editable layout to remove Steiner objects.\n")
+      nil
+    else
+      count = length(cv~>steiners)
+      foreach(st cv~>steiners dbDeleteObject(st))
+      printf("Numeric Assist: removed %d Steiner object%s.\n"
+             count if(count == 1 then "" else "s"))
+      count
+    )
+  )
+)
+
 ; Kept as a no-op for callbacks queued by revisions loaded before the
 ; generation-scoped timer was introduced.
 procedure(vbnToolbarTick() nil)
@@ -1479,11 +1502,19 @@ procedure(vbnInstall()
     hiSetBindKey("Layout" "<Key>j EF" "vbnHotkey(nil)")
     hiSetBindKey("Layout" "Shift<Key>j EF" "vbnHotkey(t)")
     vbnAction = hiCreateAction(?name 'vbnToggleAction
-      ?iconText "Numeric J" ?toolTip "Toggle Numeric Assist (J in commands, Shift+J for contour)"
+      ?icon strcat(vbnIconDirectory "numeric_assist.png")
+      ?useNameForIconText nil
+      ?toolTip "Toggle Numeric Assist (J in commands, Shift+J for contour)"
       ?callback "vbnToggle()" ?checkable t ?checked t)
+    vbnSteinerAction = hiCreateAction(?name 'vbnRemoveSteinersAction
+      ?icon strcat(vbnIconDirectory "remove_steiners.png")
+      ?useNameForIconText nil
+      ?toolTip "Remove Invisible Steiners from the edited layout"
+      ?statusTip "Delete all Steiner objects in the edited layout"
+      ?callback "vbnRemoveSteiners()")
     vbnToolbar = hiCreateToolbar(?name 'vbnToolbar
-      ?title "Numeric Assist" ?toolButtonStyle 'textOnly
-      ?items list(vbnAction))
+      ?title "Numeric Assist" ?toolButtonStyle 'iconOnly
+      ?items list(vbnAction vbnSteinerAction))
     hiSetToolbarObjName(vbnToolbar "vbnNumericAssistToolbar")
     vbnInstalled = t
     vbnToolbarLoop(vbnToolbarGeneration)

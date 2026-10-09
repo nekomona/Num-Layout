@@ -1,6 +1,6 @@
 # Numeric Assist for Virtuoso Layout
 
-Numeric Assist adds a value picker to native Virtuoso layout editing. Press **J** while drawing a path or wire, creating a measurement, stretching, moving, or copying. With one rectangle selected and no command active, **Shift+J** starts Contour. Idle J keeps Virtuoso's selection command, and Ctrl+J keeps Flip. The **Numeric J** toolbar button enables or disables the assist.
+Numeric Assist adds a value picker to native Virtuoso layout editing. Press **J** while drawing a path or wire, creating a measurement, stretching, moving, or copying. With one rectangle selected and no command active, **Shift+J** starts Contour. Idle J keeps Virtuoso's selection command, and Ctrl+J keeps Flip. The toolbar's **ruler icon** enables or disables the assist; its pressed state means enabled. The **routing-node and broom icon** removes invisible Steiners from the current edited layout using `foreach(st geGetEditCellView()~>steiners dbDeleteObject(st))`. Hover over either icon for its tooltip. The cleanup button works even when Numeric Assist is disabled and leaves saving to the user.
 
 ## Start a session
 
