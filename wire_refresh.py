@@ -22,8 +22,15 @@ class Motion(C.Structure):
                 ('same_screen', C.c_int)]
 
 
+class Property(C.Structure):
+    _fields_ = [('type', C.c_int), ('serial', C.c_ulong),
+                ('send_event', C.c_int), ('display', C.c_void_p),
+                ('window', C.c_ulong), ('atom', C.c_ulong),
+                ('time', C.c_ulong), ('state', C.c_int)]
+
+
 class Event(C.Union):
-    _fields_ = [('motion', Motion), ('pad', C.c_long * 24)]
+    _fields_ = [('motion', Motion), ('property', Property), ('pad', C.c_long * 24)]
 
 
 class X11:
@@ -48,6 +55,13 @@ class X11:
                              *([C.POINTER(C.c_uint)] * 4)], C.c_int),
             'XGetInputFocus': ([C.c_void_p, C.POINTER(C.c_ulong), C.POINTER(C.c_int)], C.c_int),
             'XSendEvent': ([C.c_void_p, C.c_ulong, C.c_int, C.c_long, C.POINTER(Event)], C.c_int),
+            'XCreateSimpleWindow': ([C.c_void_p, C.c_ulong, C.c_int, C.c_int,
+                                    C.c_uint, C.c_uint, C.c_uint, C.c_ulong, C.c_ulong], C.c_ulong),
+            'XSelectInput': ([C.c_void_p, C.c_ulong, C.c_long], C.c_int),
+            'XChangeProperty': ([C.c_void_p, C.c_ulong, C.c_ulong, C.c_ulong,
+                                 C.c_int, C.c_int, C.POINTER(C.c_ubyte), C.c_int], C.c_int),
+            'XWindowEvent': ([C.c_void_p, C.c_ulong, C.c_long, C.POINTER(Event)], C.c_int),
+            'XDestroyWindow': ([C.c_void_p, C.c_ulong], C.c_int),
             'XSync': ([C.c_void_p, C.c_int], C.c_int),
             'XFree': ([C.c_void_p], C.c_int),
             'XCloseDisplay': ([C.c_void_p], C.c_int),
@@ -59,9 +73,26 @@ class X11:
         if not self.display:
             raise RuntimeError('Cannot open the inherited Virtuoso X11 display')
         self.root = self.lib.XDefaultRootWindow(self.display)
+        # An unmapped private window supplies real X-server timestamps. Time
+        # zero means CurrentTime in requests, but is NOT a useful event time;
+        # native tracking may discard repeated zero-timestamp notifications.
+        self.clock_window = self.lib.XCreateSimpleWindow(self.display, self.root,
+                                                         0, 0, 1, 1, 0, 0, 0)
+        self.clock_atom = self.lib.XInternAtom(self.display, b'_VBN_REFRESH_CLOCK', 0)
+        self.lib.XSelectInput(self.display, self.clock_window, 1 << 22)
 
     def close(self):
+        self.lib.XDestroyWindow(self.display, self.clock_window)
         self.lib.XCloseDisplay(self.display)
+
+    def server_time(self):
+        value, event = (C.c_ubyte * 1)(1), Event()
+        self.lib.XChangeProperty(self.display, self.clock_window, self.clock_atom,
+                                 19, 8, 0, value, 1)  # XA_INTEGER, PropModeReplace
+        self.lib.XWindowEvent(self.display, self.clock_window, 1 << 22, C.byref(event))
+        if event.property.type != 28 or not event.property.time:
+            raise RuntimeError('X server did not supply a valid PropertyNotify timestamp')
+        return event.property.time
 
     def pointer(self, window):
         root, child = C.c_ulong(), C.c_ulong()
@@ -125,14 +156,16 @@ class X11:
         return dict(point, width=width.value, height=height.value)
 
     def motion(self, point, dx=0):
+        timestamp = self.server_time()
         event = Event()
         event.motion = Motion(6, 0, 1, self.display, point['window'], point['root'],
-                              0, 0, point['x'] + dx, point['y'],
+                              0, timestamp, point['x'] + dx, point['y'],
                               point['root_x'] + dx, point['root_y'],
                               point['state'], b'\0', 1)
         if not self.lib.XSendEvent(self.display, point['window'], 0, 1 << 6, C.byref(event)):
             raise RuntimeError('XSendEvent rejected the Wire motion notification')
         self.lib.XSync(self.display, 0)
+        return timestamp
 
 
 def refresh(x11, pid, title, dry_run=False, pause=time.sleep):
@@ -142,17 +175,19 @@ def refresh(x11, pid, title, dry_run=False, pause=time.sleep):
     if point['width'] < 3 or not 0 <= point['x'] < point['width'] or not 0 <= point['y'] < point['height']:
         return dict(status='skipped', reason='pointer outside drawable target')
     if dry_run:
-        return dict(status='dry-run', target=point['window'], pointer=[point['root_x'], point['root_y']])
+        return dict(status='dry-run', target=point['window'], pointer=[point['root_x'], point['root_y']],
+                    server_time=x11.server_time())
     dx = 1 if point['x'] < point['width'] - 1 else -1
-    x11.motion(point, dx)
+    first_time = x11.motion(point, dx)
     # Let Qt consume the first event instead of compressing both into one.
     pause(0.04)
     current = x11.target(pid, title)
     if not current or current['window'] != point['window']:
         return dict(status='interrupted', reason='layout target changed')
     # If the user moved meanwhile, restore tracking to their NEW position.
-    x11.motion(current)
+    return_time = x11.motion(current)
     return dict(status='sent', target=point['window'],
+                event_times=[first_time, return_time],
                 pointer_unchanged=(point['root_x'], point['root_y']) ==
                                   (current['root_x'], current['root_y']))
 
@@ -162,10 +197,17 @@ def main():
     parser.add_argument('--pid', type=int, required=True)
     parser.add_argument('--title', required=True)
     parser.add_argument('--dry-run', action='store_true')
+    parser.add_argument('--check-clock', action='store_true',
+                        help='Read X-server timestamps only; never send motion events')
     args = parser.parse_args()
     x11 = X11()
     try:
-        print(json.dumps(refresh(x11, args.pid, args.title, args.dry_run)))
+        if args.check_clock:
+            first = x11.server_time()
+            time.sleep(0.04)
+            print(json.dumps(dict(status='clock-check', event_times=[first, x11.server_time()])))
+        else:
+            print(json.dumps(refresh(x11, args.pid, args.title, args.dry_run)))
     finally:
         x11.close()
 
