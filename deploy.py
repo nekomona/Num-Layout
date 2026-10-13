@@ -35,7 +35,7 @@ def main():
 
     # Install icons first so an updated script always finds the assets it uses.
     files = ["icons/numeric_assist.png", "icons/remove_steiners.png",
-             "numeric_assist.drf", "numeric_assist.il"]
+             "numeric_assist.drf", "wire_refresh.py", "numeric_assist.il"]
     for relative in files:
         source = ROOT / relative
         final = destination + "/" + relative

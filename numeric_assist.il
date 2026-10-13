@@ -65,6 +65,9 @@ vbnContourPivot = nil
 vbnContourSide = nil
 vbnContourPickMode = nil
 vbnTrackingRefreshQueue = nil
+vbnWireRefreshBusy = nil
+vbnWireRefreshStatus = nil
+vbnWireRefreshDryRun = nil
 
 procedure(vbnX(p) car(p))
 procedure(vbnY(p) cadr(p))
@@ -974,6 +977,49 @@ procedure(vbnReleaseInput()
   vbnSavedKeys = nil
 )
 
+procedure(vbnShellQuote(value)
+  let((quoted ch)
+    quoted = "'"
+    for(i 1 strlen(value)
+      ch = substring(value i 1)
+      quoted = strcat(quoted if(ch == "'" then "'\\''" else ch)))
+    strcat(quoted "'")
+  )
+)
+
+procedure(vbnWireRefreshData(child data)
+  vbnWireRefreshStatus = data
+)
+
+procedure(vbnWireRefreshError(child data)
+  vbnWireRefreshStatus = data
+  warn("Numeric Assist Wire refresh: %s" data)
+)
+
+procedure(vbnWireRefreshDone(child status)
+  vbnWireRefreshBusy = nil
+  when(status != 0
+    warn("Numeric Assist: Wire motion helper exited with status %d.\n" status))
+)
+
+procedure(vbnRequestWireMotion(win)
+  let((cv helper command)
+    if(!hiGetScreenPoint(win) then
+      vbnWireRefreshStatus = "skipped: pointer outside Wire canvas"
+    else unless(vbnWireRefreshBusy
+      cv = geGetEditCellView(win)
+      helper = simplifyFilename(strcat(vbnIconDirectory "../wire_refresh.py"))
+      command = sprintf(nil "python3 %s --pid %d --title %s%s"
+        vbnShellQuote(helper) ipcGetPid()
+        vbnShellQuote(strcat(cv~>libName " " cv~>cellName " " cv~>viewName))
+        if(vbnWireRefreshDryRun then " --dry-run" else ""))
+      vbnWireRefreshBusy = t
+      vbnWireRefreshStatus = "pending"
+      ipcBeginProcess(command "" 'vbnWireRefreshData 'vbnWireRefreshError
+                      'vbnWireRefreshDone)))
+  )
+)
+
 procedure(vbnRefreshNativeTracking()
   let((request win command view)
     request = car(vbnTrackingRefreshQueue)
@@ -982,14 +1028,17 @@ procedure(vbnRefreshNativeTracking()
       win = car(request) command = cadr(request) view = caddr(request)
       when(member(win hiGetWindowList()) && hiGetCurrentWindow() == win &&
            hiGetCurrentCmd(win) == command && equal(hiGetViewBBox(win) view)
-        ; A factor-one refresh leaves native Path tracking stale.
-        ; Force the native zoom callback, then restore the exact saved view.
-        ; Queue this after the confirmation callback has returned.
-        hiZoomRelativeScale(win 1.01)
-        hiFlush()
-        hiZoomIn(win view)
-        vbnPaint(win t)
-        hiFlush())
+        if(command == "Wire" then
+          ; Wire regenerates tracking on motion, not on native view refresh.
+          ; The X11 helper sends notifications without warping the pointer.
+          vbnRequestWireMotion(win)
+        else
+          ; Retain Path's view refresh after the confirmation callback.
+          hiZoomRelativeScale(win 1.01)
+          hiFlush()
+          hiZoomIn(win view)
+          vbnPaint(win t)
+          hiFlush()))
     )
   )
 )

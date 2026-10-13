@@ -17,7 +17,9 @@ Available scripts:
 - `test/create_hierarchy_testbench.py`
 - `test/create_testbench.py`
 - `test/run_x11_probe.py`
+- `test/test_wire_refresh.py`
 - `test/verify_feedback.py`
+- `test/verify_wire_refresh.py`
 - `test/x11_probe.py`
 
 Keep reports and screenshots under Git-ignored `artifacts/`.
