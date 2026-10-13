@@ -1,0 +1,10 @@
+; Plugin-owned resources: do not change the PDK's packets or layer visibility.
+drDefineDisplay((display))
+drDefineColor(
+  (display vbnYellow 255 255 0)
+  (display vbnMagenta 255 0 255)
+)
+drDefinePacket(
+  (display vbnYellow solid solid vbnYellow vbnYellow solid)
+  (display vbnMagenta solid solid vbnMagenta vbnMagenta solid)
+)

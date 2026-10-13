@@ -34,7 +34,8 @@ def main():
     shell(f"if test -f {shlex.quote(target)}; then cp -p {shlex.quote(target)} {shlex.quote(backup)}; fi")
 
     # Install icons first so an updated script always finds the assets it uses.
-    files = ["icons/numeric_assist.png", "icons/remove_steiners.png", "numeric_assist.il"]
+    files = ["icons/numeric_assist.png", "icons/remove_steiners.png",
+             "numeric_assist.drf", "numeric_assist.il"]
     for relative in files:
         source = ROOT / relative
         final = destination + "/" + relative

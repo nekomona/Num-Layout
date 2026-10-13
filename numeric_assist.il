@@ -18,6 +18,7 @@ vbnForm = nil
 vbnDigits = ""
 vbnNumber = nil
 vbnEdges = nil
+vbnCandidates = nil
 vbnHilight = nil
 vbnHilightLabel = nil
 vbnLastPoint = nil
@@ -111,7 +112,7 @@ procedure(vbnLine(set points)
       box = hiGetViewBBox(vbnWindow)
       ll = car(box) ur = cadr(box)
       stroke = max(2.0*vbnGrid()
-                   max(vbnX(ur)-vbnX(ll) vbnY(ur)-vbnY(ll))/300.0)
+                   max(vbnX(ur)-vbnX(ll) vbnY(ur)-vbnY(ll))/180.0)
       geAddHilightPath(set points stroke))
   )
 )
@@ -143,7 +144,7 @@ procedure(vbnBoxLine(set box)
   )
 )
 
-procedure(vbnArrow(a b)
+procedure(vbnArrowObjects(set a b)
   let((dx dy mag size ux uy tip left right)
     dx = vbnX(b)-vbnX(a)
     dy = vbnY(b)-vbnY(a)
@@ -156,8 +157,7 @@ procedure(vbnArrow(a b)
                       vbnY(tip)-size*uy-size*ux/2.0)
       right = vbnPoint(vbnX(tip)-size*ux-size*uy/2.0
                        vbnY(tip)-size*uy+size*ux/2.0)
-      vbnSelectedObjects = cons(vbnLine(vbnSelectedSet list(a b)) vbnSelectedObjects)
-      vbnSelectedObjects = cons(vbnLine(vbnSelectedSet list(left tip right)) vbnSelectedObjects)
+      list(vbnLine(set list(a b)) vbnLine(set list(left tip right)))
     )
   )
 )
@@ -308,6 +308,7 @@ procedure(vbnRawPointForCommand(win adjusted)
         scaleY = when(sy > 0 (vbnY(ur)-vbnY(adjusted))/sy)
         anchor = vbnEnteredStartPoint()
         mode = when(vbnForm vbnForm~>snapMode~>value)
+        unless(mode mode = vbnSnapMode())
         cond(
           ((anchor && mode == "orthogonal")
             if(abs(vbnX(adjusted)-vbnX(anchor)) <= vbnGrid() then
@@ -389,7 +390,7 @@ procedure(vbnTransformEdge(edge transform)
   else edge)
 )
 
-procedure(vbnPickEdge(win pt)
+procedure(vbnPickCandidate(win pt)
   let((cv view ll ur tolerance region hits best bestDistance distance hit fig
        transform edge localEdge begin end centerPick centerDistance widthEdge width
        pickPoint rawPoint)
@@ -437,7 +438,7 @@ procedure(vbnPickEdge(win pt)
                                      if(numberp(vbnPixelScale) then
                                        0.5*vbnPixelScale else 0.0))) &&
                  distance <= centerDistance
-              centerPick = widthEdge
+              centerPick = list(widthEdge fig transform)
               centerDistance = distance)
           )
         )
@@ -445,13 +446,67 @@ procedure(vbnPickEdge(win pt)
           edge = vbnTransformEdge(localEdge transform)
           distance = vbnDistanceToSegment(pickPoint edge)
           when(vbnEdgeLength(edge) > 0.0 && distance <= bestDistance
-            best = edge
+            best = list(edge fig transform)
             bestDistance = distance
           )
         )
       )
     )
     if(centerPick then centerPick else best)
+  )
+)
+
+; Keep the measured edge and its owning geometry together. Hover and click
+; use this same candidate, including hierarchy transforms and wire width picks.
+procedure(vbnPickEdge(win pt)
+  car(vbnPickCandidate(win pt))
+)
+
+procedure(vbnNextEdges(edge)
+  if(length(vbnEdges) == 1 && !equal(car(vbnEdges) edge) &&
+     vbnParallel(car(vbnEdges) edge) then list(car(vbnEdges) edge)
+  else list(edge))
+)
+
+procedure(vbnCandidateObjects(set candidate)
+  let((fig transform objects edge points work width)
+    fig = cadr(candidate) transform = caddr(candidate)
+    when(fig && dbIsId(fig)
+      if(fig~>objType == "path" && numberp(fig~>width) then
+        points = fig~>points
+        when(transform points = dbTransformPointList(points transform))
+        width = fig~>width
+        when(transform width = width*caddr(transform))
+        work = points
+        while(cdr(work)
+          objects = cons(vbnSegmentContour(set car(work) cadr(work) width) objects)
+          work = cdr(work))
+      else
+        foreach(localEdge vbnFigureEdges(fig)
+          edge = vbnTransformEdge(localEdge transform)
+          objects = cons(vbnLine(set edge) objects)))
+    )
+    cons(vbnLine(set car(candidate)) objects)
+  )
+)
+
+procedure(vbnMeasurementObjects(set edges)
+  let((first second a b p q dx dy mag midpoint projection)
+    when(edges
+      first = car(edges) second = cadr(edges)
+      if(second then
+        a = car(first) b = cadr(first) p = car(second) q = cadr(second)
+        midpoint = vbnPoint((vbnX(a)+vbnX(b))/2.0 (vbnY(a)+vbnY(b))/2.0)
+        dx = vbnX(b)-vbnX(a) dy = vbnY(b)-vbnY(a)
+        mag = dx*dx+dy*dy
+        projection = if(mag > 0.0 then
+          ((vbnX(p)+vbnX(q)-2*vbnX(midpoint))*dx +
+           (vbnY(p)+vbnY(q)-2*vbnY(midpoint))*dy)/(2*mag) else 0.0)
+        vbnArrowObjects(set midpoint
+          vbnPoint((vbnX(p)+vbnX(q))/2.0-projection*dx
+                   (vbnY(p)+vbnY(q))/2.0-projection*dy))
+      else vbnArrowObjects(set car(first) cadr(first)))
+    )
   )
 )
 
@@ -706,7 +761,7 @@ procedure(vbnDrawPreview(pt value)
 )
 
 procedure(vbnDrawEdges(pt)
-  let((hover hoverRect first second a b p q dx dy mag midpoint projection)
+  let((hover hoverRect)
     when(vbnKind == 'contour && vbnPhase > 1
       when(vbnPhase == 2
         hoverRect = when(vbnContourPickMode == 'rect
@@ -728,43 +783,50 @@ procedure(vbnDrawEdges(pt)
                                     vbnSelectedObjects))
     )
     unless(vbnKind == 'contour && vbnPhase > 1
-    hover = when(pt vbnPickEdge(vbnWindow pt))
+    hover = when(pt vbnPickCandidate(vbnWindow pt))
     when(hover
-      vbnHoverObjects = cons(vbnLine(vbnHoverSet hover) vbnHoverObjects))
+      vbnHoverObjects = append(vbnCandidateObjects(vbnHoverSet hover)
+        vbnMeasurementObjects(vbnHoverSet vbnNextEdges(car(hover)))))
+    foreach(candidate vbnCandidates
+      vbnSelectedObjects = append(vbnCandidateObjects(vbnSelectedSet candidate)
+                                  vbnSelectedObjects))
     foreach(edge vbnEdges
       vbnSelectedObjects = cons(vbnLine(vbnSelectedSet edge) vbnSelectedObjects))
-    when(vbnEdges
-      first = car(vbnEdges)
-      if(cadr(vbnEdges) then
-        second = cadr(vbnEdges)
-        a = car(first) b = cadr(first)
-        p = car(second) q = cadr(second)
-        midpoint = vbnPoint((vbnX(a)+vbnX(b))/2.0
-                            (vbnY(a)+vbnY(b))/2.0)
-        dx = vbnX(b)-vbnX(a) dy = vbnY(b)-vbnY(a)
-        mag = dx*dx+dy*dy
-        projection = if(mag > 0.0 then
-          (vbnX(p)+vbnX(q)-2*vbnX(midpoint))*dx/(2*mag) +
-          (vbnY(p)+vbnY(q)-2*vbnY(midpoint))*dy/(2*mag)
-          else 0.0)
-        vbnArrow(midpoint
-          vbnPoint((vbnX(p)+vbnX(q))/2.0-projection*dx
-                   (vbnY(p)+vbnY(q))/2.0-projection*dy))
-      else vbnArrow(car(first) cadr(first)))
-    )
+    vbnSelectedObjects = append(vbnMeasurementObjects(vbnSelectedSet vbnEdges)
+                                vbnSelectedObjects)
     )
   )
 )
 
-procedure(vbnUpdateDisplay()
-  let((pt screen view ll ur height origin labelText value)
+procedure(vbnPaint(win redraw @optional inputEvent)
+  when(win && member(win hiGetWindowList())
+    when(redraw
+      geRefreshWindow(win)
+      hiRedraw(win)
+      when(hiGetCurrentWindow() == win && hiGetCurrentCmd(win)
+        drawEnterFun()
+        ; Native tracking geometry is separate from the window display list.
+        ; A zero-displacement update in the input event also repaints it.
+        ; Never do this from the cursor polling timer: its command point is
+        ; the last key/click, which may be behind the moving mouse.
+        when(inputEvent && hiGetCommandPoint(win) leMoveCursor(0.0 0.0))))
+    when(vbnActive && win == vbnWindow
+      foreach(set list(vbnHilight vbnPreviewSet vbnHoverSet vbnSelectedSet)
+        when(set
+          set~>enable = t
+          geDrawHilightSet(win set))))
+  )
+)
+
+procedure(vbnUpdateDisplay(@optional force)
+  let((pt screen view ll ur height origin labelText value raw)
     when(vbnActive && vbnWindow && vbnHilight
       pt = vbnContourCursorPoint()
       screen = hiGetScreenPoint(vbnWindow)
       view = hiGetViewBBox(vbnWindow)
       labelText = vbnDisplayText(pt)
       value = vbnCurrentValue()
-      when(pt && (!equal(pt vbnLastPoint) ||
+      when(pt && (force || !equal(pt vbnLastPoint) ||
                   !equal(screen vbnLastScreenPoint) || labelText != vbnLastText ||
                   !equal(value vbnLastValue) || !equal(vbnEdges vbnLastEdges) ||
                   vbnSnapMode() != vbnLastSnapMode ||
@@ -776,7 +838,9 @@ procedure(vbnUpdateDisplay()
         vbnHoverObjects = nil vbnSelectedObjects = nil vbnPreviewObjects = nil
         ll = car(view) ur = cadr(view)
         height = max(0.02 (vbnY(ur)-vbnY(ll))/35.0)
-        origin = vbnPoint(vbnX(pt)+height/2.0 vbnY(pt)+height/2.0)
+        raw = vbnRawPointForCommand(vbnWindow pt)
+        unless(raw raw = pt)
+        origin = vbnPoint(vbnX(raw)+height/2.0 vbnY(raw)+height/2.0)
         vbnHilightLabel = geAddHilightLabel(vbnHilight origin labelText
           "lowerLeft" "R0" "stick" height nil)
         vbnLastPoint = pt
@@ -788,13 +852,9 @@ procedure(vbnUpdateDisplay()
         vbnLastSnapMode = vbnSnapMode()
         vbnDrawEdges(pt)
         vbnDrawPreview(pt value)
-        geRefreshWindow(vbnWindow)
-        ; A queued graphics refresh can leave hilight geometry on screen until
-        ; the next hit-test event. Force the phase-3 contour preview to paint
-        ; when the cursor moves through otherwise empty canvas.
-        when(vbnKind == 'contour && vbnPhase == 3
-          hiRedraw(vbnWindow))
+        vbnPaint(vbnWindow t force)
       )
+      vbnPaint(vbnWindow nil)
     )
   )
 )
@@ -869,8 +929,10 @@ procedure(vbnStop()
   vbnHoverObjects = nil vbnSelectedObjects = nil vbnPreviewObjects = nil
   vbnHilightLabel = nil
   vbnReleaseInput()
+  vbnPaint(vbnWindow t t)
   vbnWindow = nil
   vbnEdges = nil
+  vbnCandidates = nil
   vbnNumber = nil
   vbnDigits = ""
   vbnPrefilled = nil
@@ -887,7 +949,7 @@ procedure(vbnStop()
 )
 
 procedure(vbnStart(kind)
-  let((cv lpp)
+  let((cv)
     vbnWindow = hiGetCurrentWindow()
     vbnCommand = hiGetCurrentCmd(vbnWindow)
     vbnForm = hiGetCurrentForm()
@@ -905,6 +967,7 @@ procedure(vbnStart(kind)
     vbnPrefilled = numberp(vbnRememberedNumber)
     vbnNumber = nil
     vbnEdges = nil
+    vbnCandidates = nil
     vbnLastPoint = nil
     vbnLastText = nil
     vbnLastValue = nil
@@ -917,19 +980,23 @@ procedure(vbnStart(kind)
     vbnContourPixelScale = nil
     vbnContourPixelView = nil
     cv = geGetEditCellView(vbnWindow)
-    lpp = leGetEntryLayer()
-    when(cv && lpp
-      vbnHilight = geCreateHilightSet(cv lpp)
+    when(cv
+      ; Missing-packet lookups may themselves create a fallback packet. Load
+      ; our definitions explicitly, including after a PDK display reload.
+      drLoadDrf(strcat(vbnIconDirectory "../numeric_assist.drf") nil)
+      vbnHilight = geCreateWindowHilightSet(vbnWindow "vbnYellow")
       when(vbnHilight vbnHilight~>enable = t)
-      vbnHoverSet = geCreateWindowHilightSet(vbnWindow "ge_glyph_yellow")
-      vbnSelectedSet = geCreateWindowHilightSet(vbnWindow "ge_glyph_magenta")
-      vbnPreviewSet = geCreateWindowHilightSet(vbnWindow "ge_glyph_magenta")
+      vbnHoverSet = geCreateWindowHilightSet(vbnWindow "vbnYellow")
+      vbnSelectedSet = geCreateWindowHilightSet(vbnWindow "vbnMagenta")
+      vbnPreviewSet = geCreateWindowHilightSet(vbnWindow "vbnMagenta")
       foreach(set list(vbnHoverSet vbnSelectedSet vbnPreviewSet)
-        when(set set~>enable = t))
+        when(set
+          set~>enable = t
+          geSetHilightSetHaloParameters(set "over" "none" "normal" 0 t)))
     )
     vbnActive = t
     vbnCaptureInput()
-    vbnUpdateDisplay()
+    vbnUpdateDisplay(t)
     hiRegTimer("vbnTick()" 2)
     t
   )
@@ -942,13 +1009,14 @@ procedure(vbnDigit(char)
       vbnPrefilled = nil)
     when(vbnEdges
       vbnEdges = nil
+      vbnCandidates = nil
       vbnNumber = nil
       vbnDigits = ""
     )
     when(char != "." || !rexMatchp("\\." vbnDigits)
       vbnDigits = strcat(vbnDigits char)
     )
-    vbnUpdateDisplay()
+    vbnUpdateDisplay(t)
   )
 )
 
@@ -957,13 +1025,14 @@ procedure(vbnBackspace()
     vbnPrefilled = nil
     if(vbnEdges then
       vbnEdges = nil
+      vbnCandidates = nil
       vbnNumber = nil
     else
       when(strlen(vbnDigits) > 0
         vbnDigits = substring(vbnDigits 1 strlen(vbnDigits)-1)
       )
     )
-    vbnUpdateDisplay()
+    vbnUpdateDisplay(t)
   )
 )
 
@@ -973,7 +1042,7 @@ procedure(vbnEscape()
       ((vbnKind == 'contour && vbnPhase == 3)
         vbnPhase = 2
         vbnContourSide = nil
-        vbnUpdateDisplay())
+        vbnUpdateDisplay(t))
       ((vbnKind == 'contour && vbnPhase == 2)
         vbnPhase = 1
         vbnDigits = sprintf(nil "%0.12g" vbnContourOffset)
@@ -981,38 +1050,41 @@ procedure(vbnEscape()
         vbnContourOffset = nil
         vbnContourEdges = nil
         vbnContourPivot = nil
-        vbnUpdateDisplay())
+        vbnUpdateDisplay(t))
       (vbnEdges
         vbnEdges = nil
+        vbnCandidates = nil
         vbnNumber = nil
         vbnDigits = ""
-        vbnUpdateDisplay())
+        vbnUpdateDisplay(t))
       (vbnDigits != ""
         vbnDigits = ""
         vbnPrefilled = nil
-        vbnUpdateDisplay())
+        vbnUpdateDisplay(t))
       (t vbnStop())
     )
   )
 )
 
-procedure(vbnSelectEdge(edge)
-  if(!vbnEdges || length(vbnEdges) >= 2 || equal(car(vbnEdges) edge) then
-    vbnEdges = list(edge)
-    vbnNumber = vbnEdgeLength(edge)
-  else
-    if(vbnParallel(car(vbnEdges) edge) then
-      vbnNumber = vbnParallelDistance(car(vbnEdges) edge)
-      vbnEdges = list(car(vbnEdges) edge)
-    else
-      vbnEdges = list(edge)
-      vbnNumber = vbnEdgeLength(edge)
-    )
+procedure(vbnSelectCandidate(candidate)
+  let((edge nextEdges)
+    edge = car(candidate)
+    nextEdges = vbnNextEdges(edge)
+    vbnCandidates = if(length(nextEdges) == 2 then
+      list(car(vbnCandidates) candidate) else list(candidate))
+    vbnEdges = nextEdges
+    vbnNumber = if(length(vbnEdges) == 2 then
+      vbnParallelDistance(car(vbnEdges) cadr(vbnEdges)) else vbnEdgeLength(edge))
+    vbnDigits = ""
+    vbnPrefilled = nil
+    vbnLastPoint = nil
+    vbnUpdateDisplay(t)
+    vbnNumber
   )
-  vbnDigits = ""
-  vbnPrefilled = nil
-  vbnUpdateDisplay()
-  vbnNumber
+)
+
+procedure(vbnSelectEdge(edge)
+  vbnSelectCandidate(list(edge nil nil))
 )
 
 procedure(vbnContourSelectPivot(pt)
@@ -1034,7 +1106,7 @@ procedure(vbnContourSelectPivot(pt)
           !equal(box vbnContourSource~>bBox) box)
       )
     )
-    vbnUpdateDisplay()
+    vbnUpdateDisplay(t)
     vbnContourPivot
   )
 )
@@ -1050,8 +1122,8 @@ procedure(vbnClick()
           ((vbnKind == 'contour && vbnPhase == 3)
             vbnConfirm())
           (t
-            edge = vbnPickEdge(vbnWindow pt)
-            if(edge then vbnSelectEdge(edge)
+            edge = vbnPickCandidate(vbnWindow pt)
+            if(edge then vbnSelectCandidate(edge)
             else when(vbnCurrentValue() vbnConfirm())))
         )
       )
@@ -1326,9 +1398,10 @@ procedure(vbnConfirmContour()
           vbnPrefilled = nil
           vbnNumber = nil
           vbnEdges = nil
+          vbnCandidates = nil
           vbnPhase = 2
           vbnContourPickMode = 'edge
-          vbnUpdateDisplay()
+          vbnUpdateDisplay(t)
           t))
       ((vbnPhase == 2)
         if(!vbnContourPivot then
@@ -1338,7 +1411,7 @@ procedure(vbnConfirmContour()
           vbnPhase = 3
           vbnContourPixelScale = nil
           vbnContourPixelView = nil
-          vbnUpdateDisplay()
+          vbnUpdateDisplay(t)
           t))
       ((vbnPhase == 3)
         side = vbnContourDirection(vbnContourCursorPoint())
@@ -1403,7 +1476,7 @@ procedure(vbnHotkey(shift)
       when(vbnPhase == 2
         vbnContourPickMode = if(shift then 'rect else 'edge)
         vbnLastPoint = nil
-        vbnUpdateDisplay())
+        vbnUpdateDisplay(t))
     else
     command = hiGetCurrentCmd(win)
     selection = geGetSelSet(win)

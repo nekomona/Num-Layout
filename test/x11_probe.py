@@ -2,7 +2,7 @@
 
 Run on the remote GUI host with: python3 x11_probe.py WINDOW_ID ACTION...
 Actions are key:KEYSYM, chord:MODIFIER:KEYSYM, move:X:Y, click:X:Y,
-where, or wait:MILLISECONDS.
+raise:FRAME_ID, where, or wait:MILLISECONDS. Requires wmctrl for activation.
 This sends UI events only; it does not evaluate SKILL.
 """
 
@@ -35,6 +35,7 @@ def main():
     xlib.XOpenDisplay.argtypes = [ctypes.c_char_p]
     xlib.XOpenDisplay.restype = ctypes.c_void_p
     xlib.XSetInputFocus.argtypes = [ctypes.c_void_p, ctypes.c_ulong, ctypes.c_int, ctypes.c_ulong]
+    xlib.XRaiseWindow.argtypes = [ctypes.c_void_p, ctypes.c_ulong]
     xlib.XStringToKeysym.argtypes = [ctypes.c_char_p]
     xlib.XStringToKeysym.restype = ctypes.c_ulong
     xlib.XKeysymToKeycode.argtypes = [ctypes.c_void_p, ctypes.c_ulong]
@@ -53,6 +54,10 @@ def main():
     display = xlib.XOpenDisplay(None)
     if not display:
         raise RuntimeError("XOpenDisplay failed")
+    # Ask the window manager to activate the client and its enclosing frame.
+    # Raising just the client can leave another session above the testbench.
+    subprocess.run(["wmctrl", "-ia", hex(win)], check=True)
+    xlib.XRaiseWindow(display, win)
     xlib.XSetInputFocus(display, win, 1, 0)
     xlib.XFlush(display)
     time.sleep(0.1)
@@ -65,7 +70,9 @@ def main():
 
     for action in sys.argv[2:]:
         parts = action.split(":")
-        if parts[0] == "key":
+        if parts[0] == "raise":
+            xlib.XRaiseWindow(display, int(parts[1], 0))
+        elif parts[0] == "key":
             code = keycode(parts[1])
             xtst.XTestFakeKeyEvent(display, code, 1, 0)
             xtst.XTestFakeKeyEvent(display, code, 0, 0)

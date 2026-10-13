@@ -121,5 +121,4 @@ IC23.1 instance. Recheck them on another release before loading there. Edge
 selection searches shapes through the instance hierarchy and saved ruler
 markers in the edited cellview. Absolute Stretch
 length requires exactly one native selection with a subset of its points
-selected. The cursor label uses a temporary highlight set on the current entry
-layer, so that layer needs to be visible.
+selected. Cursor labels use plugin-owned window highlight packets.
