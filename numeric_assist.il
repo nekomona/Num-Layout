@@ -48,6 +48,7 @@ vbnLastEdges = nil
 vbnLastSnapMode = nil
 vbnLastScreenPoint = nil
 vbnLastView = nil
+vbnLastHover = nil
 vbnPixelScale = nil
 vbnPixelScaleView = nil
 vbnContourPixelScale = nil
@@ -106,23 +107,24 @@ procedure(vbnClearObjects(objects)
   nil
 )
 
-procedure(vbnLine(set points)
+procedure(vbnLine(set points @optional thin)
   let((box ll ur stroke)
     when(set
       box = hiGetViewBBox(vbnWindow)
       ll = car(box) ur = cadr(box)
       stroke = max(2.0*vbnGrid()
-                   max(vbnX(ur)-vbnX(ll) vbnY(ur)-vbnY(ll))/180.0)
+                   max(vbnX(ur)-vbnX(ll) vbnY(ur)-vbnY(ll))/
+                     if(thin then 700.0 else 180.0))
       geAddHilightPath(set points stroke))
   )
 )
 
-procedure(vbnSegmentContour(set a b width)
+procedure(vbnSegmentContour(set a b width @optional thin)
   let((dx dy mag nx ny)
     dx = vbnX(b)-vbnX(a) dy = vbnY(b)-vbnY(a)
     mag = sqrt(dx*dx+dy*dy)
     if(!numberp(width) || width <= 0.0 || mag <= 0.0 then
-      vbnLine(set list(a b))
+      vbnLine(set list(a b) thin)
     else
       nx = -dy/mag*width/2.0 ny = dx/mag*width/2.0
       vbnLine(set list(
@@ -130,34 +132,41 @@ procedure(vbnSegmentContour(set a b width)
         vbnPoint(vbnX(b)+nx vbnY(b)+ny)
         vbnPoint(vbnX(b)-nx vbnY(b)-ny)
         vbnPoint(vbnX(a)-nx vbnY(a)-ny)
-        vbnPoint(vbnX(a)+nx vbnY(a)+ny)))
+        vbnPoint(vbnX(a)+nx vbnY(a)+ny)) thin)
     )
   )
 )
 
-procedure(vbnBoxLine(set box)
+procedure(vbnBoxLine(set box @optional thin)
   let((edges objects)
     edges = vbnBoxEdges(box)
     objects = nil
-    foreach(edge edges objects = cons(vbnLine(set edge) objects))
+    foreach(edge edges objects = cons(vbnLine(set edge thin) objects))
     objects
   )
 )
 
+procedure(vbnArrowHead(set tip ux uy size)
+  let((left right)
+    left = vbnPoint(vbnX(tip)-size*ux+size*uy/2.0
+                    vbnY(tip)-size*uy-size*ux/2.0)
+    right = vbnPoint(vbnX(tip)-size*ux-size*uy/2.0
+                     vbnY(tip)-size*uy+size*ux/2.0)
+    vbnLine(set list(left tip right))
+  )
+)
+
 procedure(vbnArrowObjects(set a b)
-  let((dx dy mag size ux uy tip left right)
+  let((dx dy mag size ux uy)
     dx = vbnX(b)-vbnX(a)
     dy = vbnY(b)-vbnY(a)
     mag = sqrt(dx*dx+dy*dy)
     when(mag > 0.0
       ux = dx/mag uy = dy/mag
       size = min(mag/3.0 max(0.25 mag/18.0))
-      tip = b
-      left = vbnPoint(vbnX(tip)-size*ux+size*uy/2.0
-                      vbnY(tip)-size*uy-size*ux/2.0)
-      right = vbnPoint(vbnX(tip)-size*ux-size*uy/2.0
-                       vbnY(tip)-size*uy+size*ux/2.0)
-      list(vbnLine(set list(a b)) vbnLine(set list(left tip right)))
+      list(vbnLine(set list(a b))
+           vbnArrowHead(set b ux uy size)
+           vbnArrowHead(set a -ux -uy size))
     )
   )
 )
@@ -390,6 +399,18 @@ procedure(vbnTransformEdge(edge transform)
   else edge)
 )
 
+procedure(vbnFigureVisible(win fig)
+  let((cv tf)
+    ; Rulers are marker geometry, not layer-purpose shapes. Actual shapes
+    ; must be on a displayed LPP, including when found through hierarchy.
+    if(fig~>objType == "ruler" then t
+    else
+      cv = geGetEditCellView(win)
+      tf = when(cv techGetTechFile(ddGetObj(cv~>libName)))
+      when(tf && fig~>lpp leIsLayerVisible(fig~>lpp tf)))
+  )
+)
+
 procedure(vbnPickCandidate(win pt)
   let((cv view ll ur tolerance region hits best bestDistance distance hit fig
        transform edge localEdge begin end centerPick centerDistance widthEdge width
@@ -416,7 +437,7 @@ procedure(vbnPickCandidate(win pt)
     centerDistance = tolerance
     foreach(hit hits
       fig = vbnOverlapFigure(hit)
-      when(fig && fig~>bBox && fig~>objType != "inst" &&
+      when(fig && fig~>bBox && vbnFigureVisible(win fig) && fig~>objType != "inst" &&
            fig~>objType != "mosaic"
         transform = vbnOverlapTransform(hit)
         pickPoint = pt
@@ -479,12 +500,12 @@ procedure(vbnCandidateObjects(set candidate)
         when(transform width = width*caddr(transform))
         work = points
         while(cdr(work)
-          objects = cons(vbnSegmentContour(set car(work) cadr(work) width) objects)
+          objects = cons(vbnSegmentContour(set car(work) cadr(work) width t) objects)
           work = cdr(work))
       else
         foreach(localEdge vbnFigureEdges(fig)
           edge = vbnTransformEdge(localEdge transform)
-          objects = cons(vbnLine(set edge) objects)))
+          objects = cons(vbnLine(set edge t) objects)))
     )
     cons(vbnLine(set car(candidate)) objects)
   )
@@ -519,7 +540,7 @@ procedure(vbnContourRectAtPoint(win pt)
     bestArea = nil
     foreach(hit dbGetTrueOverlaps(cv region t dbGetMaxHierDepth() t)
       fig = vbnOverlapFigure(hit)
-      when(fig && fig~>objType == "rect" &&
+      when(fig && fig~>objType == "rect" && vbnFigureVisible(win fig) &&
            fig != vbnContourSource
         transform = vbnOverlapTransform(hit)
         box = if(transform then dbTransformBBox(fig~>bBox transform)
@@ -760,14 +781,14 @@ procedure(vbnDrawPreview(pt value)
   )
 )
 
-procedure(vbnDrawEdges(pt)
+procedure(vbnDrawEdges(pt @optional candidate)
   let((hover hoverRect)
     when(vbnKind == 'contour && vbnPhase > 1
       when(vbnPhase == 2
         hoverRect = when(vbnContourPickMode == 'rect
           vbnContourRectAtPoint(vbnWindow pt))
         if(hoverRect then
-          vbnHoverObjects = append(vbnBoxLine(vbnHoverSet hoverRect)
+          vbnHoverObjects = append(vbnBoxLine(vbnHoverSet hoverRect t)
                                    vbnHoverObjects)
         else
           hover = when(pt vbnPickEdge(vbnWindow pt))
@@ -779,11 +800,11 @@ procedure(vbnDrawEdges(pt)
                                     vbnSelectedObjects))
       )
       when(vbnContourPivot
-        vbnSelectedObjects = append(vbnBoxLine(vbnSelectedSet vbnContourPivot)
+        vbnSelectedObjects = append(vbnBoxLine(vbnSelectedSet vbnContourPivot t)
                                     vbnSelectedObjects))
     )
     unless(vbnKind == 'contour && vbnPhase > 1
-    hover = when(pt vbnPickCandidate(vbnWindow pt))
+    hover = candidate
     when(hover
       vbnHoverObjects = append(vbnCandidateObjects(vbnHoverSet hover)
         vbnMeasurementObjects(vbnHoverSet vbnNextEdges(car(hover)))))
@@ -798,18 +819,13 @@ procedure(vbnDrawEdges(pt)
   )
 )
 
-procedure(vbnPaint(win redraw @optional inputEvent)
+procedure(vbnPaint(win redraw)
   when(win && member(win hiGetWindowList())
     when(redraw
       geRefreshWindow(win)
       hiRedraw(win)
       when(hiGetCurrentWindow() == win && hiGetCurrentCmd(win)
-        drawEnterFun()
-        ; Native tracking geometry is separate from the window display list.
-        ; A zero-displacement update in the input event also repaints it.
-        ; Never do this from the cursor polling timer: its command point is
-        ; the last key/click, which may be behind the moving mouse.
-        when(inputEvent && hiGetCommandPoint(win) leMoveCursor(0.0 0.0))))
+        drawEnterFun()))
     when(vbnActive && win == vbnWindow
       foreach(set list(vbnHilight vbnPreviewSet vbnHoverSet vbnSelectedSet)
         when(set
@@ -819,18 +835,26 @@ procedure(vbnPaint(win redraw @optional inputEvent)
 )
 
 procedure(vbnUpdateDisplay(@optional force)
-  let((pt screen view ll ur height origin labelText value raw)
+  let((pt screen view ll ur height origin labelText value raw hover)
     when(vbnActive && vbnWindow && vbnHilight
       pt = vbnContourCursorPoint()
       screen = hiGetScreenPoint(vbnWindow)
       view = hiGetViewBBox(vbnWindow)
       labelText = vbnDisplayText(pt)
       value = vbnCurrentValue()
+      ; Recheck the candidate while stationary so palette visibility changes
+      ; immediately remove hidden targets or expose the next visible edge.
+      when(pt
+        hover = if(vbnKind == 'contour && vbnPhase == 2 &&
+                   vbnContourPickMode == 'rect then
+          vbnContourRectAtPoint(vbnWindow pt)
+        else unless(vbnKind == 'contour && vbnPhase == 3
+          vbnPickCandidate(vbnWindow pt))))
       when(pt && (force || !equal(pt vbnLastPoint) ||
                   !equal(screen vbnLastScreenPoint) || labelText != vbnLastText ||
                   !equal(value vbnLastValue) || !equal(vbnEdges vbnLastEdges) ||
                   vbnSnapMode() != vbnLastSnapMode ||
-                  !equal(view vbnLastView))
+                  !equal(view vbnLastView) || !equal(hover vbnLastHover))
         when(vbnHilightLabel geDeleteHilightObject(vbnHilightLabel))
         vbnClearObjects(vbnHoverObjects)
         vbnClearObjects(vbnSelectedObjects)
@@ -850,9 +874,10 @@ procedure(vbnUpdateDisplay(@optional force)
         vbnLastValue = value
         vbnLastEdges = vbnEdges
         vbnLastSnapMode = vbnSnapMode()
-        vbnDrawEdges(pt)
+        vbnLastHover = hover
+        vbnDrawEdges(pt hover)
         vbnDrawPreview(pt value)
-        vbnPaint(vbnWindow t force)
+        vbnPaint(vbnWindow t)
       )
       vbnPaint(vbnWindow nil)
     )
@@ -917,7 +942,7 @@ procedure(vbnReleaseInput()
   vbnSavedKeys = nil
 )
 
-procedure(vbnStop()
+procedure(vbnStop(@optional confirmed)
   vbnActive = nil
   when(vbnHilight
     geDeleteHilightSet(vbnHilight)
@@ -929,7 +954,12 @@ procedure(vbnStop()
   vbnHoverObjects = nil vbnSelectedObjects = nil vbnPreviewObjects = nil
   vbnHilightLabel = nil
   vbnReleaseInput()
-  vbnPaint(vbnWindow t t)
+  ; Native tracking only regenerates on its view/motion callback. A factor-
+  ; one view refresh runs that callback without warping the cursor or changing
+  ; zoom. Run it after confirmed settings, after our overlays are removed.
+  vbnPaint(vbnWindow t)
+  when(confirmed && vbnWindow && member(vbnWindow hiGetWindowList())
+    hiZoomRelativeScale(vbnWindow 1.0))
   vbnWindow = nil
   vbnEdges = nil
   vbnCandidates = nil
@@ -975,6 +1005,7 @@ procedure(vbnStart(kind)
     vbnLastSnapMode = nil
     vbnLastScreenPoint = nil
     vbnLastView = nil
+    vbnLastHover = nil
     vbnPixelScale = nil
     vbnPixelScaleView = nil
     vbnContourPixelScale = nil
@@ -1422,7 +1453,7 @@ procedure(vbnConfirmContour()
         else
           vbnContourSource~>bBox = target
           vbnRememberedNumber = vbnContourOffset
-          vbnStop()
+          vbnStop(t)
           t))
     )
   )
@@ -1452,7 +1483,7 @@ procedure(vbnConfirm()
           (vbnKind == 'distance vbnApplyDistance(value))
         )
         when(ok vbnRememberedNumber = value)
-        when(ok vbnStop())
+        when(ok vbnStop(t))
         ok
       )
     )
