@@ -64,6 +64,7 @@ vbnContourEdges = nil
 vbnContourPivot = nil
 vbnContourSide = nil
 vbnContourPickMode = nil
+vbnTrackingRefreshQueue = nil
 
 procedure(vbnX(p) car(p))
 procedure(vbnY(p) cadr(p))
@@ -411,6 +412,37 @@ procedure(vbnFigureVisible(win fig)
   )
 )
 
+procedure(vbnOverlapVisible(win hit pt)
+  let((depth editDepth node inst levels start stop base area)
+    ; Database overlap queries ignore window hierarchy display settings.
+    ; Evaluate the instance path as well as the leaf layer visibility.
+    editDepth = if(geGetWindowCellView(win) != geGetEditCellView(win) then
+      length(geGetInstHierPath(win)) else 0)
+    start = win~>startLevel
+    stop = win~>stopLevel
+    unless(numberp(start) start = 0)
+    unless(numberp(stop) stop = 0)
+    area = geGetAreaViewLevel(win list(pt pt))
+    when(area start = car(area) stop = cadr(area))
+    depth = editDepth
+    base = 0
+    node = hit
+    while(listp(node) && node
+      inst = car(node)
+      ; Mosaic entries can wrap the instance ID with row/column indices.
+      when(listp(inst) inst = car(inst))
+      when(dbIsId(inst)
+        levels = geGetInstViewLevel(win inst)
+        when(levels
+          start = car(levels) stop = cadr(levels) base = depth))
+      depth = depth+1
+      node = car(last(node))
+    )
+    depth-base >= start && depth-base <= stop &&
+      vbnFigureVisible(win vbnOverlapFigure(hit))
+  )
+)
+
 procedure(vbnPickCandidate(win pt)
   let((cv view ll ur tolerance region hits best bestDistance distance hit fig
        transform edge localEdge begin end centerPick centerDistance widthEdge width
@@ -437,7 +469,7 @@ procedure(vbnPickCandidate(win pt)
     centerDistance = tolerance
     foreach(hit hits
       fig = vbnOverlapFigure(hit)
-      when(fig && fig~>bBox && vbnFigureVisible(win fig) && fig~>objType != "inst" &&
+      when(fig && fig~>bBox && vbnOverlapVisible(win hit pt) && fig~>objType != "inst" &&
            fig~>objType != "mosaic"
         transform = vbnOverlapTransform(hit)
         pickPoint = pt
@@ -534,20 +566,20 @@ procedure(vbnMeasurementObjects(set edges)
 procedure(vbnContourRectAtPoint(win pt)
   let((cv tolerance region result bestArea box ll ur area hit fig transform)
     cv = geGetEditCellView(win)
-    tolerance = vbnGrid()
+    tolerance = max(vbnGrid()
+      (vbnX(cadr(hiGetViewBBox(win)))-vbnX(car(hiGetViewBBox(win))))/200.0)
     region = list(vbnPoint(vbnX(pt)-tolerance vbnY(pt)-tolerance)
                   vbnPoint(vbnX(pt)+tolerance vbnY(pt)+tolerance))
     bestArea = nil
     foreach(hit dbGetTrueOverlaps(cv region t dbGetMaxHierDepth() t)
       fig = vbnOverlapFigure(hit)
-      when(fig && fig~>objType == "rect" && vbnFigureVisible(win fig) &&
-           fig != vbnContourSource
+      when(fig && fig~>objType == "rect" && vbnOverlapVisible(win hit pt)
         transform = vbnOverlapTransform(hit)
         box = if(transform then dbTransformBBox(fig~>bBox transform)
               else fig~>bBox)
         ll = car(box) ur = cadr(box)
-        when(vbnX(pt) >= vbnX(ll) && vbnX(pt) <= vbnX(ur) &&
-             vbnY(pt) >= vbnY(ll) && vbnY(pt) <= vbnY(ur)
+        when(vbnX(pt) >= vbnX(ll)-tolerance && vbnX(pt) <= vbnX(ur)+tolerance &&
+             vbnY(pt) >= vbnY(ll)-tolerance && vbnY(pt) <= vbnY(ur)+tolerance
           area = (vbnX(ur)-vbnX(ll))*(vbnY(ur)-vbnY(ll))
           when(!numberp(bestArea) || area < bestArea
             result = box bestArea = area)
@@ -942,6 +974,26 @@ procedure(vbnReleaseInput()
   vbnSavedKeys = nil
 )
 
+procedure(vbnRefreshNativeTracking()
+  let((request win command view)
+    request = car(vbnTrackingRefreshQueue)
+    vbnTrackingRefreshQueue = cdr(vbnTrackingRefreshQueue)
+    when(request
+      win = car(request) command = cadr(request) view = caddr(request)
+      when(member(win hiGetWindowList()) && hiGetCurrentWindow() == win &&
+           hiGetCurrentCmd(win) == command && equal(hiGetViewBBox(win) view)
+        ; A factor-one refresh leaves native Path tracking stale.
+        ; Force the native zoom callback, then restore the exact saved view.
+        ; Queue this after the confirmation callback has returned.
+        hiZoomRelativeScale(win 1.01)
+        hiFlush()
+        hiZoomIn(win view)
+        vbnPaint(win t)
+        hiFlush())
+    )
+  )
+)
+
 procedure(vbnStop(@optional confirmed)
   vbnActive = nil
   when(vbnHilight
@@ -954,12 +1006,12 @@ procedure(vbnStop(@optional confirmed)
   vbnHoverObjects = nil vbnSelectedObjects = nil vbnPreviewObjects = nil
   vbnHilightLabel = nil
   vbnReleaseInput()
-  ; Native tracking only regenerates on its view/motion callback. A factor-
-  ; one view refresh runs that callback without warping the cursor or changing
-  ; zoom. Run it after confirmed settings, after our overlays are removed.
   vbnPaint(vbnWindow t)
-  when(confirmed && vbnWindow && member(vbnWindow hiGetWindowList())
-    hiZoomRelativeScale(vbnWindow 1.0))
+  when(confirmed && member(vbnKind list('width 'wire)) &&
+       vbnWindow && member(vbnWindow hiGetWindowList())
+    vbnTrackingRefreshQueue = append(vbnTrackingRefreshQueue
+      list(list(vbnWindow vbnCommand hiGetViewBBox(vbnWindow))))
+    hiEnqueueCmd("vbnRefreshNativeTracking()"))
   vbnWindow = nil
   vbnEdges = nil
   vbnCandidates = nil
@@ -1133,8 +1185,9 @@ procedure(vbnContourSelectPivot(pt)
                             else append(vbnContourEdges list(edge)))
         )
         box = vbnContourBoxFromEdges(vbnContourEdges)
-        vbnContourPivot = when(box &&
-          !equal(box vbnContourSource~>bBox) box)
+        ; Snapshot even the source's own box: contouring around its original
+        ; boundary is a valid operation and does not change it until phase 3.
+        vbnContourPivot = box
       )
     )
     vbnUpdateDisplay(t)
@@ -1145,7 +1198,11 @@ procedure(vbnContourSelectPivot(pt)
 procedure(vbnClick()
   let((pt edge)
     when(vbnActive
-      pt = hiGetPoint(vbnWindow)
+      ; Contour has no native command to constrain the pointer. Use the raw
+      ; click so snap-grid rounding cannot disagree with the hover preview.
+      ; Path/Wire retain their existing raw-pointer conversion in the picker.
+      pt = when(vbnKind == 'contour hiGetCommandPoint(vbnWindow t))
+      unless(pt pt = hiGetPoint(vbnWindow))
       when(pt
         cond(
           ((vbnKind == 'contour && vbnPhase == 2)
@@ -1435,8 +1492,13 @@ procedure(vbnConfirmContour()
           vbnUpdateDisplay(t)
           t))
       ((vbnPhase == 2)
+        when(vbnContourEdges
+          vbnContourPivot = vbnContourBoxFromEdges(vbnContourEdges))
         if(!vbnContourPivot then
-          warn("Numeric Assist: select one pivot rectangle or four bounding edges.\n")
+          if(length(vbnContourEdges) == 4 then
+            warn("Numeric Assist: four edges must define two distinct horizontal and two distinct vertical boundaries.\n")
+          else
+            warn("Numeric Assist: select one pivot rectangle or four bounding edges.\n"))
           nil
         else
           vbnPhase = 3

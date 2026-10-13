@@ -92,7 +92,10 @@ define two distinct X and two distinct Y boundaries. Press **Shift+J** for
 **rectangle** mode; a rectangle takes priority over its edge at the pointer.
 Press **J** to return to edge-only picking. Switching modes preserves the
 current edge or pivot selection. A new rectangle pick replaces the edge set.
-The edge segments may stop short of the corners. Only Enter or Space advances
+The source rectangle's original boundary is also a valid pivot. Rectangle
+picks tolerate a small distance from the displayed boundary, and confirmation
+rebuilds a four-edge pivot from the selected edges. The edge segments may stop
+short of the corners. Only Enter or Space advances
 to phase three after a valid pivot is selected. Move the cursor
 inside or outside the pivot to preview the result, then click or confirm again
 to resize and move the initially selected rectangle. The offset applies to
