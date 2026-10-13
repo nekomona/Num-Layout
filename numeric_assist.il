@@ -1030,7 +1030,7 @@ procedure(vbnRefreshNativeTracking()
            hiGetCurrentCmd(win) == command && equal(hiGetViewBBox(win) view)
         if(command == "Wire" then
           ; Wire regenerates tracking on motion, not on native view refresh.
-          ; The X11 helper sends notifications without warping the pointer.
+          ; XTest nudges one pixel and returns unless user input intervenes.
           vbnRequestWireMotion(win)
         else
           ; Retain Path's view refresh after the confirmation callback.
