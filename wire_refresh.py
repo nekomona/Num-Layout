@@ -1,4 +1,4 @@
-"""Nudge the X11 pointer one pixel and return it to refresh native Wire tracking.
+"""Nudge the X11 pointer diagonally and return it to refresh native Wire tracking.
 
 Invoked by Virtuoso's ipcBeginProcess, so DISPLAY/XAUTHORITY are inherited.
 Uses XTest motion only: no focus, button, or keyboard changes. Return motion is
@@ -10,6 +10,9 @@ import ctypes as C
 import ctypes.util
 import json
 import time
+
+
+NUDGE_X, NUDGE_Y = 32, 16  # Screen pixels; unequal components avoid 45-degree motion.
 
 
 class Property(C.Structure):
@@ -160,15 +163,29 @@ class X11:
             raise RuntimeError('The Virtuoso X server does not support XTest')
         self.xtest = xtest
 
-    def motion(self, point, dx=0):
+    def motion(self, point, dx=0, dy=0):
         self.enable_motion()
         # XSendEvent sets send_event=true, and native Wire ignores those events.
         # XTest generates ordinary server motion and supplies its own event time.
         if not self.xtest.XTestFakeMotionEvent(self.display, -1,
-                point['root_x'] + dx, point['root_y'], 0):
+                point['root_x'] + dx, point['root_y'] + dy, 0):
             raise RuntimeError('XTest rejected the Wire pointer motion')
         self.lib.XSync(self.display, 0)
         return self.server_time()  # Diagnostic server time after the request.
+
+
+def nudge_offset(point):
+    """Keep the full diagonal inside the drawable; reverse either axis at borders."""
+    offsets = []
+    for coord, size, amount in ((point['x'], point['width'], NUDGE_X),
+                                (point['y'], point['height'], NUDGE_Y)):
+        if coord + amount < size:
+            offsets.append(amount)
+        elif coord - amount >= 0:
+            offsets.append(-amount)
+        else:
+            return None
+    return tuple(offsets)
 
 
 def refresh(x11, pid, title, dry_run=False, pause=time.sleep):
@@ -177,24 +194,28 @@ def refresh(x11, pid, title, dry_run=False, pause=time.sleep):
         return dict(status='skipped', reason='pointer/focus left the layout or a button is held')
     if point['width'] < 3 or not 0 <= point['x'] < point['width'] or not 0 <= point['y'] < point['height']:
         return dict(status='skipped', reason='pointer outside drawable target')
+    offset = nudge_offset(point)
+    if offset is None:
+        return dict(status='skipped', reason='insufficient canvas room for diagonal nudge')
+    dx, dy = offset
     x11.enable_motion()  # Extension availability check also runs without motion.
     if dry_run:
         return dict(status='dry-run', transport='xtest', target=point['window'], pointer=[point['root_x'], point['root_y']],
-                    server_time=x11.server_time())
-    dx = 1 if point['x'] < point['width'] - 1 else -1
-    first_time = x11.motion(point, dx)
+                    nudge_pixels=[dx, dy], server_time=x11.server_time())
+    first_time = x11.motion(point, dx, dy)
     # Let Qt consume the first event instead of compressing both into one.
     pause(0.04)
     current = x11.target(pid, title)
     if not current or current['window'] != point['window']:
         return dict(status='interrupted', transport='xtest', reason='layout target changed')
     if current['state'] & 0x1f00 or (current['root_x'], current['root_y']) != (
-            point['root_x'] + dx, point['root_y']):
+            point['root_x'] + dx, point['root_y'] + dy):
         # Do not jump back over any intervening user movement or button action.
         return dict(status='interrupted', transport='xtest', reason='user input after nudge')
     return_time = x11.motion(point)
     final = x11.pointer(x11.root)
     return dict(status='moved-returned', transport='xtest', target=point['window'],
+                nudge_pixels=[dx, dy],
                 request_times=[first_time, return_time],
                 pointer_restored=bool(final and (point['root_x'], point['root_y']) ==
                                      (final['root_x'], final['root_y'])))
