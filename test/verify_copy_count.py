@@ -114,6 +114,21 @@ def main():
               'progn(vbnCountHotkey() vbnDigit("9") vbnHotkey(nil) '
               'vbnCountHotkey() list(vbnKind vbnDigits hiGetCurrentForm()~>number~>value))',
               '(copyCount "1" 1)')
+        check('J commits pending N digits without placing copies',
+              'progn(vbnDigit("9") vbnHotkey(nil) '
+              'list(vbnKind hiGetCurrentForm()~>number~>value '
+              'length(vbnCopyVerifyCv~>shapes) vbnRememberedNumber))',
+              '(distance 9 1 123.5)')
+        check('Shift-J commits pending N digits',
+              'progn(vbnCountHotkey() vbnDigit("2") vbnHotkey(t) '
+              'list(vbnKind hiGetCurrentForm()~>number~>value '
+              'length(vbnCopyVerifyCv~>shapes)))', '(distance 2 1)')
+        check('invalid N does not switch into J',
+              'progn(vbnCountHotkey() vbnDigit("0") vbnHotkey(nil))', 'nil',
+              warning='positive integer copy count')
+        check('invalid switch retains N and native Copy',
+              'list(vbnActive vbnKind hiGetCurrentForm()~>number~>value '
+              'hiGetCurrentCmd(vbnCopyVerifyWin))', '(t copyCount 1 "Copy")')
         check('disabling cancels N and resets count',
               'progn(vbnSetFormField(hiGetCurrentForm()~>number 5) vbnToggle() '
               'list(vbnActive vbnEnabled hiGetCurrentForm()~>number~>value))', '(nil nil 1)')

@@ -1379,7 +1379,10 @@ procedure(vbnDirection()
 )
 
 procedure(vbnSetFormField(field value)
-  let((callback)
+  let((callback windowId)
+    ; Native Copy callbacks reference the UI's dynamically scoped windowId.
+    ; Calling them from a bindkey/timer must supply that context explicitly.
+    windowId = hiGetCurrentWindow()
     field~>value = value
     callback = field~>_callback
     ; Radio fields use a callback list: one shared callback, or one per choice.
@@ -1560,7 +1563,7 @@ procedure(vbnFinishMeasurement()
 procedure(vbnApplyMeasurement(value)
   let((start current target ruler)
     start = vbnEnteredStartPoint()
-    current = hiGetPoint(vbnWindow)
+    current = vbnContourCursorPoint()
     if(!start || !current then
       warn("Numeric Assist: place the first measurement point before confirming.\n")
       nil
@@ -1570,8 +1573,11 @@ procedure(vbnApplyMeasurement(value)
         warn("Numeric Assist: point from the start toward the measurement direction.\n")
         nil
       else
+        ; Enterfunction/cursor points use window coordinates; stored rulers
+        ; belong to the edited cell, including inside descended group contents.
         ruler = leCreateMeasurement(geGetEditCellView(vbnWindow)
-                                    list(start target))
+          list(geWindowToEditPoint(vbnWindow start)
+               geWindowToEditPoint(vbnWindow target)))
         when(ruler
           vbnMeasureFinishForm = vbnForm
           hiRegTimer("vbnFinishMeasurement()" 1)
@@ -1707,7 +1713,11 @@ procedure(vbnHotkey(shift)
   let((win command kind form selection)
     when(vbnEnabled
     win = hiGetCurrentWindow()
-    if(vbnActive && vbnKind == 'contour && win == vbnWindow then
+    if(vbnActive && vbnKind == 'copyCount && win == vbnWindow then
+      ; Commit the pending count without placing copies, then open J.
+      ; Invalid/empty N input stays in N so it cannot be silently discarded.
+      when(vbnConfirm() vbnHotkey(shift))
+    else if(vbnActive && vbnKind == 'contour && win == vbnWindow then
       when(vbnPhase == 2
         vbnContourPickMode = if(shift then 'rect else 'edge)
         vbnLastPoint = nil
@@ -1748,7 +1758,7 @@ procedure(vbnHotkey(shift)
         else vbnStart(kind))
       )
     )
-    )
+    ))
     )
   )
 )

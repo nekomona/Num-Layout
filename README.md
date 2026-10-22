@@ -29,6 +29,9 @@ During native Copy, press **N**, type a positive integer using `0`–`9` and
 Backspace, then confirm with **Enter**, **Space**, **N** again, or a canvas click.
 The cursor label shows `COPY COUNT`. Decimal input is ignored; zero cannot be
 confirmed. N does not pick geometry or change the remembered J distance.
+Pressing **J** or **Shift+J** while N is open first applies the pending count,
+then opens displacement entry without placing copies. Invalid or empty count
+input keeps N open for correction.
 
 Confirmation sets native **Copies → Type: Step → Number**, closes numeric
 entry, and leaves Copy waiting for placement. It does not invoke Copy's Apply
@@ -104,6 +107,8 @@ desired direction, and press J. Enter or pick a number and confirm to create a
 saved ruler at that length. A line previews the result before confirmation.
 The active Measurement command then ends. Its endpoint is snapped to the
 manufacturing grid, so diagonal lengths can have a small grid approximation.
+When editing descended group contents or an instance in place, the saved ruler
+uses the active edited cell's coordinates, keeping it at the requested position.
 
 For **Copy**, select objects and start native Copy. Press J or Shift+J, then
 enter or pick the displacement magnitude. The cursor direction follows the

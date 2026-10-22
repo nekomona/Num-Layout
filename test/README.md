@@ -20,6 +20,7 @@ Available scripts:
 - `test/test_wire_refresh.py`
 - `test/verify_copy_count.py`
 - `test/verify_feedback.py`
+- `test/verify_group_edit.py`
 - `test/verify_wire_clock.py`
 - `test/verify_wire_refresh.py`
 - `test/verify_wire_xtest.py`
