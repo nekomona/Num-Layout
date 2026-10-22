@@ -20,7 +20,31 @@ command, or select one rectangle to contour it.
 | Move | J | Move displacement magnitude |
 | Move | Shift+J | Move displacement magnitude |
 | Copy | J or Shift+J | Copy displacement magnitude |
+| Copy | N | Positive integer copy count; does not place copies |
 | One selected rectangle, no command | Shift+J | Start Contour |
+
+### Copy count (N)
+
+During native Copy, press **N**, type a positive integer using `0`–`9` and
+Backspace, then confirm with **Enter**, **Space**, **N** again, or a canvas click.
+The cursor label shows `COPY COUNT`. Decimal input is ignored; zero cannot be
+confirmed. N does not pick geometry or change the remembered J distance.
+
+Confirmation sets native **Copies → Type: Step → Number**, closes numeric
+entry, and leaves Copy waiting for placement. It does not invoke Copy's Apply
+action or add a point. Place the copies using native Copy afterward.
+
+Entering N or J resets the native copy count to **1**. Canceling either assist,
+switching between them, or leaving J resets it to **1** as well. A successfully
+confirmed N count remains set for the pending native placement. Opening J after
+that clears the count to 1. Escape first clears N's digits; another Escape
+closes numeric entry while keeping native Copy active.
+
+Outside Copy, N retains its previous native binding. Turning Numeric Assist
+off also restores N's native behavior. Uninstalling restores the prior N
+enterfunction binding; the normal N binding is not replaced.
+
+### J number entry
 
 After the hotkey, type `0`–`9`, `.`, or Backspace. The current input and mode
 appear next to the cursor. The result contour appears while a valid number is

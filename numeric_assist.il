@@ -1,6 +1,7 @@
 ; Numeric layout assist for Virtuoso IC23.1.
 ; J sets Path/Wire width, Stretch extent, or Move/Copy displacement.
 ; Shift-J sets the displacement magnitude of Move/Copy/Stretch.
+; N sets the native Copy count without placing copies.
 
 when(boundp('vbnInstalled) && vbnInstalled
   vbnUninstall()
@@ -27,6 +28,8 @@ vbnSavedKeys = nil
 vbnMainOld = nil
 vbnContourOld = nil
 vbnShiftOld = nil
+vbnCountOld = nil
+vbnCountNormalOld = nil
 vbnEnabled = t
 vbnToolbar = nil
 vbnAction = nil
@@ -681,17 +684,19 @@ procedure(vbnContourCursorPoint()
 )
 
 procedure(vbnCurrentValue()
-  if(vbnKind == 'contour && vbnPhase && vbnPhase > 1 then
+  if(vbnKind == 'copyCount then atoi(vbnDigits t)
+  else if(vbnKind == 'contour && vbnPhase && vbnPhase > 1 then
     vbnContourOffset
   else if(vbnEdges then vbnNumber
   else
     if(vbnDigits == "" || vbnDigits == "." then nil
     else atof(vbnDigits))
-  ))
+  )))
 )
 
 procedure(vbnModeText()
   cond(
+    (vbnKind == 'copyCount "COPY COUNT")
     (vbnKind == 'contour "CONTOUR OFFSET")
     (vbnKind == 'width "PATH WIDTH")
     (vbnKind == 'wire "WIRE WIDTH")
@@ -879,7 +884,7 @@ procedure(vbnUpdateDisplay(@optional force)
       value = vbnCurrentValue()
       ; Recheck the candidate while stationary so palette visibility changes
       ; immediately remove hidden targets or expose the next visible edge.
-      when(pt
+      when(pt && vbnKind != 'copyCount
         hover = if(vbnKind == 'contour && vbnPhase == 2 &&
                    vbnContourPickMode == 'rect then
           vbnContourRectAtPoint(vbnWindow pt)
@@ -910,8 +915,9 @@ procedure(vbnUpdateDisplay(@optional force)
         vbnLastEdges = vbnEdges
         vbnLastSnapMode = vbnSnapMode()
         vbnLastHover = hover
-        vbnDrawEdges(pt hover)
-        vbnDrawPreview(pt value)
+        unless(vbnKind == 'copyCount
+          vbnDrawEdges(pt hover)
+          vbnDrawPreview(pt value))
         vbnPaint(vbnWindow t)
       )
       vbnPaint(vbnWindow nil)
@@ -1044,6 +1050,9 @@ procedure(vbnRefreshNativeTracking()
 )
 
 procedure(vbnStop(@optional confirmed)
+  ; Confirmed N commits an option for the NEXT native placement. All other
+  ; exits reset the count; J has already applied its single-copy displacement.
+  unless(confirmed && vbnKind == 'copyCount vbnResetCopyCount())
   vbnActive = nil
   when(vbnHilight
     geDeleteHilightSet(vbnHilight)
@@ -1085,6 +1094,7 @@ procedure(vbnStart(kind)
     vbnCommand = hiGetCurrentCmd(vbnWindow)
     vbnForm = hiGetCurrentForm()
     vbnKind = kind
+    vbnResetCopyCount()
     vbnPhase = if(kind == 'contour then 1 else nil)
     vbnContourSource = if(kind == 'contour then
       car(geGetSelSet(vbnWindow)) else nil)
@@ -1093,9 +1103,10 @@ procedure(vbnStart(kind)
     vbnContourPivot = nil
     vbnContourSide = nil
     vbnContourPickMode = 'edge
-    vbnDigits = if(numberp(vbnRememberedNumber) then
-      sprintf(nil "%0.12g" vbnRememberedNumber) else "")
-    vbnPrefilled = numberp(vbnRememberedNumber)
+    vbnDigits = if(kind == 'copyCount then "1"
+      else if(numberp(vbnRememberedNumber) then
+        sprintf(nil "%0.12g" vbnRememberedNumber) else ""))
+    vbnPrefilled = kind == 'copyCount || numberp(vbnRememberedNumber)
     vbnNumber = nil
     vbnEdges = nil
     vbnCandidates = nil
@@ -1135,7 +1146,8 @@ procedure(vbnStart(kind)
 )
 
 procedure(vbnDigit(char)
-  when(vbnActive && (vbnKind != 'contour || vbnPhase == 1)
+  when(vbnActive && (vbnKind != 'contour || vbnPhase == 1) &&
+       (vbnKind != 'copyCount || char != ".")
     when(vbnPrefilled
       vbnDigits = ""
       vbnPrefilled = nil)
@@ -1254,6 +1266,7 @@ procedure(vbnClick()
       unless(pt pt = hiGetPoint(vbnWindow))
       when(pt
         cond(
+          (vbnKind == 'copyCount vbnConfirm())
           ((vbnKind == 'contour && vbnPhase == 2)
             vbnContourSelectPivot(pt))
           ((vbnKind == 'contour && vbnPhase == 3)
@@ -1345,9 +1358,35 @@ procedure(vbnDirection()
 )
 
 procedure(vbnSetFormField(field value)
-  field~>value = value
-  when(field~>_callback && field~>_callback != ""
-    evalstring(field~>_callback)
+  let((callback)
+    field~>value = value
+    callback = field~>_callback
+    ; Radio fields use a callback list: one shared callback, or one per choice.
+    when(listp(callback) && callback
+      callback = if(length(callback) == 1 then car(callback)
+        else nth(length(field~>choices)-length(member(value field~>choices))
+                 callback)))
+    when(callback && callback != "" evalstring(callback))
+  )
+)
+
+procedure(vbnSetCopyCount(form value)
+  if(form && form~>_formName == "Copy" && form~>number && form~>copyType then
+    unless(form~>copyType~>value == "Step"
+      vbnSetFormField(form~>copyType "Step"))
+    vbnSetFormField(form~>number value)
+    t
+  else nil)
+)
+
+procedure(vbnResetCopyCount()
+  let((win form)
+    leSetEnv("copyNumber" 1)
+    win = hiGetCurrentWindow()
+    when(geIsGraphicalWindow(win t) && hiGetCurrentCmd(win) == "Copy"
+      form = hiGetCurrentForm()
+      vbnSetCopyCount(form 1))
+    t
   )
 )
 
@@ -1572,7 +1611,17 @@ procedure(vbnConfirmContour()
 
 procedure(vbnConfirm()
   let((value ok)
-    if(vbnKind == 'contour then
+    if(vbnKind == 'copyCount then
+      value = vbnCurrentValue()
+      if(!value || value < 1 then
+        warn("Numeric Assist: enter a positive integer copy count.\n")
+        nil
+      else
+        ok = hiGetCurrentWindow() == vbnWindow &&
+             hiGetCurrentCmd(vbnWindow) == "Copy" && vbnSetCopyCount(vbnForm value)
+        when(ok vbnStop(t))
+        ok)
+    else if(vbnKind == 'contour then
       vbnConfirmContour()
     else
       value = vbnCurrentValue()
@@ -1597,7 +1646,30 @@ procedure(vbnConfirm()
         when(ok vbnStop(t))
         ok
       )
-    )
+    ))
+  )
+)
+
+procedure(vbnCountHotkey()
+  let((win form fallback)
+    win = hiGetCurrentWindow()
+    if(vbnEnabled && geIsGraphicalWindow(win t) &&
+       hiGetCurrentCmd(win) == "Copy" then
+      if(vbnActive && win == vbnWindow && vbnKind == 'copyCount then
+        vbnConfirm()
+      else
+        when(vbnActive vbnStop())
+        form = hiGetCurrentForm()
+        if(form && form~>_formName == "Copy" && form~>number && form~>copyType then
+          vbnStart('copyCount)
+        else
+          warn("Numeric Assist: native Copy count form is unavailable.\n")
+          nil))
+    else
+      ; Keep stock N (cycle snap modes) in other native commands and when off.
+      fallback = if(vbnCountOld && vbnCountOld != "" then
+        vbnCountOld else vbnCountNormalOld)
+      when(fallback && fallback != "" evalstring(fallback)))
   )
 )
 
@@ -1713,13 +1785,16 @@ procedure(vbnInstall()
     vbnContourOld = hiGetBindKey("Layout" "Shift<Key>j")
     vbnMainOld = hiGetBindKey("Layout" "<Key>j EF")
     vbnShiftOld = hiGetBindKey("Layout" "Shift<Key>j EF")
+    vbnCountOld = hiGetBindKey("Layout" "<Key>n EF")
+    vbnCountNormalOld = hiGetBindKey("Layout" "<Key>n")
     hiSetBindKey("Layout" "Shift<Key>j" "vbnHotkey(t)")
     hiSetBindKey("Layout" "<Key>j EF" "vbnHotkey(nil)")
     hiSetBindKey("Layout" "Shift<Key>j EF" "vbnHotkey(t)")
+    hiSetBindKey("Layout" "<Key>n EF" "vbnCountHotkey()")
     vbnAction = hiCreateAction(?name 'vbnToggleAction
       ?icon strcat(vbnIconDirectory "numeric_assist.png")
       ?useNameForIconText nil
-      ?toolTip "Toggle Numeric Assist (J in commands, Shift+J for contour)"
+      ?toolTip "Toggle Numeric Assist (J; N for Copy count; Shift+J for contour)"
       ?callback "vbnToggle()" ?checkable t ?checked t)
     vbnSteinerAction = hiCreateAction(?name 'vbnRemoveSteinersAction
       ?icon strcat(vbnIconDirectory "remove_steiners.png")
@@ -1754,6 +1829,8 @@ procedure(vbnUninstall()
       if(vbnMainOld then vbnMainOld else ""))
     hiSetBindKey("Layout" "Shift<Key>j EF"
       if(vbnShiftOld then vbnShiftOld else ""))
+    hiSetBindKey("Layout" "<Key>n EF"
+      if(vbnCountOld then vbnCountOld else ""))
     vbnInstalled = nil
   )
   t

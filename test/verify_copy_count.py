@@ -1,0 +1,171 @@
+"""Exercise N with native Copy in a fresh cell; sends no mouse/key events."""
+
+from config import LIB, LAYER, PCELL_LIB, PCELL_CELL, artifact_path
+
+import argparse
+from datetime import datetime
+import json
+from pathlib import Path
+
+from virtuoso_bridge import VirtuosoClient
+from virtuoso_bridge.virtuoso.layout import layout_create_rect
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--lib', default=LIB)
+    parser.add_argument('--layer', default=LAYER)
+    args = parser.parse_args()
+    c = VirtuosoClient.from_env()
+    cell = 'VB_NUMERIC_COPY_N_' + datetime.now().strftime('%Y%m%d_%H%M%S')
+    checks = []
+
+    def check(name, code, expected=None, warning=None):
+        r = c.execute_skill(code)
+        row = dict(name=name, output=r.output, warnings=r.warnings, errors=r.errors)
+        checks.append(row)
+        print(name, r)
+        if not r.ok or (expected is not None and r.output != expected):
+            raise AssertionError(row)
+        if warning:
+            # This bridge version may leave warn() text in CIW only.
+            if r.warnings and warning not in str(r.warnings):
+                raise AssertionError(row)
+        elif r.warnings:
+            raise AssertionError(row)
+        return r.output
+
+    check('idle caller', 'list(vbnActive hiGetCurrentCmd(hiGetCurrentWindow()))', '(nil nil)')
+    check('fresh cell', f'ddGetObj("{args.lib}" "{cell}" "layout")', 'nil')
+    check('save caller state', 'progn(vbnCopyVerifyOriginalWin=hiGetCurrentWindow() '
+          'vbnCopyVerifyMemory=vbnRememberedNumber vbnCopyVerifyEnabled=vbnEnabled '
+          'vbnCopyVerifyNumber=leGetEnv("copyNumber") '
+          'vbnCopyVerifyOrder=leGetEnv("copyOrder") '
+          'vbnCopyVerifyWin=nil vbnCopyVerifyForm=nil '
+          'vbnCopyVerifyKeys=mapcar(lambda((key) list(key hiGetBindKey("Layout" key))) '
+          'list("<Key>n" "<Key>n EF" "<Key>j" "<Key>j EF" "<Key>2" '
+          '"<Key>2 EF" "<Key>period" "<Key>period EF" "<Key>Return EF" '
+          '"<Key>space EF" "<Key>BackSpace EF" "<Key>Escape EF" "None<Btn1Down> EF")) '
+          'vbnRememberedNumber=123.5 vbnEnabled=t t)', 't')
+    try:
+        with c.layout.create(args.lib, cell) as lay:
+            lay.add(layout_create_rect(args.layer, 'drawing', 0, 0, 8, 3))
+        r = c.open_window(args.lib, cell, view='layout')
+        if not r.ok:
+            raise RuntimeError(r)
+        check('start isolated Copy', 'progn(vbnCopyVerifyWin=hiGetCurrentWindow() '
+              'vbnCopyVerifyCv=geGetEditCellView(vbnCopyVerifyWin) '
+              'vbnCopyVerifySource=car(vbnCopyVerifyCv~>shapes) '
+              'geSelectFig(vbnCopyVerifySource) '
+              'hiEnqueueCmd("leHiCopy(vbnCopyVerifyWin)"))', 't')
+        check('native Copy form', 'list(hiGetCurrentCmd(vbnCopyVerifyWin) '
+              'hiGetCurrentForm()~>_formName)', '("Copy" "Copy")')
+        check('save native form defaults', 'progn(vbnCopyVerifyForm=hiGetCurrentForm() '
+              'vbnCopyVerifySnapOriginal=vbnCopyVerifyForm~>segSnapMode~>value '
+              'vbnCopyVerifyRecursive=vbnCopyVerifyForm~>copyRecursive~>value t)', 't')
+        check('N entry resets stale count and Single type',
+              'progn(vbnSetFormField(hiGetCurrentForm()~>copyType "Single") '
+              'vbnSetFormField(hiGetCurrentForm()~>number 7) vbnCountHotkey() '
+              'list(vbnActive vbnKind vbnDigits vbnModeText() '
+              'hiGetCurrentForm()~>copyType~>value hiGetCurrentForm()~>number~>value))',
+              '(t copyCount "1" "COPY COUNT" "Step" 1)')
+        check('integer-only typing and Backspace',
+              'progn(vbnDigit(".") vbnDigit("2") vbnDigit("5") vbnBackspace() '
+              'vbnDigit(".") list(vbnDigits vbnCurrentValue()))', '("2" 2)')
+        check('Enter callback sets count without placement or J memory change',
+              'progn(evalstring(hiGetBindKey("Layout" "<Key>Return EF")) '
+              'list(vbnActive hiGetCurrentForm()~>number~>value '
+              'hiGetCurrentCmd(vbnCopyVerifyWin) length(vbnCopyVerifyCv~>shapes) '
+              'vbnRememberedNumber))', '(nil 2 "Copy" 1 123.5)')
+        check('J entry resets N count', 'progn(vbnHotkey(nil) '
+              'list(vbnKind vbnDigits hiGetCurrentForm()~>number~>value))',
+              '(distance "123.5" 1)')
+        check('J exit resets edited native count',
+              'progn(vbnSetFormField(hiGetCurrentForm()~>number 5) vbnStop() '
+              'hiGetCurrentForm()~>number~>value)', '1')
+        check('N cancellation resets count; Copy survives',
+              'progn(vbnCountHotkey() vbnDigit("8") '
+              'vbnSetFormField(hiGetCurrentForm()~>number 6) '
+              'vbnEscape() vbnEscape() '
+              'list(vbnActive hiGetCurrentForm()~>number~>value '
+              'hiGetCurrentCmd(vbnCopyVerifyWin)))', '(nil 1 "Copy")')
+        check('Array type resets to Step',
+              'progn(vbnSetFormField(hiGetCurrentForm()~>copyType "Array") '
+              'vbnCountHotkey() list(hiGetCurrentForm()~>copyType~>value '
+              'hiGetCurrentForm()~>number~>value))', '("Step" 1)')
+        check('zero is rejected', 'progn(vbnDigit("0") vbnConfirm())', 'nil',
+              warning='positive integer copy count')
+        check('fraction is rejected without closing',
+              'progn(vbnDigits="2.5" vbnConfirm())', 'nil',
+              warning='positive integer copy count')
+        check('invalid entries created no copies',
+              'list(vbnActive hiGetCurrentForm()~>number~>value '
+              'length(vbnCopyVerifyCv~>shapes))', '(t 1 1)')
+        check('N again confirms count only',
+              'progn(vbnDigits="4" vbnCountHotkey() '
+              'list(vbnActive hiGetCurrentForm()~>number~>value '
+              'length(vbnCopyVerifyCv~>shapes)))', '(nil 4 1)')
+        check('Space confirmation',
+              'progn(vbnCountHotkey() vbnDigit("3") '
+              'evalstring(hiGetBindKey("Layout" "<Key>space EF")) '
+              'list(vbnActive hiGetCurrentForm()~>number~>value '
+              'length(vbnCopyVerifyCv~>shapes)))', '(nil 3 1)')
+        check('N to J to N switches reset count',
+              'progn(vbnCountHotkey() vbnDigit("9") vbnHotkey(nil) '
+              'vbnCountHotkey() list(vbnKind vbnDigits hiGetCurrentForm()~>number~>value))',
+              '(copyCount "1" 1)')
+        check('disabling cancels N and resets count',
+              'progn(vbnSetFormField(hiGetCurrentForm()~>number 5) vbnToggle() '
+              'list(vbnActive vbnEnabled hiGetCurrentForm()~>number~>value))', '(nil nil 1)')
+        check('disabled N delegates saved EF and normal bindings',
+              'progn(vbnCopyVerifyFallbackHits=0 '
+              'vbnCopyVerifySavedN=vbnCountOld vbnCopyVerifySavedNormalN=vbnCountNormalOld '
+              'vbnCountOld="vbnCopyVerifyFallbackHits=vbnCopyVerifyFallbackHits+1" '
+              'vbnCountHotkey() vbnCountOld=nil '
+              'vbnCountNormalOld="vbnCopyVerifyFallbackHits=vbnCopyVerifyFallbackHits+10" '
+              'vbnCountHotkey() vbnCountOld=vbnCopyVerifySavedN '
+              'vbnCountNormalOld=vbnCopyVerifySavedNormalN '
+              'list(vbnActive vbnCopyVerifyFallbackHits))', '(nil 11)')
+        check('reenable and preserve reference point',
+              'progn(vbnToggle() vbnSetFormField(hiGetCurrentForm()~>segSnapMode "orthogonal") '
+              'vbnSetFormField(hiGetCurrentForm()~>copyRecursive nil) '
+              'addPoint(0:0) vbnCopyVerifyPoints=hiGetCurrentEnterFunPoints() '
+              'vbnCountHotkey() vbnDigit("3") vbnConfirm() '
+              'list(equal(hiGetCurrentEnterFunPoints() vbnCopyVerifyPoints) '
+              'hiGetCurrentCmd(vbnCopyVerifyWin) length(vbnCopyVerifyCv~>shapes)))',
+              '(t "Copy" 1)')
+        check('native placement using Apply after N confirmation',
+              'progn(vbnSetFormField(hiGetCurrentForm()~>copyXField 12.0) '
+              'vbnSetFormField(hiGetCurrentForm()~>copyYField 0.0) '
+              'evalstring(hiGetCurrentForm()~>copyApply~>_callback) t)', 't')
+        check('native placement uses confirmed count', 'length(vbnCopyVerifyCv~>shapes)', '4')
+        check('copies have expected step spacing',
+              'list(length(setof(fig vbnCopyVerifyCv~>shapes '
+              'member(fig~>bBox list(list(12:0 20:3) list(24:0 32:3) list(36:0 44:3))))) '
+              'vbnCopyVerifySource~>bBox)', '(3 ((0.0 0.0) (8.0 3.0)))')
+        check('save isolated result', 'progn(dbSave(vbnCopyVerifyCv) t)', 't')
+    finally:
+        check('restore state', 'progn(when(vbnActive vbnStop()) '
+              'when(vbnCopyVerifyWin && member(vbnCopyVerifyWin hiGetWindowList()) '
+              'hiSetCurrentWindow(vbnCopyVerifyWin) '
+              'when(vbnCopyVerifyForm '
+              'vbnSetFormField(vbnCopyVerifyForm~>segSnapMode vbnCopyVerifySnapOriginal) '
+              'vbnSetFormField(vbnCopyVerifyForm~>copyRecursive vbnCopyVerifyRecursive)) '
+              'when(hiGetCurrentCmd(vbnCopyVerifyWin) cancelEnterFun(hiGetCurrentForm()))) '
+              'vbnRememberedNumber=vbnCopyVerifyMemory vbnEnabled=vbnCopyVerifyEnabled '
+              'hiSetActionChecked(vbnAction vbnEnabled nil) '
+              'leSetEnv("copyNumber" vbnCopyVerifyNumber) '
+              'leSetEnv("copyOrder" vbnCopyVerifyOrder) '
+              'when(member(vbnCopyVerifyOriginalWin hiGetWindowList()) '
+              'hiSetCurrentWindow(vbnCopyVerifyOriginalWin)) t)', 't')
+        check('captured keys restored',
+              'equal(vbnCopyVerifyKeys mapcar(lambda((entry) '
+              'list(car(entry) hiGetBindKey("Layout" car(entry)))) vbnCopyVerifyKeys))', 't')
+    artifact_path('copy-count-verification.json').write_text(
+        json.dumps(dict(cell=f'{args.lib}/{cell}/layout', checks=checks,
+                        limitation='Bridge calls only; physical N key, cursor label, and canvas clicks need human retest.'),
+                   indent=2), encoding='utf-8')
+
+
+if __name__ == '__main__':
+    main()
