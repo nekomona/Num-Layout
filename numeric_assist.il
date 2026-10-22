@@ -703,7 +703,10 @@ procedure(vbnModeText()
     (vbnKind == 'length "STRETCH LENGTH")
     (vbnKind == 'measurement "MEASUREMENT LENGTH")
     (vbnCommand == "Move" "MOVE DISTANCE")
-    (vbnCommand == "Copy" "COPY DISTANCE")
+    (vbnCommand == "Copy"
+      if(vbnCopyCount() > 1 then
+        sprintf(nil "COPY DISTANCE [%d copies]" vbnCopyCount())
+      else "COPY DISTANCE"))
     (t "STRETCH DISTANCE")
   )
 )
@@ -733,8 +736,34 @@ procedure(vbnDisplayText(pt)
   )
 )
 
+procedure(vbnCopyCount()
+  let((count)
+    count = when(vbnCommand == "Copy" && vbnForm &&
+                 vbnForm~>_formName == "Copy" && vbnForm~>copyType~>value == "Step"
+      vbnForm~>number~>value)
+    if(numberp(count) && count > 0 then count else 1)
+  )
+)
+
+procedure(vbnDistancePreviewBoxes(value direction)
+  let((boxes count dx dy fig box ll ur step)
+    count = vbnCopyCount()
+    ; Native Step copies repeat the already grid-snapped X/Y displacement.
+    dx = vbnSnap(value*car(direction))
+    dy = vbnSnap(value*cadr(direction))
+    foreach(fig geGetSelSet(vbnWindow)
+      box = fig~>bBox
+      when(box
+        ll = car(box) ur = cadr(box)
+        for(step 1 count
+          boxes = cons(list(vbnPoint(vbnX(ll)+step*dx vbnY(ll)+step*dy)
+                            vbnPoint(vbnX(ur)+step*dx vbnY(ur)+step*dy)) boxes))))
+    reverse(boxes)
+  )
+)
+
 procedure(vbnDrawPreview(pt value)
-  let((start direction dx dy a b nx ny half selection fig box ll ur axis sign
+  let((start direction dx dy a b nx ny half fig box ll ur axis sign
        fixed moving points selectedPoints target side)
     when(numberp(value)
       start = vbnEnteredStartPoint()
@@ -769,17 +798,9 @@ procedure(vbnDrawPreview(pt value)
             vbnPreviewObjects = cons(vbnLine(vbnPreviewSet list(start target))
                                       vbnPreviewObjects)))
         (vbnKind == 'distance && direction
-          selection = geGetSelSet(vbnWindow)
-          foreach(fig selection
-            box = fig~>bBox
-            when(box
-              ll = car(box) ur = cadr(box)
-              dx = vbnSnap(value*car(direction))
-              dy = vbnSnap(value*cadr(direction))
-              vbnPreviewObjects = append(vbnBoxLine(vbnPreviewSet
-                list(vbnPoint(vbnX(ll)+dx vbnY(ll)+dy)
-                     vbnPoint(vbnX(ur)+dx vbnY(ur)+dy)))
-                vbnPreviewObjects))))
+          foreach(box vbnDistancePreviewBoxes(value direction)
+            vbnPreviewObjects = append(vbnBoxLine(vbnPreviewSet box)
+                                      vbnPreviewObjects)))
         (vbnKind == 'length && start && pt
           fig = car(geGetSelSet(vbnWindow))
           when(fig && length(geGetSelSet(vbnWindow)) == 1
@@ -1051,7 +1072,7 @@ procedure(vbnRefreshNativeTracking()
 
 procedure(vbnStop(@optional confirmed)
   ; Confirmed N commits an option for the NEXT native placement. All other
-  ; exits reset the count; J has already applied its single-copy displacement.
+  ; exits reset the count; J has already applied all requested copies.
   unless(confirmed && vbnKind == 'copyCount vbnResetCopyCount())
   vbnActive = nil
   when(vbnHilight
@@ -1094,7 +1115,7 @@ procedure(vbnStart(kind)
     vbnCommand = hiGetCurrentCmd(vbnWindow)
     vbnForm = hiGetCurrentForm()
     vbnKind = kind
-    vbnResetCopyCount()
+    when(kind == 'copyCount vbnResetCopyCount())
     vbnPhase = if(kind == 'contour then 1 else nil)
     vbnContourSource = if(kind == 'contour then
       car(geGetSelSet(vbnWindow)) else nil)

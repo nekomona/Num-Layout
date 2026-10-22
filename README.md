@@ -19,7 +19,7 @@ command, or select one rectangle to contour it.
 | Stretch | Shift+J | Stretch displacement magnitude |
 | Move | J | Move displacement magnitude |
 | Move | Shift+J | Move displacement magnitude |
-| Copy | J or Shift+J | Copy displacement magnitude |
+| Copy | J or Shift+J | Per-copy displacement magnitude; keeps the copy count |
 | Copy | N | Positive integer copy count; does not place copies |
 | One selected rectangle, no command | Shift+J | Start Contour |
 
@@ -34,11 +34,16 @@ Confirmation sets native **Copies → Type: Step → Number**, closes numeric
 entry, and leaves Copy waiting for placement. It does not invoke Copy's Apply
 action or add a point. Place the copies using native Copy afterward.
 
-Entering N or J resets the native copy count to **1**. Canceling either assist,
-switching between them, or leaving J resets it to **1** as well. A successfully
-confirmed N count remains set for the pending native placement. Opening J after
-that clears the count to 1. Escape first clears N's digits; another Escape
-closes numeric entry while keeping native Copy active.
+Entering N resets the native copy count to **1**. A confirmed N count is
+preserved when J opens, so N can set the number of copies and J can set their
+displacement. J previews every Step copy target for each selected object, at
+successive multiples of the entered distance. Its hint includes the count,
+for example `12 | COPY DISTANCE [3 copies]`. Confirming J places all the copies.
+
+Canceling either assist, entering N again, or leaving J resets the count to
+**1**. On J confirmation, that reset happens after placement. Escape first
+clears N's digits; another Escape closes numeric entry while keeping native
+Copy active.
 
 Outside Copy, N retains its previous native binding. Turning Numeric Assist
 off also restores N's native behavior. Uninstalling restores the prior N

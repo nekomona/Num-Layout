@@ -77,9 +77,9 @@ def main():
               'list(vbnActive hiGetCurrentForm()~>number~>value '
               'hiGetCurrentCmd(vbnCopyVerifyWin) length(vbnCopyVerifyCv~>shapes) '
               'vbnRememberedNumber))', '(nil 2 "Copy" 1 123.5)')
-        check('J entry resets N count', 'progn(vbnHotkey(nil) '
-              'list(vbnKind vbnDigits hiGetCurrentForm()~>number~>value))',
-              '(distance "123.5" 1)')
+        check('J entry preserves N count and adds hint', 'progn(vbnHotkey(nil) '
+              'list(vbnKind vbnDigits hiGetCurrentForm()~>number~>value vbnModeText()))',
+              '(distance "123.5" 2 "COPY DISTANCE [2 copies]")')
         check('J exit resets edited native count',
               'progn(vbnSetFormField(hiGetCurrentForm()~>number 5) vbnStop() '
               'hiGetCurrentForm()~>number~>value)', '1')
@@ -134,16 +134,48 @@ def main():
               'list(equal(hiGetCurrentEnterFunPoints() vbnCopyVerifyPoints) '
               'hiGetCurrentCmd(vbnCopyVerifyWin) length(vbnCopyVerifyCv~>shapes)))',
               '(t "Copy" 1)')
-        check('native placement using Apply after N confirmation',
-              'progn(vbnSetFormField(hiGetCurrentForm()~>copyXField 12.0) '
-              'vbnSetFormField(hiGetCurrentForm()~>copyYField 0.0) '
-              'evalstring(hiGetCurrentForm()~>copyApply~>_callback) t)', 't')
+        check('J previews all three targets and count hint',
+              'progn(vbnHotkey(nil) vbnDigits="12" '
+              'vbnCopyVerifyPreviewBoxes=vbnDistancePreviewBoxes(12.0 1:0) '
+              'list(vbnCopyCount() vbnDisplayText(nil) vbnCopyVerifyPreviewBoxes))',
+              '(3 "12  |  COPY DISTANCE [3 copies]" '
+              '(((12.0 0.0) (20.0 3.0)) ((24.0 0.0) (32.0 3.0)) ((36.0 0.0) (44.0 3.0))))')
+        check('negative Y preview repeats in requested direction',
+              'vbnDistancePreviewBoxes(4.0 0:-1)',
+              '(((0.0 -4.0) (8.0 -1.0)) ((0.0 -8.0) (8.0 -5.0)) ((0.0 -12.0) (8.0 -9.0)))')
+        check('preview and hint follow native count changes',
+              'progn(vbnSetCopyCount(vbnForm 4) '
+              'list(vbnModeText() length(vbnDistancePreviewBoxes(12.0 1:0))))',
+              '("COPY DISTANCE [4 copies]" 4)')
+        check('Single type has one preview even with stale number',
+              'progn(vbnSetFormField(vbnForm~>copyType "Single") '
+              'list(vbnModeText() length(vbnDistancePreviewBoxes(12.0 1:0))))',
+              '("COPY DISTANCE" 1)')
+        check('draws four highlight edges for each of three targets',
+              'progn(vbnSetCopyCount(vbnForm 3) vbnClearObjects(vbnPreviewObjects) '
+              'vbnPreviewObjects=nil '
+              'let((savedDirection) savedDirection=getd(quote(vbnDirection)) '
+              'unwindProtect(progn(putd(quote(vbnDirection) lambda(() 1:0)) '
+              'vbnDrawPreview(12:0 12.0) length(vbnPreviewObjects)) '
+              'putd(quote(vbnDirection) savedDirection))))', '12')
+        check('J confirms all copies before resetting count on exit',
+              'let((savedDirection) savedDirection=getd(quote(vbnDirection)) '
+              'unwindProtect(progn(putd(quote(vbnDirection) lambda(() 1:0)) '
+              'vbnConfirm()) putd(quote(vbnDirection) savedDirection)))', 't')
         check('native placement uses confirmed count', 'length(vbnCopyVerifyCv~>shapes)', '4')
+        check('native copies match all preview targets',
+              'list(vbnActive length(setof(fig vbnCopyVerifyCv~>shapes '
+              'member(fig~>bBox vbnCopyVerifyPreviewBoxes))) leGetEnv("copyNumber"))',
+              '(nil 3 1)')
         check('copies have expected step spacing',
               'list(length(setof(fig vbnCopyVerifyCv~>shapes '
               'member(fig~>bBox list(list(12:0 20:3) list(24:0 32:3) list(36:0 44:3))))) '
               'vbnCopyVerifySource~>bBox)', '(3 ((0.0 0.0) (8.0 3.0)))')
         check('save isolated result', 'progn(dbSave(vbnCopyVerifyCv) t)', 't')
+        check('restart isolated Copy after J exit',
+              'progn(geDeselectAllFig(vbnCopyVerifyCv) geSelectFig(vbnCopyVerifySource) '
+              'hiEnqueueCmd("leHiCopy(vbnCopyVerifyWin)"))', 't')
+        check('next native Copy starts at one', 'hiGetCurrentForm()~>number~>value', '1')
     finally:
         check('restore state', 'progn(when(vbnActive vbnStop()) '
               'when(vbnCopyVerifyWin && member(vbnCopyVerifyWin hiGetWindowList()) '
