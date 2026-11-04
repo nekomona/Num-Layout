@@ -1,7 +1,8 @@
 # Numeric Assist quick guide
 
-Load `numeric_assist.il` with its sibling runtime assets as described in the
-[installation instructions](../README.md#installation).
+Load `src/numeric_assist.il` with its sibling runtime assets as described in the
+[installation instructions](../README.md#installation). `python deploy.py`
+installs the contents of `src/` into the configured remote directory.
 
 1. Start a native Rectangle, Path, Wire, Measurement, Stretch, Move, or Copy command.
 2. Press **J** to enter a value or pick a geometry edge. Pick a second parallel

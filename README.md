@@ -1,27 +1,28 @@
 # Numeric Layout Assist for Virtuoso
 
-`numeric_assist.il` adds numeric entry and geometry picking to native Virtuoso
+`src/numeric_assist.il` adds numeric entry and geometry picking to native Virtuoso
 Layout commands. It targets Virtuoso IC23.1; native form fields and callbacks
 may differ on other releases. See the [usage guide](docs/numeric_assist_guide.md)
 and [test instructions](test/README.md).
 
 ## Installation
 
-Keep these runtime files together:
+The deployable runtime files are in `src/`. Keep their relative paths intact:
 
 ```text
-numeric_assist.il
-numeric_assist.drf
-wire_refresh.py
-icons/
-  numeric_assist.png
-  remove_steiners.png
+src/
+  numeric_assist.il
+  numeric_assist.drf
+  wire_refresh.py
+  icons/
+    numeric_assist.png
+    remove_steiners.png
 ```
 
-Load the script in the Virtuoso CIW, using your installation path:
+To load directly from a checkout, use its absolute path in the Virtuoso CIW:
 
 ```skill
-load("/path/to/numeric-assist/numeric_assist.il")
+load("/path/to/numeric-assist/src/numeric_assist.il")
 ```
 
 The script installs its bindings and toolbar when loaded. To load it at startup,
@@ -37,8 +38,11 @@ python deploy.py
 python deploy.py --remote-dir /path/to/numeric-assist
 ```
 
-The deployment helper uploads the runtime assets, checks their hashes, backs up
-the installed `.il`, and loads the plugin through the bridge. The Wire refresh
+The deployment helper uploads the contents of `src/` into the installation
+directory, checks their hashes, backs up the installed `.il`, and loads the
+plugin through the bridge. For example, `--remote-dir /opt/numeric-assist`
+installs `/opt/numeric-assist/numeric_assist.il`, with the helper, display
+resources, and `icons/` beside it. The Wire refresh
 helper requires Python 3, libX11, and the XTest extension on the GUI host. It
 inherits DISPLAY and XAUTHORITY from Virtuoso.
 
@@ -263,8 +267,10 @@ coordinates.
 
 ## Repository layout
 
-The main SKILL program remains at the repository root with its runtime assets.
-`docs/` contains public usage documentation. `test/` contains test scripts and
-manual checks. Local agent instructions belong in `.local/agent/`; screenshots,
+`src/` contains the SKILL program and all deployed runtime assets. `deploy.py`
+at the root installs them. `tools/generate_icons.py` regenerates the icons in
+`src/icons/` and requires Pillow. `docs/` contains public usage documentation.
+`test/` contains test scripts and manual checks. Local agent instructions
+belong in `.local/agent/`; screenshots,
 verification reports, and other test output belong in `artifacts/`. Both local
 folders are ignored by Git.

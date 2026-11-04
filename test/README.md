@@ -3,7 +3,8 @@
 Run commands from the repository root using a virtual environment. Offline
 tests use Python's standard library. Live checks additionally require the
 installed `virtuoso-bridge` package, working bridge configuration, a running
-Virtuoso session, and Numeric Assist loaded with its runtime assets.
+Virtuoso session, and Numeric Assist loaded from `src/numeric_assist.il` with
+its sibling runtime assets, or from an installation created by `deploy.py`.
 
 ## Offline tests
 
@@ -33,7 +34,8 @@ The bridge reads its own environment/profile configuration independently.
 Keep credentials and host configuration outside the tracked tree.
 
 Verify connectivity with `virtuoso-bridge status`, then load the plugin using
-`python deploy.py`. Keep the session idle before starting a live check. Run
+`python deploy.py`, which deploys the contents of `src/`. Keep the session idle
+before starting a live check. Run
 one script at a time: scripts open layout windows, run native commands, and
 change selection or form state. Cell-creation checks refuse existing names;
 verification scripts use fresh cell names. Reuse or delete only test cells.

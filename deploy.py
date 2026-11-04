@@ -8,7 +8,7 @@ import shlex
 
 from virtuoso_bridge import SSHClient, VirtuosoClient
 
-ROOT = Path(__file__).parent
+SOURCE_ROOT = Path(__file__).resolve().parent / "src"
 
 
 def main():
@@ -37,7 +37,7 @@ def main():
     files = ["icons/numeric_assist.png", "icons/remove_steiners.png",
              "numeric_assist.drf", "wire_refresh.py", "numeric_assist.il"]
     for relative in files:
-        source = ROOT / relative
+        source = SOURCE_ROOT / relative
         final = destination + "/" + relative
         staged = final + ".new"
         uploaded = ssh.upload_file(source, staged)
