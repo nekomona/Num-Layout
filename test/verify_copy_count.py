@@ -1,11 +1,10 @@
 """Exercise N with native Copy in a fresh cell; sends no mouse/key events."""
 
-from config import LIB, LAYER, PCELL_LIB, PCELL_CELL, artifact_path
+from config import artifact_path, LIB, LAYER
 
 import argparse
 from datetime import datetime
 import json
-from pathlib import Path
 
 from virtuoso_bridge import VirtuosoClient, SSHClient
 from virtuoso_bridge.virtuoso.layout import layout_create_rect

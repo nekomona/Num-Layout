@@ -4,7 +4,7 @@ Run with the project's virtual environment. The cell name is intentionally
 fixed and creation refuses to overwrite any existing cell.
 """
 
-from config import LIB, LAYER, PCELL_LIB, PCELL_CELL, artifact_path
+from config import LIB, LAYER
 
 from virtuoso_bridge import VirtuosoClient
 from virtuoso_bridge.virtuoso.layout import (

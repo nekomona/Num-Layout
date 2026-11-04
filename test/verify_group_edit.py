@@ -1,10 +1,9 @@
 """Native group Copy and rotated EIP ruler regression; no mouse/key events."""
 
-from config import LIB, LAYER, PCELL_LIB, PCELL_CELL, artifact_path
+from config import artifact_path, LIB, LAYER
 
 from datetime import datetime
 import json
-from pathlib import Path
 
 from virtuoso_bridge import VirtuosoClient, SSHClient
 from virtuoso_bridge.virtuoso.layout import layout_create_rect

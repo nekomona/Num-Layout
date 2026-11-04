@@ -1,82 +1,41 @@
-# Numeric Assist for Virtuoso Layout
+# Numeric Assist quick guide
 
-Numeric Assist adds a value picker to native Virtuoso layout editing. Press **J** while drawing a path or wire, creating a measurement, stretching, moving, or copying. With one rectangle selected and no command active, **Shift+J** starts Contour. Idle J keeps Virtuoso's selection command, and Ctrl+J keeps Flip. The toolbar's **ruler icon** enables or disables the assist; its pressed state means enabled. The **routing-node and broom icon** removes invisible Steiners from the current edited layout using `foreach(st geGetEditCellView()~>steiners dbDeleteObject(st))`. Hover over either icon for its tooltip. The cleanup button works even when Numeric Assist is disabled and leaves saving to the user.
+Load `numeric_assist.il` with its sibling runtime assets as described in the
+[installation instructions](../README.md#installation).
 
-## Start a session
+1. Start a native Rectangle, Path, Wire, Measurement, Stretch, Move, or Copy command.
+2. Press **J** to enter a value or pick a geometry edge. Pick a second parallel
+   edge to measure spacing. The candidate is yellow and the selection is magenta.
+3. Confirm with Enter, Space, the active hotkey, or empty canvas. Contour uses
+   Enter or Space to advance its offset and pivot phases.
+4. Escape clears input before closing the assist. The native command remains
+   active unless confirming a completed operation ends it.
 
-Load the plugin through your configured bridge:
-
-```powershell
-virtuoso-bridge load numeric_assist.il
-```
-
-The file installs the J bindings and toolbar button when loaded. To remove them and restore the previous bindings, run `virtuoso-bridge eval 'vbnUninstall()'`.
-
-## Choose the value
-
-After **J**, type digits, the decimal point, or Backspace. The number and the active mode appear beside the cursor. The last confirmed number is prefilled the next time J opens; typing a digit or decimal point replaces that prefill. Enter, Space, J again, or a click on empty canvas confirms the value. Escape clears the current input before closing the assist, leaving the native command active.
-
-You can also take a value from geometry:
-
-1. Move over an edge. The candidate edge turns **yellow**.
-2. Click once to use that edge's length. The selected edge and length arrow turn **magenta**.
-3. Click a parallel edge to use the spacing between the two edges. A perpendicular second edge starts a new single-edge pick; a third edge also starts over.
-
-Edges inside instances, PCells, and arrays can be picked. Numeric Assist
-transforms each picked shape into the edited cellview's coordinates before
-measuring it. Contour can use an internal rectangle as its pivot.
-
-For a wire, clicking its longitudinal centerline or terminal uses its physical width. A side click uses the side length. The plugin uses the raw pointer position for Path and Wire picking, even if native wire drawing snaps the working cursor elsewhere.
-
-## What J changes
-
-| Native context | Key | Result after confirmation |
+| Context | J | Shift+J |
 | --- | --- | --- |
-| Path | J | Active path width |
-| Wire | J | Current wire segment width |
-| Measurement (K) | J | New measurement length |
-| Stretch | J | Final extent for one edge/endpoint; displacement for a whole object or multiple objects |
-| Stretch | Shift+J | Stretch displacement magnitude |
-| Move | J or Shift+J | Move displacement magnitude |
-| Copy | J or Shift+J | Copy displacement magnitude |
-| One rectangle selected, no active command | Shift+J | Contour offset |
+| Path / Wire | Width | — |
+| Rectangle | Width/height, including `X,Y` | — |
+| Measurement | Length or endpoint delta | — |
+| Partial Stretch | Final extent of selected edge/endpoint | Relative displacement |
+| Whole-object / multiple-object Stretch | Relative displacement | Relative displacement |
+| Move / Copy | Relative displacement or `X,Y` delta | Absolute reference-point position |
+| One idle selected rectangle | Native binding | Contour |
 
-### Path and Wire widths
+During Copy, **N** sets a positive integer Step copy count without placing copies.
+J preserves that count and previews each Step target. Scalar relative distances
+follow the native snap mode; explicit X/Y input still snaps to the manufacturing
+grid. Omitted X or Y components retain the context-specific behavior described
+in the [full input reference](../README.md#xy-input-and-absolute-position).
 
-Start the native Path or Wire command, press J, enter or pick the width, then confirm. The preview shows the new contour before confirmation. In Wire, the confirmed value updates the Create Wire form's `wireWidth` for the current and subsequent segments.
+Contour resizes a selected rectangle in three phases: choose a positive offset,
+choose a pivot rectangle or four bounding edges, then choose inside or outside.
+In its pivot phase, J picks edges and Shift+J gives rectangles priority.
+Enter or Space advances phases; Escape returns to the preceding phase.
 
-### Stretch, Move, and Copy
+The ruler toolbar icon toggles the assist. The routing-node and broom icon
+removes invisible Steiners without saving the cellview. `vbnUninstall()`
+restores the previous key bindings.
 
-For an absolute Stretch length, select one edge or endpoint with native Stretch before pressing J. With a whole object or multiple objects selected, J instead sets displacement magnitude toward the pointer, just like Move. Shift+J in Stretch always uses displacement magnitude, as does either J or Shift+J in Move or Copy. Copy uses the native reference point when available, or the center of the selected objects' combined bounding box. The current native snap mode controls the direction: orthogonal, 45-degree, or any angle. Copy confirmation applies the native Copy form's current settings.
-
-The plugin places supported rectangle extents and straight path or ruler endpoints at absolute grid coordinates after native Stretch completes. This avoids the observed half-grid error where a requested `20.000` could land at `19.995`. Diagonal results can still differ slightly because the manufacturing grid has discrete coordinates.
-
-### Measurement
-
-Press K to start a native measurement, place its first point, and move toward the desired direction. Press J, enter or pick a length, and confirm. Numeric Assist creates a saved ruler at that length and finishes the Measurement command. Live tests produced exact `5.0` lengths from typed and edge-picked values.
-
-## Contour a rectangle
-
-Select exactly one source rectangle while no command is active, then press Shift+J. Contour has three phases:
-
-1. **Offset:** Type a positive number or pick it from one or two edges. Press Enter or Space to advance.
-2. **Pivot:** J selects only edges; Shift+J selects a rectangle before an edge at the same pointer location. The phase starts in edge mode. Click one rectangle or four edges that define two X and two Y boundaries. Switching modes keeps the current selection. The segments may stop short of the corners. Press Enter or Space to confirm the pivot; clicking empty canvas does not advance.
-3. **Side:** Move the pointer inside or outside the pivot. A magenta contour previews the chosen result, and the cursor label says INSIDE or OUTSIDE. Click, Enter, or Space to move and resize the source rectangle.
-
-Each Escape returns to the preceding phase. If the inset would collapse either pivot dimension, only OUTSIDE is available. The direction preview repaints as the pointer moves through empty canvas, including across a boundary with no object under the cursor.
-
-## Quick reference
-
-| Input | Effect while Numeric Assist is active |
-| --- | --- |
-| `0`–`9`, `.` | Enter a number; first character replaces remembered value |
-| Backspace | Remove the last entered character |
-| Click an edge | Pick its length or wire width |
-| Click a second parallel edge | Pick the spacing between edges |
-| Enter, Space | Confirm the current value or contour phase |
-| Active hotkey outside Contour | Confirm the current value |
-| J / Shift+J in Contour pivot phase | Pick edge mode / rectangle priority mode |
-| Escape | Clear the current value or return one contour phase |
-| Numeric J toolbar button | Enable or disable the assist |
-
-The physical dot key is captured for decimal input while Numeric Assist runs. Its original Virtuoso magnifier binding returns when the assist closes. Edge picking searches shapes through the instance hierarchy and saved ruler markers in the edited cellview. The cursor label uses a temporary highlight on the current entry layer, which must be visible.
+See the [full usage reference](../README.md#use) for input memory, wire-width
+picking, hierarchy transforms, repeated Copy, and grid rounding. Reproducible
+checks and environment setup are in [test/](../test/README.md).

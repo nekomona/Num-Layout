@@ -1,9 +1,70 @@
 # Numeric Layout Assist for Virtuoso
 
-Load `numeric_assist.il` in the Virtuoso CIW using your installation path.
-Keep any sibling runtime assets beside the script. The script installs
-its bindings when loaded; `vbnUninstall()` restores prior bindings.
-See [test instructions](test/README.md) for isolated live checks.
+`numeric_assist.il` adds numeric entry and geometry picking to native Virtuoso
+Layout commands. It targets Virtuoso IC23.1; native form fields and callbacks
+may differ on other releases. See the [usage guide](docs/numeric_assist_guide.md)
+and [test instructions](test/README.md).
+
+## Installation
+
+Keep these runtime files together:
+
+```text
+numeric_assist.il
+numeric_assist.drf
+wire_refresh.py
+icons/
+  numeric_assist.png
+  remove_steiners.png
+```
+
+Load the script in the Virtuoso CIW, using your installation path:
+
+```skill
+load("/path/to/numeric-assist/numeric_assist.il")
+```
+
+The script installs its bindings and toolbar when loaded. To load it at startup,
+add that line to your own `.cdsinit`. Run `vbnUninstall()` in CIW to restore the
+previous bindings and remove the toolbar.
+
+For remote deployment, install `virtuoso-bridge` in a virtual environment and
+configure its SSH and GUI roles. From this repository, run:
+
+```sh
+python deploy.py
+# Optional: choose an absolute directory on the remote host.
+python deploy.py --remote-dir /path/to/numeric-assist
+```
+
+The deployment helper uploads the runtime assets, checks their hashes, backs up
+the installed `.il`, and loads the plugin through the bridge. The Wire refresh
+helper requires Python 3, libX11, and the XTest extension on the GUI host. It
+inherits DISPLAY and XAUTHORITY from Virtuoso.
+
+## Toolbar and previews
+
+The ruler icon enables or disables Numeric Assist. Its pressed state means
+that the assist is enabled. The routing-node and broom icon deletes invisible
+Steiners from the edited layout, including during edit-in-place. It reports
+the removed count and leaves saving to the user. The toolbar is registered
+with the layout session's **Window > Toolbars** manager.
+
+Candidate contours appear in yellow; selected contours and measurement arrows
+appear in magenta. Picking respects displayed layers and hierarchy levels.
+The plugin loads its own highlight packets from `numeric_assist.drf`.
+
+After Wire width confirmation, `wire_refresh.py` nudges the pointer by 32 pixels
+in X and 16 pixels in Y, then returns it after 40 ms. It checks the target,
+focus, held buttons, and pointer movement before returning. It skips the return
+if user input intervenes. CIW diagnostics are available as:
+
+```skill
+list(vbnWireRefreshBusy vbnWireRefreshStatus)
+```
+
+A successful pointer return does not establish that the native rubberband
+repainted; verify that behavior interactively using the test instructions.
 
 ## Use
 
@@ -200,11 +261,10 @@ points use native Stretch's result.
 A requested diagonal length may be approximated by the nearest grid
 coordinates.
 
-## Version and scope
+## Repository layout
 
-The native form fields and callbacks were checked against a running Virtuoso
-IC23.1 instance. Recheck them on another release before loading there. Edge
-selection searches shapes through the instance hierarchy and saved ruler
-markers in the edited cellview. Absolute Stretch
-length requires exactly one native selection with a subset of its points
-selected. Cursor labels use plugin-owned window highlight packets.
+The main SKILL program remains at the repository root with its runtime assets.
+`docs/` contains public usage documentation. `test/` contains test scripts and
+manual checks. Local agent instructions belong in `.local/agent/`; screenshots,
+verification reports, and other test output belong in `artifacts/`. Both local
+folders are ignored by Git.

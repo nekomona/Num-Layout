@@ -1,9 +1,8 @@
 """Check repeated helper IPC and real X-server clocks without mouse events."""
 
-from config import LIB, LAYER, PCELL_LIB, PCELL_CELL, artifact_path
+from config import artifact_path
 
 import json
-from pathlib import Path
 import time
 
 from virtuoso_bridge import VirtuosoClient

@@ -1,10 +1,9 @@
 """Wire width/state checks in a fresh cell, with motion sending disabled."""
 
-from config import LIB, LAYER, PCELL_LIB, PCELL_CELL, artifact_path
+from config import artifact_path, LIB, LAYER
 
 from datetime import datetime
 import json
-from pathlib import Path
 
 from virtuoso_bridge import VirtuosoClient
 from virtuoso_bridge.virtuoso.layout import layout_create_rect

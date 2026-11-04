@@ -1,10 +1,9 @@
 """Bridge-only regression checks; creates fresh cells and sends no mouse events."""
 
-from config import LIB, LAYER, PCELL_LIB, PCELL_CELL, artifact_path
+from config import artifact_path, LIB, LAYER
 
 from datetime import datetime
 import json
-from pathlib import Path
 
 from virtuoso_bridge import VirtuosoClient
 from virtuoso_bridge.virtuoso.layout import layout_create_rect
@@ -47,7 +46,7 @@ def main():
         'vbnTestCv=geGetEditCellView(vbnTestWin) '
         'vbnTestRemembered=vbnRememberedNumber '
         f'equal(vbnTestCv~>cellName "{top}"))', 't')
-    run('visible M4', f'leSetLayerVisible(list("{LAYER}" "drawing") t '
+    run('visible test layer', f'leSetLayerVisible(list("{LAYER}" "drawing") t '
         'techGetTechFile(ddGetObj(vbnTestCv~>libName)))', 't')
     run('source', 'progn(vbnTestSource=car(setof(fig vbnTestCv~>shapes '
         'equal(fig~>bBox list(0:0 8:3)))) geDeselectAllFig(vbnTestCv) '

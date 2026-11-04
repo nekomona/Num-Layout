@@ -1,7 +1,5 @@
 """Check XTest refresh and input-interruption behavior without live input."""
 
-from config import LIB, LAYER, PCELL_LIB, PCELL_CELL, artifact_path
-
 import unittest
 from wire_refresh import X11, refresh
 

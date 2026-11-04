@@ -1,10 +1,10 @@
 """Create an isolated three-level layout for Numeric Assist hierarchy checks.
 
 The script refuses to replace any existing cells and never edits user layouts.
-Run it with the configured virtual environment and bridge profile.
+Run it with a virtual environment and configured bridge profile.
 """
 
-from config import LIB, LAYER, PCELL_LIB, PCELL_CELL, artifact_path
+from config import LIB, LAYER, PCELL_LIB, PCELL_CELL
 
 from virtuoso_bridge import VirtuosoClient
 from virtuoso_bridge.virtuoso.layout import (
