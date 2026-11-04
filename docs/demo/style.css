@@ -1,0 +1,844 @@
+@charset "UTF-8";
+:root {
+  --paper: #f5f3ed;
+  --ink: #202328;
+  --muted: #62666a;
+  --line: #d9d9d0;
+  --accent: #6b45b9;
+  --magenta: #e989f1;
+  --yellow: #efcf72;
+  --canvas: #17232e;
+  --cyan: #82d2c9;
+}
+* {
+  box-sizing: border-box;
+}
+html {
+  scroll-behavior: smooth;
+}
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
+  font-size: 15px;
+}
+button,
+input,
+select {
+  font: inherit;
+}
+button,
+a,
+input,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+a {
+  color: inherit;
+  text-underline-offset: 4px;
+}
+button {
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 11px 15px;
+  background: transparent;
+  color: inherit;
+}
+button:hover {
+  background: #e9e5dc;
+}
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid #9d77dc;
+  outline-offset: 4px;
+}
+button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+.topbar {
+  max-width: 1560px;
+  margin: auto;
+  padding: 25px 42px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  gap: 24px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 13px;
+  font-weight: 750;
+  letter-spacing: 0.07em;
+  text-decoration: none;
+}
+.brand-mark {
+  font-size: 25px;
+  letter-spacing: -0.15em;
+  margin-right: 12px;
+}
+.brand-mark span {
+  color: var(--accent);
+}
+.brand-light {
+  font-weight: 400;
+}
+.topbar nav {
+  display: flex;
+  gap: 25px;
+  font-size: 13px;
+}
+.topbar nav a {
+  text-decoration: none;
+}
+.intro {
+  max-width: 1560px;
+  margin: auto;
+  padding: 54px 42px 44px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 36px;
+}
+.eyebrow {
+  font-family: "Cascadia Code", Consolas, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  margin: 0 0 18px;
+}
+.signal-dot {
+  display: inline-block;
+  background: #9fd5a9;
+  border-radius: 50%;
+  width: 7px;
+  height: 7px;
+  margin-right: 8px;
+}
+h1 {
+  font-size: clamp(44px, 4.5vw, 70px);
+  letter-spacing: -0.06em;
+  line-height: 1.02;
+  font-weight: 600;
+  margin: 0;
+}
+h1 span {
+  color: var(--accent);
+}
+.intro-note {
+  padding-bottom: 4px;
+}
+.intro-note > p {
+  font-size: 18px;
+  line-height: 1.65;
+  letter-spacing: -0.015em;
+  margin: 0 0 22px;
+}
+.key-line {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 11px;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+.key-line span {
+  margin-right: 9px;
+}
+kbd {
+  font:
+    12px "Cascadia Code",
+    Consolas,
+    monospace;
+  background: #fffdf7;
+  border: 1px solid #c9c7bf;
+  border-bottom-width: 3px;
+  border-radius: 5px;
+  padding: 5px 7px;
+  color: var(--ink);
+  white-space: nowrap;
+}
+.lab {
+  max-width: 1476px;
+  width: calc(100% - 84px);
+  margin: 0 auto 55px;
+  display: grid;
+  grid-template-columns: 200px minmax(0, 1fr) 218px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fbfaf6;
+  overflow: hidden;
+}
+.tool-panel {
+  padding: 25px 12px 20px;
+  border-right: 1px solid var(--line);
+}
+.panel-heading {
+  font-family: "Cascadia Code", Consolas, monospace;
+  font-size: 10px;
+  letter-spacing: 0.07em;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0 0 22px;
+}
+.tool-panel > .panel-heading {
+  padding: 0 9px;
+  display: flex;
+  justify-content: space-between;
+}
+.panel-heading span {
+  opacity: 0.6;
+}
+.tool-panel nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.tool {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  width: 100%;
+  border: 0;
+  padding: 12px 9px;
+  font-size: 13px;
+  font-weight: 550;
+  border-radius: 6px;
+}
+.tool .index {
+  font-family: Consolas, monospace;
+  font-size: 10px;
+  opacity: 0.55;
+  width: 16px;
+}
+.tool.active {
+  background: #eee8f7;
+  color: #623ca8;
+}
+.tool.active::after {
+  content: "↗";
+  margin-left: auto;
+  font-size: 15px;
+}
+.aside-note {
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin: 32px 9px 0;
+}
+.experiment {
+  padding: 26px 24px 22px;
+  min-width: 0;
+}
+.experiment-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
+.experiment-heading .eyebrow {
+  font-size: 10px;
+  margin: 0 0 7px;
+  color: var(--accent);
+}
+h2 {
+  font-size: 26px;
+  letter-spacing: -0.04em;
+  font-weight: 600;
+  margin: 0;
+}
+.key-badge {
+  font:
+    12px Consolas,
+    monospace;
+  border: 1px solid var(--line);
+  padding: 7px 10px;
+  border-radius: 5px;
+  white-space: nowrap;
+}
+.tool-description {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 13px 0 20px;
+  min-height: 42px;
+  max-width: 650px;
+}
+.capture {
+  background: var(--canvas);
+  border: 1px solid #253746;
+  border-radius: 9px;
+  overflow: hidden;
+  color: #d7e5ed;
+}
+.canvas-bar {
+  padding: 14px 16px;
+  border-bottom: 1px solid #30404c;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font:
+    10px "Cascadia Code",
+    Consolas,
+    monospace;
+  letter-spacing: 0.045em;
+  gap: 12px;
+}
+.canvas-bar strong {
+  font-weight: 400;
+  color: #e6d3f7;
+}
+.bar-divider {
+  color: #667480;
+  margin: 0 8px;
+}
+.illustration-label {
+  color: #a4b6c2;
+  font-size: 9px;
+}
+#scene {
+  width: 100%;
+  height: auto;
+  display: block;
+  aspect-ratio: 900/460;
+}
+.scene-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 16px;
+  background: #1d2c38;
+  border-top: 1px solid #31424f;
+  font:
+    11px "Cascadia Code",
+    Consolas,
+    monospace;
+  min-height: 43px;
+}
+.scene-caption > span {
+  color: #a8becd;
+}
+.scene-caption strong {
+  font-weight: 500;
+  color: #eed0f1;
+}
+.transport {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 18px 0;
+}
+.transport button {
+  font-size: 12px;
+  padding: 9px 13px;
+}
+.transport .primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  min-width: 87px;
+}
+.transport .primary:hover {
+  background: #563393;
+}
+.transport .quiet {
+  border-color: transparent;
+  color: var(--muted);
+}
+.step-counter {
+  margin-left: auto;
+  color: var(--muted);
+  font:
+    11px Consolas,
+    monospace;
+}
+.steps {
+  display: flex;
+  gap: 8px;
+}
+.step {
+  flex: 1;
+  text-align: left;
+  border: 0;
+  border-top: 3px solid #e3dfd5;
+  border-radius: 0;
+  padding: 10px 0 3px;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+.step.active {
+  border-top-color: var(--accent);
+  color: var(--accent);
+}
+.step .step-num {
+  font:
+    10px Consolas,
+    monospace;
+  display: block;
+  opacity: 0.7;
+  margin-bottom: 4px;
+}
+.controls {
+  border-left: 1px solid var(--line);
+  padding: 27px 19px;
+}
+.controls label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  margin: 19px 0 8px;
+}
+.controls input,
+.controls select {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #cbc9bf;
+  background: #fffdf8;
+  color: var(--ink);
+  border-radius: 5px;
+  padding: 11px 10px;
+  font-family: Consolas, monospace;
+  font-size: 14px;
+}
+.field-hint {
+  display: block;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin-top: 7px;
+}
+.apply {
+  width: 100%;
+  font-size: 12px;
+  margin-top: 5px;
+}
+.error {
+  min-height: 16px;
+  font-size: 11px;
+  color: #ae3349;
+  line-height: 1.5;
+  margin: 11px 0 4px;
+}
+.readout {
+  border-top: 1px solid var(--line);
+  margin-top: 28px;
+  padding-top: 24px;
+}
+.readout .panel-heading {
+  margin-bottom: 14px;
+}
+#explanation {
+  font-size: 12px;
+  line-height: 1.85;
+  margin: 0;
+  min-height: 108px;
+}
+.legend {
+  display: grid;
+  gap: 12px;
+  font-size: 10px;
+  color: var(--muted);
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  margin-top: 23px;
+}
+.legend i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 8px;
+}
+.candidate {
+  background: var(--yellow);
+}
+.preview {
+  background: var(--magenta);
+}
+.geometry {
+  background: var(--cyan);
+}
+.reference {
+  display: block;
+  margin-top: 30px;
+  font-size: 11px;
+  color: var(--accent);
+}
+.principles {
+  max-width: 1476px;
+  margin: 0 auto 58px;
+  padding: 0 24px;
+}
+.principles > .eyebrow {
+  color: var(--muted);
+  margin-bottom: 25px;
+}
+.principles > div {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 55px;
+}
+.principles article {
+  position: relative;
+  padding-left: 42px;
+}
+.principles article > span {
+  position: absolute;
+  left: 0;
+  top: 4px;
+  font:
+    12px Consolas,
+    monospace;
+  color: var(--accent);
+}
+h3 {
+  font-size: 19px;
+  font-weight: 550;
+  letter-spacing: -0.03em;
+  margin: 0 0 10px;
+}
+.principles article p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted);
+  max-width: 310px;
+  margin: 0;
+}
+footer {
+  border-top: 1px solid var(--line);
+  padding: 23px 42px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 30px;
+  color: var(--muted);
+  font-size: 11px;
+}
+footer p {
+  max-width: 520px;
+  line-height: 1.7;
+  margin: 0;
+}
+footer > a {
+  white-space: nowrap;
+}
+.skip-link {
+  position: absolute;
+  top: -80px;
+  left: 15px;
+  padding: 10px;
+  z-index: 20;
+  background: white;
+}
+.skip-link:focus {
+  top: 10px;
+}
+.noscript {
+  padding: 30px;
+}
+body.export {
+  background: var(--canvas);
+}
+body.export .topbar,
+body.export .intro,
+body.export .tool-panel,
+body.export .controls,
+body.export .experiment-heading,
+body.export .tool-description,
+body.export .transport,
+body.export .steps,
+body.export .principles,
+body.export footer {
+  display: none;
+}
+body.export .lab,
+body.export .experiment {
+  display: block;
+  width: auto;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  max-width: none;
+}
+body.export .capture {
+  border-radius: 0;
+  width: 900px;
+  border: 0;
+}
+body.export .canvas-bar {
+  font-size: 14px;
+  padding: 18px 22px;
+}
+body.export .illustration-label {
+  font-size: 11px;
+}
+body.export .scene-caption {
+  font-size: 14px;
+  padding: 18px 22px;
+  min-height: 55px;
+}
+@media (min-width: 1700px) {
+  .intro {
+    padding-top: 64px;
+    padding-bottom: 55px;
+  }
+}
+@media (max-width: 1250px) {
+  .lab {
+    width: auto;
+    margin: 0 24px 45px;
+    grid-template-columns: 175px minmax(0, 1fr) 190px;
+  }
+  .experiment {
+    padding: 22px 17px;
+  }
+  .controls {
+    padding: 24px 14px;
+  }
+  .topbar,
+  .intro {
+    padding-left: 25px;
+    padding-right: 25px;
+  }
+  .intro-note > p {
+    font-size: 16px;
+  }
+  .key-line {
+    max-width: 360px;
+  }
+  .brand-light {
+    display: none;
+  }
+  .canvas-bar {
+    font-size: 9px;
+    padding: 12px;
+  }
+  .illustration-label {
+    font-size: 8px;
+  }
+  .scene-caption {
+    font-size: 10px;
+    padding: 12px;
+  }
+  .tool {
+    font-size: 12px;
+  }
+  .tool-panel > .panel-heading span {
+    display: none;
+  }
+}
+@media (max-width: 960px) {
+  .lab {
+    grid-template-columns: 160px minmax(0, 1fr);
+  }
+  .controls {
+    grid-column: 1/-1;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 30px;
+    padding: 22px;
+  }
+  .controls > .panel-heading {
+    grid-column: 1/-1;
+    margin-bottom: 0;
+  }
+  .readout {
+    border-top: 0;
+    padding-top: 20px;
+    margin-top: 0;
+  }
+  .legend {
+    grid-column: 2;
+    margin-top: 0;
+  }
+  .reference {
+    grid-row: 3;
+    grid-column: 1;
+  }
+  .intro {
+    align-items: flex-start;
+  }
+  .intro-note {
+    max-width: 340px;
+  }
+  .key-line {
+    gap: 8px;
+  }
+  footer {
+    padding: 22px 25px;
+  }
+  .principles > div {
+    gap: 24px;
+  }
+}
+@media (max-width: 650px) {
+  .topbar {
+    padding: 18px;
+  }
+  .topbar nav {
+    gap: 13px;
+    font-size: 11px;
+  }
+  .brand {
+    font-size: 11px;
+  }
+  .brand-mark {
+    margin-right: 4px;
+  }
+  .intro {
+    display: block;
+    padding: 32px 20px;
+  }
+  .intro-note {
+    margin-top: 23px;
+    max-width: none;
+  }
+  .intro-note > p {
+    font-size: 15px;
+    margin-bottom: 18px;
+  }
+  .intro-note > p br {
+    display: none;
+  }
+  .lab {
+    display: block;
+    margin: 0 12px 36px;
+  }
+  .tool-panel {
+    padding: 16px 12px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .tool-panel > .panel-heading {
+    margin-bottom: 10px;
+  }
+  .tool-panel nav {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 5px;
+  }
+  .tool {
+    width: auto;
+    flex: 0 0 auto;
+    font-size: 12px;
+    padding: 10px;
+  }
+  .tool .index,
+  .tool.active::after,
+  .aside-note {
+    display: none;
+  }
+  .experiment {
+    padding: 20px 12px;
+  }
+  .experiment-heading h2 {
+    font-size: 24px;
+  }
+  .tool-description {
+    min-height: 0;
+    font-size: 12px;
+  }
+  .canvas-bar {
+    padding: 10px;
+    font-size: 8px;
+  }
+  .illustration-label {
+    font-size: 7px;
+  }
+  .canvas-bar .signal-dot {
+    display: none;
+  }
+  .bar-divider {
+    margin: 0 5px;
+  }
+  .scene-caption {
+    padding: 10px;
+    font-size: 9px;
+    gap: 8px;
+    min-height: 37px;
+  }
+  .controls {
+    display: block;
+    padding: 22px;
+  }
+  .controls > .panel-heading {
+    margin-bottom: 10px;
+  }
+  .controls form {
+    max-width: none;
+  }
+  .readout {
+    padding-top: 24px;
+    margin-top: 26px;
+    border-top: 1px solid var(--line);
+  }
+  #explanation {
+    min-height: 0;
+  }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 22px;
+  }
+  .reference {
+    margin-top: 23px;
+  }
+  .principles {
+    padding: 0 23px;
+    margin-bottom: 35px;
+  }
+  .principles > div {
+    grid-template-columns: 1fr;
+    gap: 26px;
+  }
+  .principles article p {
+    max-width: none;
+  }
+  footer {
+    display: block;
+    padding: 23px;
+  }
+  footer p {
+    margin: 15px 0;
+  }
+  h1 {
+    font-size: 49px;
+  }
+  .steps {
+    gap: 6px;
+  }
+  .step {
+    font-size: 10px;
+  }
+  .key-badge {
+    font-size: 10px;
+  }
+  .transport button {
+    padding: 8px 10px;
+    font-size: 11px;
+  }
+  .step-counter {
+    font-size: 10px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

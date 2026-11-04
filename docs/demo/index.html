@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Explore Numeric Layout Assist: interactive illustrations of precise widths, positions, copies, and contours in Virtuoso Layout."
+    />
+    <title>Numeric Layout Assist · Interactive lab</title>
+    <link rel="stylesheet" href="style.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#workspace">Skip to demonstration</a>
+    <header class="topbar">
+      <a class="brand" href="#width" aria-label="Numeric Layout Assist home"
+        ><span class="brand-mark">N<span>↗</span></span> NUMERIC
+        <span class="brand-light">LAYOUT ASSIST</span></a
+      >
+      <nav aria-label="Resources">
+        <a href="guide.html">User guide ↗</a
+        ><a href="../../LICENSE">MIT license ↗</a>
+      </nav>
+    </header>
+    <main>
+      <section class="intro">
+        <div>
+          <p class="eyebrow">
+            <span class="signal-dot"></span> BUILT FOR VIRTUOSO LAYOUT
+          </p>
+          <h1>Precision,<br /><span>at your cursor.</span></h1>
+        </div>
+        <div class="intro-note">
+          <p>
+            Pick a dimension. Type a value.<br />
+            Preview the result before you commit.
+          </p>
+          <div class="key-line">
+            <kbd>J</kbd><span>numeric entry</span><kbd>⇧ J</kbd
+            ><span>absolute / contour</span><kbd>N</kbd><span>copy count</span>
+          </div>
+        </div>
+      </section>
+      <section
+        class="lab"
+        aria-label="Interactive tool demonstrations"
+        id="workspace"
+      >
+        <aside class="tool-panel">
+          <p class="panel-heading">EXPLORE THE TOOLS <span>01—09</span></p>
+          <nav id="tools" aria-label="Choose a tool"></nav>
+          <p class="aside-note">
+            Every scene uses synthetic geometry.<br />Explore freely.
+          </p>
+        </aside>
+        <div class="experiment">
+          <div class="experiment-heading">
+            <div>
+              <p class="eyebrow" id="tool-category"></p>
+              <h2 id="tool-title"></h2>
+            </div>
+            <span id="key-badge" class="key-badge"></span>
+          </div>
+          <p id="tool-description" class="tool-description"></p>
+          <div class="capture" id="capture">
+            <div class="canvas-bar">
+              <span
+                ><span class="signal-dot"></span> NUMERIC LAB
+                <span class="bar-divider">/</span>
+                <strong id="scene-name"></strong></span
+              ><span class="illustration-label">ILLUSTRATIVE DEMO</span>
+            </div>
+            <svg
+              id="scene"
+              viewBox="0 0 900 460"
+              role="img"
+              aria-label="Synthetic layout demonstration"
+            ></svg>
+            <div class="scene-caption">
+              <span id="scene-phase"></span><strong id="scene-result"></strong>
+            </div>
+          </div>
+          <div class="transport">
+            <button id="play" class="primary" type="button">▶ Play</button
+            ><button id="next" type="button">Next step →</button
+            ><button id="reset" type="button" class="quiet">↺ Reset</button
+            ><span class="step-counter" id="step-counter"></span>
+          </div>
+          <div class="steps" id="steps" aria-label="Demonstration steps"></div>
+        </div>
+        <aside class="controls">
+          <p class="panel-heading">TRY A VALUE</p>
+          <form id="settings" novalidate>
+            <div id="fields"></div>
+            <p id="error" class="error" role="alert"></p>
+            <button type="submit" class="apply">Update preview ↗</button>
+          </form>
+          <div class="readout">
+            <p class="panel-heading">WHAT HAPPENS</p>
+            <p id="explanation" aria-live="polite"></p>
+          </div>
+          <div class="legend">
+            <span><i class="candidate"></i> Candidate</span
+            ><span><i class="preview"></i> Selection / preview</span
+            ><span><i class="geometry"></i> Geometry</span>
+          </div>
+          <a id="reference" class="reference" href="guide.html"
+            >Read the tool guide ↗</a
+          >
+        </aside>
+      </section>
+      <section class="principles">
+        <p class="eyebrow">A SMALL HABIT. A PRECISE EDIT.</p>
+        <div>
+          <article>
+            <span>01</span>
+            <h3>Pick or type</h3>
+            <p>
+              Measure existing geometry, or enter the dimension you already
+              know.
+            </p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>See the target</h3>
+            <p>
+              Magenta previews show the intended result before confirmation.
+            </p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>Stay in the flow</h3>
+            <p>
+              Numeric entry works with the native drawing and editing command.
+            </p>
+          </article>
+        </div>
+      </section>
+    </main>
+    <footer>
+      <span>Numeric Layout Assist · MIT</span>
+      <p>
+        Interactive illustrations, not a live Virtuoso session. Native snapping
+        and command behavior are described in the
+        <a href="guide.html">guide</a>.
+      </p>
+      <a href="../../README.md">Project overview ↗</a>
+    </footer>
+    <noscript
+      ><p class="noscript">
+        Enable JavaScript for interactive demonstrations, or read the
+        <a href="guide.html">complete user guide</a>.
+      </p></noscript
+    >
+  </body>
+</html>
