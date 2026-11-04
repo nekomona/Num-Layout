@@ -24,6 +24,7 @@ Available scripts:
 - `test/verify_wire_clock.py`
 - `test/verify_wire_refresh.py`
 - `test/verify_wire_xtest.py`
+- `test/verify_xy.py`
 - `test/x11_probe.py`
 
 Keep reports and screenshots under Git-ignored `artifacts/`.

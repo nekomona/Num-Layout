@@ -51,7 +51,7 @@ def main():
         print(f"Installed {final}")
 
     escaped = target.replace("\\", "\\\\").replace('"', '\\"')
-    result = VirtuosoClient.from_env().execute_skill(f'load("{escaped}")')
+    result = VirtuosoClient.from_tunnel(ssh).execute_skill(f'load("{escaped}")')
     if not result.ok:
         raise RuntimeError(str(result.errors))
     print(f"Loaded Numeric Assist: {result.output}")

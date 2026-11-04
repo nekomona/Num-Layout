@@ -1,6 +1,6 @@
 ; Numeric layout assist for Virtuoso IC23.1.
 ; J sets Path/Wire width, Stretch extent, or Move/Copy displacement.
-; Shift-J sets the displacement magnitude of Move/Copy/Stretch.
+; Shift-J sets Move/Copy absolute coordinates, or Stretch displacement.
 ; N sets the native Copy count without placing copies.
 
 when(boundp('vbnInstalled) && vbnInstalled
@@ -59,6 +59,7 @@ vbnContourPixelView = nil
 vbnMeasureFinishForm = nil
 vbnRememberedNumber = if(boundp('vbnRememberedNumber) then
   vbnRememberedNumber else nil)
+vbnRememberedXY = if(boundp('vbnRememberedXY) then vbnRememberedXY else nil)
 vbnPrefilled = nil
 vbnPhase = nil
 vbnContourSource = nil
@@ -683,14 +684,46 @@ procedure(vbnContourCursorPoint()
   )
 )
 
+procedure(vbnXYEnabled()
+  member(vbnKind list('distance 'position 'length 'measurement 'rectSize))
+)
+
+procedure(vbnXYValuep(value)
+  listp(value) && length(value) == 2
+)
+
+procedure(vbnParseNumber(text)
+  ; Strict conversion also accepts scientific notation produced by %g memory.
+  when(text != "" && rexMatchp("[0-9]" text) atof(text t))
+)
+
+procedure(vbnFormatXY(value)
+  strcat(if(numberp(car(value)) then sprintf(nil "%0.12g" car(value)) else "")
+         ","
+         if(numberp(cadr(value)) then sprintf(nil "%0.12g" cadr(value)) else ""))
+)
+
+procedure(vbnParseInput(text)
+  let((parts x y)
+    if(rexMatchp("," text) then
+      when(vbnXYEnabled()
+        parts = parseString(text "," t)
+        when(length(parts) == 2
+          x = vbnParseNumber(car(parts)) y = vbnParseNumber(cadr(parts))
+          when((car(parts) == "" || numberp(x)) &&
+               (cadr(parts) == "" || numberp(y)) && (numberp(x) || numberp(y))
+            list(x y))))
+    else vbnParseNumber(text))
+  )
+)
+
 procedure(vbnCurrentValue()
   if(vbnKind == 'copyCount then atoi(vbnDigits t)
   else if(vbnKind == 'contour && vbnPhase && vbnPhase > 1 then
     vbnContourOffset
-  else if(vbnEdges then vbnNumber
+  else if(vbnEdges && !rexMatchp("," vbnDigits) then vbnNumber
   else
-    if(vbnDigits == "" || vbnDigits == "." then nil
-    else atof(vbnDigits))
+    vbnParseInput(vbnDigits)
   )))
 )
 
@@ -700,9 +733,13 @@ procedure(vbnModeText()
     (vbnKind == 'contour "CONTOUR OFFSET")
     (vbnKind == 'width "PATH WIDTH")
     (vbnKind == 'wire "WIRE WIDTH")
-    (vbnKind == 'length "STRETCH LENGTH")
+    (vbnKind == 'length
+      if(rexMatchp("," vbnDigits) then "STRETCH SIZE X,Y" else "STRETCH LENGTH"))
     (vbnKind == 'measurement "MEASUREMENT LENGTH")
-    (vbnCommand == "Move" "MOVE DISTANCE")
+    (vbnKind == 'rectSize "RECT SIZE X,Y")
+    (vbnKind == 'position vbnPositionHint())
+    (vbnCommand == "Move"
+      if(rexMatchp("," vbnDigits) then "MOVE DELTA X,Y" else "MOVE DISTANCE"))
     (vbnCommand == "Copy"
       if(vbnCopyCount() > 1 then
         sprintf(nil "COPY DISTANCE [%d copies]" vbnCopyCount())
@@ -726,7 +763,7 @@ procedure(vbnDisplayText(pt)
                 else if(side == 'outside then "OUTSIDE" else "OUTSIDE ONLY"))
                 vbnContourOffset))
       (t
-        numberText = if(vbnEdges then
+        numberText = if(vbnEdges && !vbnXYValuep(value) then
           sprintf(nil "%0.6g [%d edge%s]" value length(vbnEdges)
                   if(length(vbnEdges) == 1 then "" else "s"))
         else vbnDigits)
@@ -749,23 +786,24 @@ procedure(vbnDistancePreviewBoxes(value direction)
   let((boxes count dx dy fig box ll ur step)
     count = vbnCopyCount()
     ; Native Step copies repeat the already grid-snapped X/Y displacement.
-    dx = vbnSnap(value*car(direction))
-    dy = vbnSnap(value*cadr(direction))
+    direction = vbnMotionDelta(value direction)
+    when(direction
+    dx = car(direction) dy = cadr(direction)
     foreach(fig geGetSelSet(vbnWindow)
-      box = fig~>bBox
+      box = vbnBoxToWindow(fig~>bBox)
       when(box
         ll = car(box) ur = cadr(box)
         for(step 1 count
           boxes = cons(list(vbnPoint(vbnX(ll)+step*dx vbnY(ll)+step*dy)
                             vbnPoint(vbnX(ur)+step*dx vbnY(ur)+step*dy)) boxes))))
-    reverse(boxes)
+    reverse(boxes))
   )
 )
 
 procedure(vbnDrawPreview(pt value)
   let((start direction dx dy a b nx ny half fig box ll ur axis sign
        fixed moving points selectedPoints target side)
-    when(numberp(value)
+    when(numberp(value) || vbnXYValuep(value)
       start = vbnEnteredStartPoint()
       direction = vbnDirection()
       cond(
@@ -792,15 +830,26 @@ procedure(vbnDrawPreview(pt value)
           when(start && pt
             vbnPreviewObjects = cons(vbnSegmentContour(vbnPreviewSet start pt value)
                                       vbnPreviewObjects)))
+        (vbnKind == 'rectSize
+          target = vbnRectDrawBox(value)
+          when(target
+            vbnPreviewObjects = append(vbnBoxLine(vbnPreviewSet target) vbnPreviewObjects)))
         (vbnKind == 'measurement && start && pt
-          target = vbnLinearTarget(start pt pt value)
+          target = vbnMeasurementTarget(start pt value)
           when(target
             vbnPreviewObjects = cons(vbnLine(vbnPreviewSet list(start target))
                                       vbnPreviewObjects)))
-        (vbnKind == 'distance && direction
+        ((vbnKind == 'distance || vbnKind == 'position) &&
+         (direction || vbnXYValuep(value) || vbnKind == 'position)
           foreach(box vbnDistancePreviewBoxes(value direction)
             vbnPreviewObjects = append(vbnBoxLine(vbnPreviewSet box)
                                       vbnPreviewObjects)))
+        (vbnKind == 'length && (vbnXYValuep(value) ||
+             car(geGetSelSet(vbnWindow))~>objType == "rect")
+          target = vbnSizePlan(value)
+          when(target
+            vbnPreviewObjects = append(vbnBoxLine(vbnPreviewSet vbnBoxToWindow(car(target)))
+                                       vbnPreviewObjects)))
         (vbnKind == 'length && start && pt
           fig = car(geGetSelSet(vbnWindow))
           when(fig && length(geGetSelSet(vbnWindow)) == 1
@@ -979,6 +1028,10 @@ procedure(vbnCaptureInput()
     vbnCaptureKey("<Key>period" "vbnDigit(\".\")")
     vbnCaptureKey("<Key>. EF" "vbnDigit(\".\")")
     vbnCaptureKey("<Key>." "vbnDigit(\".\")")
+    vbnCaptureKey("<Key>comma EF" "vbnDigit(\",\")")
+    vbnCaptureKey("<Key>comma" "vbnDigit(\",\")")
+    vbnCaptureKey("<Key>minus EF" "vbnDigit(\"-\")")
+    vbnCaptureKey("<Key>minus" "vbnDigit(\"-\")")
     vbnCaptureKey("<Key>BackSpace EF" "vbnBackspace()")
     vbnCaptureKey("<Key>BackSpace" "vbnBackspace()")
     vbnCaptureKey("<Key>Escape EF" "vbnEscape()")
@@ -1070,10 +1123,10 @@ procedure(vbnRefreshNativeTracking()
   )
 )
 
-procedure(vbnStop(@optional confirmed)
+procedure(vbnStop(@optional confirmed keepCopyCount)
   ; Confirmed N commits an option for the NEXT native placement. All other
   ; exits reset the count; J has already applied all requested copies.
-  unless(confirmed && vbnKind == 'copyCount vbnResetCopyCount())
+  unless(keepCopyCount || (confirmed && vbnKind == 'copyCount) vbnResetCopyCount())
   vbnActive = nil
   when(vbnHilight
     geDeleteHilightSet(vbnHilight)
@@ -1125,9 +1178,11 @@ procedure(vbnStart(kind)
     vbnContourSide = nil
     vbnContourPickMode = 'edge
     vbnDigits = if(kind == 'copyCount then "1"
+      else if(vbnXYEnabled() && vbnRememberedXY && vbnValidValue(vbnRememberedXY) then
+        vbnFormatXY(vbnRememberedXY)
       else if(numberp(vbnRememberedNumber) then
-        sprintf(nil "%0.12g" vbnRememberedNumber) else ""))
-    vbnPrefilled = kind == 'copyCount || numberp(vbnRememberedNumber)
+        sprintf(nil "%0.12g" vbnRememberedNumber) else "")))
+    vbnPrefilled = vbnDigits != ""
     vbnNumber = nil
     vbnEdges = nil
     vbnCandidates = nil
@@ -1167,22 +1222,32 @@ procedure(vbnStart(kind)
 )
 
 procedure(vbnDigit(char)
+  let((parts tail allowed)
   when(vbnActive && (vbnKind != 'contour || vbnPhase == 1) &&
-       (vbnKind != 'copyCount || char != ".")
-    when(vbnPrefilled
+       (vbnKind != 'copyCount || rexMatchp("^[0-9]$" char)) &&
+       (char != "," || (vbnXYEnabled() && !rexMatchp("," vbnDigits)))
+    when(vbnPrefilled && char != ","
       vbnDigits = ""
       vbnPrefilled = nil)
     when(vbnEdges
+      if(char == "," then vbnDigits = sprintf(nil "%0.12g" vbnNumber)
+      else if(rexMatchp("," vbnDigits) then
+        vbnDigits = strcat(car(parseString(vbnDigits "," t)) ",")
+      else vbnDigits = ""))
       vbnEdges = nil
       vbnCandidates = nil
       vbnNumber = nil
-      vbnDigits = ""
     )
-    when(char != "." || !rexMatchp("\\." vbnDigits)
+    parts = parseString(vbnDigits "," t)
+    tail = if(cdr(parts) then cadr(parts) else vbnDigits)
+    allowed = (char != "." || !rexMatchp("\\." tail)) &&
+              (char != "-" || tail == "")
+    when(allowed
       vbnDigits = strcat(vbnDigits char)
+      vbnPrefilled = nil
     )
     vbnUpdateDisplay(t)
-  )
+  ))
 )
 
 procedure(vbnBackspace()
@@ -1240,7 +1305,9 @@ procedure(vbnSelectCandidate(candidate)
     vbnEdges = nextEdges
     vbnNumber = if(length(vbnEdges) == 2 then
       vbnParallelDistance(car(vbnEdges) cadr(vbnEdges)) else vbnEdgeLength(edge))
-    vbnDigits = ""
+    vbnDigits = if(vbnXYEnabled() && rexMatchp("," vbnDigits) then
+      strcat(car(parseString(vbnDigits "," t)) "," sprintf(nil "%0.12g" vbnNumber))
+      else "")
     vbnPrefilled = nil
     vbnLastPoint = nil
     vbnUpdateDisplay(t)
@@ -1325,7 +1392,7 @@ procedure(vbnCopyAnchor()
   let((left bottom right top box ll ur)
     ; Native Copy can apply X/Y values without recording an enterfunction point.
     foreach(fig geGetSelSet(vbnWindow)
-      box = fig~>bBox
+      box = vbnBoxToWindow(fig~>bBox)
       when(box
         ll = car(box) ur = cadr(box)
         left = if(numberp(left) then min(left vbnX(ll)) else vbnX(ll))
@@ -1336,6 +1403,208 @@ procedure(vbnCopyAnchor()
     )
     when(numberp(left)
       vbnPoint((left+right)/2.0 (bottom+top)/2.0))
+  )
+)
+
+procedure(vbnBoxToWindow(box)
+  let((a b)
+    when(box
+      a = geEditToWindowPoint(vbnWindow car(box))
+      b = geEditToWindowPoint(vbnWindow cadr(box))
+      list(vbnPoint(min(vbnX(a) vbnX(b)) min(vbnY(a) vbnY(b)))
+           vbnPoint(max(vbnX(a) vbnX(b)) max(vbnY(a) vbnY(b)))))
+  )
+)
+
+procedure(vbnMotionAnchor()
+  let((point)
+    point = vbnEnteredStartPoint()
+    unless(point point = vbnCopyAnchor())
+    point)
+)
+
+procedure(vbnInputAxis(anchor current)
+  when(anchor && current
+    current = vbnConstrainPoint(anchor current)
+    if(abs(vbnX(current)-vbnX(anchor)) >= abs(vbnY(current)-vbnY(anchor)) then 'x else 'y))
+)
+
+procedure(vbnMotionDelta(value @optional direction)
+  let((anchor target axis)
+    cond(
+      (vbnKind == 'position
+        anchor = vbnMotionAnchor()
+        when(anchor
+          if(vbnXYValuep(value) then
+            target = vbnPoint(if(numberp(car(value)) then car(value) else vbnX(anchor))
+                              if(numberp(cadr(value)) then cadr(value) else vbnY(anchor)))
+          else
+            axis = vbnInputAxis(anchor vbnContourCursorPoint())
+            when(axis target = if(axis == 'x then vbnPoint(value vbnY(anchor))
+                                 else vbnPoint(vbnX(anchor) value))))
+          when(target
+            vbnPoint(vbnSnap(vbnX(target)-vbnX(anchor))
+                     vbnSnap(vbnY(target)-vbnY(anchor))))))
+      (vbnXYValuep(value)
+        vbnPoint(vbnSnap(if(numberp(car(value)) then car(value) else 0.0))
+                 vbnSnap(if(numberp(cadr(value)) then cadr(value) else 0.0))))
+      (t
+        unless(direction direction = vbnDirection())
+        when(direction vbnPoint(vbnSnap(value*car(direction))
+                                  vbnSnap(value*cadr(direction)))))
+    )
+  )
+)
+
+procedure(vbnPositionHint()
+  let((axis text)
+    axis = if(rexMatchp("," vbnDigits) then "X,Y"
+      else case(vbnInputAxis(vbnMotionAnchor() vbnContourCursorPoint())
+        (x "X") (y "Y") (t "X/Y")))
+    text = sprintf(nil "%s ABSOLUTE %s" if(vbnCommand == "Copy" then "COPY" else "MOVE") axis)
+    if(vbnCopyCount() > 1 then sprintf(nil "%s [%d copies]" text vbnCopyCount()) else text))
+)
+
+procedure(vbnMeasurementTarget(start current value)
+  if(vbnXYValuep(value) then
+    vbnPoint(vbnSnap(vbnX(start)+if(numberp(car(value)) then car(value) else 0.0))
+             vbnSnap(vbnY(start)+if(numberp(cadr(value)) then cadr(value) else 0.0)))
+  else vbnLinearTarget(start current current value))
+)
+
+procedure(vbnRectDimensions(value)
+  let((start current width height axis)
+    start = vbnEnteredStartPoint() current = vbnContourCursorPoint()
+    if(start && current then
+      width = abs(vbnX(current)-vbnX(start))
+      height = abs(vbnY(current)-vbnY(start))
+    else
+      width = vbnForm~>width~>value height = vbnForm~>height~>value)
+    if(vbnXYValuep(value) then
+      when(numberp(car(value)) width = car(value))
+      when(numberp(cadr(value)) height = cadr(value))
+    else
+      axis = if(start then vbnInputAxis(start current) else 'x)
+      if(axis == 'y then height = value else width = value))
+    list(width height))
+)
+
+procedure(vbnRectCorner(value)
+  let((start current size)
+    start = vbnEnteredStartPoint() current = vbnContourCursorPoint()
+    size = vbnRectDimensions(value)
+    when(start && current && numberp(car(size)) && numberp(cadr(size)) &&
+         car(size) > 0.0 && cadr(size) > 0.0
+      vbnPoint(vbnSnap(vbnX(start)+if(vbnX(current) < vbnX(start) then -car(size) else car(size)))
+               vbnSnap(vbnY(start)+if(vbnY(current) < vbnY(start) then -cadr(size) else cadr(size)))))
+  )
+)
+
+procedure(vbnRectDrawBox(value)
+  let((start target size current base x y width height)
+    start = vbnEnteredStartPoint()
+    if(start then
+      target = vbnRectCorner(value)
+      when(target
+        list(vbnPoint(min(vbnX(start) vbnX(target)) min(vbnY(start) vbnY(target)))
+             vbnPoint(max(vbnX(start) vbnX(target)) max(vbnY(start) vbnY(target)))))
+    else
+      size = vbnRectDimensions(value) current = vbnContourCursorPoint()
+      width = car(size) height = cadr(size)
+      when(current && numberp(width) && numberp(height) && width > 0.0 && height > 0.0
+        base = vbnForm~>Justification~>value
+        x = vbnX(current) y = vbnY(current)
+        when(base == "Bottom right" || base == "Top right" x = x-width)
+        when(base == "Top left" || base == "Top right" y = y-height)
+        when(base == "Center" x = x-width/2.0 y = y-height/2.0)
+        list(vbnPoint(x y) vbnPoint(x+width y+height))))
+  )
+)
+
+procedure(vbnApplyRectSize(value)
+  let((start target size)
+    start = vbnEnteredStartPoint()
+    if(start then
+      target = vbnRectCorner(value)
+      if(target then addPoint(target)
+      else warn("Numeric Assist: point toward a rectangle with positive width and height.\n") nil)
+    else
+      size = vbnRectDimensions(value)
+      when(numberp(car(size)) vbnSetFormField(vbnForm~>width vbnSnap(car(size))))
+      when(numberp(cadr(size)) vbnSetFormField(vbnForm~>height vbnSnap(cadr(size))))
+      vbnSetFormField(vbnForm~>leRectSpecifySize t)
+      t)
+  )
+)
+
+procedure(vbnSizePlan(value)
+  let((fig flags points start current ll ur sx sy width height axis target dx dy moved)
+    fig = car(geGetSelSet(vbnWindow))
+    when(fig && length(geGetSelSet(vbnWindow)) == 1
+      flags = geGetSelSetFigPoint(fig) points = fig~>points
+      when(member(t flags) && member(nil flags)
+        ll = car(fig~>bBox) ur = cadr(fig~>bBox)
+        start = vbnEnteredStartPoint() current = vbnContourCursorPoint()
+        if(vbnXYValuep(value) then width = car(value) height = cadr(value)
+        else
+          axis = vbnInputAxis(start current)
+          if(axis == 'x then width = value else when(axis height = value)))
+        value = vbnEditDimensions(list(width height))
+        width = car(value) height = cadr(value)
+        when(start start = geWindowToEditPoint(vbnWindow start))
+        unless(start start = ur)
+        sx = vbnSelectedSide(points flags 'x (vbnX(ll)+vbnX(ur))/2.0
+          if(vbnX(start) >= (vbnX(ll)+vbnX(ur))/2.0 then 1 else -1))
+        sy = vbnSelectedSide(points flags 'y (vbnY(ll)+vbnY(ur))/2.0
+          if(vbnY(start) >= (vbnY(ll)+vbnY(ur))/2.0 then 1 else -1))
+        target = list(ll ur)
+        when(numberp(width)
+          if(sx > 0 then ur = vbnPoint(vbnSnap(vbnX(ll)+width) vbnY(ur))
+          else ll = vbnPoint(vbnSnap(vbnX(ur)-width) vbnY(ll))))
+        when(numberp(height)
+          if(sy > 0 then ur = vbnPoint(vbnX(ur) vbnSnap(vbnY(ll)+height))
+          else ll = vbnPoint(vbnX(ll) vbnSnap(vbnY(ur)-height))))
+        dx = if(sx > 0 then vbnX(ur)-vbnX(cadr(target)) else vbnX(ll)-vbnX(car(target)))
+        dy = if(sy > 0 then vbnY(ur)-vbnY(cadr(target)) else vbnY(ll)-vbnY(car(target)))
+        moved = vbnShiftSelectedPoints(points flags 'x dx)
+        moved = vbnShiftSelectedPoints(moved flags 'y dy)
+        when((numberp(width) || numberp(height)) &&
+             (vbnX(ur) > vbnX(ll) || vbnY(ur) > vbnY(ll)) &&
+             (fig~>objType != "rect" || (vbnX(ur) > vbnX(ll) && vbnY(ur) > vbnY(ll)))
+          list(list(ll ur) dx dy moved)))))
+)
+
+procedure(vbnEditDimensions(size)
+  let((zero x y width height)
+    zero = geWindowToEditPoint(vbnWindow 0:0)
+    x = geWindowToEditPoint(vbnWindow 1:0)
+    y = geWindowToEditPoint(vbnWindow 0:1)
+    ; Window X/Y become swapped (and possibly scaled) in rotated EIP.
+    if(abs(vbnX(x)-vbnX(zero)) >= abs(vbnY(x)-vbnY(zero)) then
+      width = when(numberp(car(size)) car(size)*abs(vbnX(x)-vbnX(zero)))
+      height = when(numberp(cadr(size)) cadr(size)*abs(vbnY(y)-vbnY(zero)))
+    else
+      width = when(numberp(cadr(size)) cadr(size)*abs(vbnX(y)-vbnX(zero)))
+      height = when(numberp(car(size)) car(size)*abs(vbnY(x)-vbnY(zero))))
+    list(width height))
+)
+
+procedure(vbnApplySize(value)
+  let((fig plan zero delta)
+    fig = car(geGetSelSet(vbnWindow)) plan = vbnSizePlan(value)
+    if(!plan then
+      warn("Numeric Assist: select one edge/corner with native Stretch for absolute X/Y size.\n")
+      nil
+    else
+      zero = geEditToWindowPoint(vbnWindow 0:0)
+      delta = geEditToWindowPoint(vbnWindow list(cadr(plan) caddr(plan)))
+      vbnSetFormField(vbnForm~>DeltaXField vbnX(delta)-vbnX(zero))
+      vbnSetFormField(vbnForm~>DeltaYField vbnY(delta)-vbnY(zero))
+      evalstring(vbnForm~>submitXY~>_callback)
+      when(dbIsId(fig)
+        if(fig~>objType == "rect" then fig~>bBox = car(plan)
+        else when(cadddr(plan) fig~>points = cadddr(plan))))
+      t)
   )
 )
 
@@ -1439,18 +1708,20 @@ procedure(vbnSelectedSide(points flags axis middle fallback)
 
 procedure(vbnApplyDistance(value)
   let((direction dx dy)
-    direction = vbnDirection()
+    direction = vbnMotionDelta(value)
     if(!direction then
       warn("Numeric Assist: point from the command start toward the copy, move, or stretch direction.\n")
       nil
     else
-      dx = vbnSnap(value*car(direction))
-      dy = vbnSnap(value*cadr(direction))
+      dx = car(direction) dy = cadr(direction)
       if(vbnCommand == "Move" then
+        when(vbnForm~>moveCoordinates~>value vbnSetFormField(vbnForm~>moveCoordinates nil))
         vbnSetFormField(vbnForm~>moveXField dx)
         vbnSetFormField(vbnForm~>moveYField dy)
         evalstring(vbnForm~>submitXY2~>_callback)
       else if(vbnCommand == "Copy" then
+        unless(vbnForm~>leCopySpacingModeField~>value == "Pitch"
+          vbnSetFormField(vbnForm~>leCopySpacingModeField "Pitch"))
         vbnSetFormField(vbnForm~>copyXField dx)
         vbnSetFormField(vbnForm~>copyYField dy)
         evalstring(vbnForm~>copyApply~>_callback)
@@ -1503,7 +1774,8 @@ procedure(vbnApplyLength(value)
     start = vbnEnteredStartPoint()
     current = hiGetPoint(vbnWindow)
     selectedPoints = when(fig geGetSelSetFigPoint(fig))
-    if(length(selection) != 1 || !fig || !start || !current ||
+    if(vbnXYValuep(value) || (fig && fig~>objType == "rect") then vbnApplySize(value)
+    else if(length(selection) != 1 || !fig || !start || !current ||
        !member(t selectedPoints) ||
        !member(nil selectedPoints) then
       warn("Numeric Assist: select one edge or endpoint with native Stretch before confirming length.\n")
@@ -1550,7 +1822,7 @@ procedure(vbnApplyLength(value)
                                                    axis delta))
         ))
       t
-    ))
+    )))
   )
 )
 
@@ -1568,8 +1840,8 @@ procedure(vbnApplyMeasurement(value)
       warn("Numeric Assist: place the first measurement point before confirming.\n")
       nil
     else
-      target = vbnLinearTarget(start current current value)
-      if(!target then
+      target = vbnMeasurementTarget(start current value)
+      if(!target || equal(target start) then
         warn("Numeric Assist: point from the start toward the measurement direction.\n")
         nil
       else
@@ -1630,10 +1902,24 @@ procedure(vbnConfirmContour()
         else
           vbnContourSource~>bBox = target
           vbnRememberedNumber = vbnContourOffset
+          vbnRememberedXY = nil
           vbnStop(t)
           t))
     )
   )
+)
+
+procedure(vbnValidValue(value)
+  if(vbnXYValuep(value) then
+    vbnXYEnabled() &&
+      (vbnKind != 'length && vbnKind != 'rectSize ||
+       ((!numberp(car(value)) || car(value) >= 0.0) &&
+        (!numberp(cadr(value)) || cadr(value) >= 0.0))) &&
+      (vbnKind != 'rectSize ||
+       ((!numberp(car(value)) || car(value) > 0.0) &&
+        (!numberp(cadr(value)) || cadr(value) > 0.0)))
+  else numberp(value) &&
+    (vbnKind == 'position || (value >= 0.0 && (vbnKind == 'distance || value > 0.0))))
 )
 
 procedure(vbnConfirm()
@@ -1652,9 +1938,8 @@ procedure(vbnConfirm()
       vbnConfirmContour()
     else
       value = vbnCurrentValue()
-      if(!numberp(value) || value < 0.0 ||
-         (vbnKind != 'distance && value == 0.0) then
-        warn("Numeric Assist: enter a positive number.\n")
+      if(!vbnValidValue(value) then
+        warn("Numeric Assist: enter a valid number or X,Y pair; shape sizes must be positive.\n")
         nil
       else
         ok = cond(
@@ -1664,12 +1949,15 @@ procedure(vbnConfirm()
             t)
           (vbnKind == 'length vbnApplyLength(value))
           (vbnKind == 'measurement vbnApplyMeasurement(value))
+          (vbnKind == 'rectSize vbnApplyRectSize(value))
           (vbnKind == 'wire
             vbnSetFormField(vbnForm~>wireWidth value)
             t)
-          (vbnKind == 'distance vbnApplyDistance(value))
+          ((vbnKind == 'distance || vbnKind == 'position) vbnApplyDistance(value))
         )
-        when(ok vbnRememberedNumber = value)
+        when(ok
+          if(vbnXYValuep(value) then vbnRememberedXY = value
+          else vbnRememberedNumber = value vbnRememberedXY = nil))
         when(ok vbnStop(t))
         ok
       )
@@ -1710,7 +1998,7 @@ procedure(vbnStretchKind(selection)
 )
 
 procedure(vbnHotkey(shift)
-  let((win command kind form selection)
+  let((win command kind form selection input)
     when(vbnEnabled
     win = hiGetCurrentWindow()
     if(vbnActive && vbnKind == 'copyCount && win == vbnWindow then
@@ -1729,24 +2017,31 @@ procedure(vbnHotkey(shift)
       ((command == "Path") && !shift 'width)
       ((command == "Wire") && !shift 'wire)
       ((command == "Ruler") && !shift 'measurement)
+      ((command == "Rectangle") && !shift 'rectSize)
       ((command == "Stretch") && !shift vbnStretchKind(selection))
-      ((command == "Move" || command == "Copy") ||
-       ((command == "Stretch") && shift) 'distance)
+      ((command == "Move" || command == "Copy")
+        if(shift then 'position else 'distance))
+      ((command == "Stretch") && shift 'distance)
       ((shift && !command &&
         length(selection) == 1 && car(selection)~>objType == "rect")
         'contour)
       (t nil)
     )
     if(!kind then
-      warn("Numeric Assist: start Path, Wire, Measurement, Stretch, Move, Copy, or select one rectangle and press Shift+J for contour.\n")
+      warn("Numeric Assist: start Rectangle, Path, Wire, Measurement, Stretch, Move, Copy, or use Shift+J on one rectangle for contour.\n")
       nil
     else
       if(vbnActive && win == vbnWindow && kind == vbnKind then
         when(vbnKind == 'contour || vbnCurrentValue() vbnConfirm())
       else
-        when(vbnActive vbnStop())
+        when(vbnActive
+          when(win == vbnWindow && member(kind list('distance 'position)) &&
+               member(vbnKind list('distance 'position))
+            input = list(vbnDigits vbnEdges vbnCandidates vbnNumber vbnPrefilled))
+          vbnStop(nil input))
         form = hiGetCurrentForm()
         if((kind != 'contour && !form) ||
+           (command == "Rectangle" && form~>_formName != "Create Rectangle") ||
            (command == "Path" && form~>_formName != "Create Path") ||
            (command == "Wire" && form~>_formName != "Create Wire") ||
            (command == "Ruler" && form~>_formName != "Create Measurement") ||
@@ -1755,7 +2050,13 @@ procedure(vbnHotkey(shift)
            (command == "Copy" && form~>_formName != "Copy") then
           warn("Numeric Assist: native command form is unavailable.\n")
           nil
-        else vbnStart(kind))
+        else
+          vbnStart(kind)
+          when(input
+            vbnDigits = car(input) vbnEdges = cadr(input) vbnCandidates = caddr(input)
+            vbnNumber = cadddr(input) vbnPrefilled = nth(4 input)
+            vbnUpdateDisplay(t))
+          t)
       )
     )
     ))

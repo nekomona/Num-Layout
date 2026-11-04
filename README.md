@@ -7,21 +7,70 @@ See [test instructions](test/README.md) for isolated live checks.
 
 ## Use
 
-Start a native **Path**, **Wire**, **Measurement (K)**, **Stretch**, **Move**, or **Copy**
+Start a native **Rectangle**, **Path**, **Wire**, **Measurement (K)**, **Stretch**, **Move**, or **Copy**
 command, or select one rectangle to contour it.
 
 | Active command | Key | Confirmed number means |
 | --- | --- | --- |
 | Path | J | Width of the active path |
 | Wire | J | Width of the current wire segment |
+| Rectangle | J | Rectangle width/height; enter `X,Y` |
 | Measurement (K) | J | Length of a new two-point ruler |
 | Stretch | J | Final length for one selected edge/endpoint; displacement for a whole object or multiple objects |
 | Stretch | Shift+J | Stretch displacement magnitude |
 | Move | J | Move displacement magnitude |
-| Move | Shift+J | Move displacement magnitude |
-| Copy | J or Shift+J | Per-copy displacement magnitude; keeps the copy count |
+| Move | Shift+J | Absolute reference-point position |
+| Copy | J | Per-copy displacement; keeps the copy count |
+| Copy | Shift+J | Absolute position of the first copy's reference point |
 | Copy | N | Positive integer copy count; does not place copies |
 | One selected rectangle, no command | Shift+J | Start Contour |
+
+### X/Y input and absolute position
+
+In Move, Copy, Stretch, Measurement, and Rectangle, a comma switches input to
+`X,Y`. Each component accepts decimals and a leading minus. Backspace edits the
+text normally. A second comma or a second dot in the same component is ignored.
+
+| Context | `10,20` | `10,` | `,20` |
+| --- | --- | --- | --- |
+| J Move/Copy or relative Stretch | Delta X=10, Y=20 | Delta X=10, Y=0 | Delta X=0, Y=20 |
+| J partial Stretch size | Width=10, height=20 | Width=10; height unchanged | Height=20; width unchanged |
+| J Rectangle | Width=10, height=20 | Width=10; height unchanged | Height=20; width unchanged |
+| J Measurement | End point at start + (10,20) | Horizontal delta 10 | Vertical delta 20 |
+| Shift+J Move/Copy | Target position (10,20) | Target X=10; Y unchanged | Target Y=20; X unchanged |
+
+For **Shift+J Move/Copy**, the target is the native command's reference point.
+When no reference point is recorded, Numeric Assist uses the selected objects'
+combined bounding-box center. Coordinates use the displayed window's frame,
+including during edit-in-place. A **single number** changes only X or Y,
+selected by mouse direction from the reference point; the hint identifies the
+axis. Negative absolute coordinates are supported.
+
+Explicit X/Y components determine the edit without an angular snap constraint;
+the manufacturing grid still applies. Scalar relative distances retain the
+current orthogonal/45-degree/any-angle behavior. Switching J and Shift+J during
+Move/Copy keeps pending input, picked edges, and the copy count. In repeated
+Copy, the first target uses the commanded position, and later targets repeat
+the same displacement; every Step target is previewed.
+
+For **Rectangle drawing**, J before the first corner sets the native Specify
+Size fields for subsequent placement. After the first corner, J previews and
+completes the rectangle in the mouse's quadrant. An omitted dimension retains
+the existing native field or the current provisional rectangle extent. A
+single value selects an axis by mouse direction after the first corner; before
+the first corner it sets width.
+
+For **rectangle resizing**, use native partial Stretch to select an edge/corner,
+then J with a final width/height. The opposite side stays fixed. Whole-object
+or multiple-object Stretch retains relative displacement behavior; Shift+J
+Stretch also stays relative.
+
+Comma keeps the preceding number as X, including a prefilled or picked value.
+Clear it with Escape first when starting with an empty X. Picking after a comma
+fills Y without discarding X. Empty `,` cannot confirm. Size dimensions must be
+positive. N remains integer-only; Path/Wire widths and Contour offsets stay
+scalar. The last successful X/Y input is remembered for Cartesian modes;
+scalar modes keep their scalar memory.
 
 ### Copy count (N)
 
@@ -30,7 +79,7 @@ Backspace, then confirm with **Enter**, **Space**, **N** again, or a canvas clic
 The cursor label shows `COPY COUNT`. Decimal input is ignored; zero cannot be
 confirmed. N does not pick geometry or change the remembered J distance.
 Pressing **J** or **Shift+J** while N is open first applies the pending count,
-then opens displacement entry without placing copies. Invalid or empty count
+then opens relative or absolute entry without placing copies. Invalid or empty count
 input keeps N open for correction.
 
 Confirmation sets native **Copies → Type: Step → Number**, closes numeric
@@ -54,7 +103,7 @@ enterfunction binding; the normal N binding is not replaced.
 
 ### J number entry
 
-After the hotkey, type `0`–`9`, `.`, or Backspace. The current input and mode
+After the hotkey, type `0`–`9`, `.`, `,`, `-`, or Backspace as appropriate for the mode. The current input and mode
 appear next to the cursor. The result contour appears while a valid number is
 pending. Numeric Assist captures Virtuoso's physical dot binding during input
 and restores its original magnifier binding when the assist closes.
@@ -110,12 +159,12 @@ manufacturing grid, so diagonal lengths can have a small grid approximation.
 When editing descended group contents or an instance in place, the saved ruler
 uses the active edited cell's coordinates, keeping it at the requested position.
 
-For **Copy**, select objects and start native Copy. Press J or Shift+J, then
-enter or pick the displacement magnitude. The cursor direction follows the
+For **Copy**, select objects and start native Copy. Press J for relative input
+or Shift+J for absolute position. A scalar relative distance follows the
 Copy form's snap mode. If Copy has no entered reference point, Numeric Assist
 uses the center of the selected objects' combined bounding box as the direction
-origin. Confirmation uses the native Copy form's X/Y fields and Apply action,
-including its current Single, Step, or Array settings.
+origin. Confirmation uses the native Copy form's X/Y fields in Pitch mode and
+its Apply action, including the current Single, Step, or Array settings.
 
 ## Contour a rectangle
 

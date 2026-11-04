@@ -6,12 +6,12 @@ from datetime import datetime
 import json
 from pathlib import Path
 
-from virtuoso_bridge import VirtuosoClient
+from virtuoso_bridge import VirtuosoClient, SSHClient
 from virtuoso_bridge.virtuoso.layout import layout_create_rect
 
 
 def main():
-    c = VirtuosoClient.from_env()
+    c = VirtuosoClient.from_tunnel(SSHClient.from_env())
     lib = LIB
     stamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     top, leaf = 'VB_NUMERIC_GROUP_TOP_' + stamp, 'VB_NUMERIC_GROUP_LEAF_' + stamp
@@ -26,11 +26,12 @@ def main():
             raise AssertionError(row)
         return r.output
 
-    check('idle caller', 'list(vbnActive hiGetCurrentCmd(hiGetCurrentWindow()))', '(nil nil)')
+    check('idle caller', 'list(vbnActive when(hiGetCurrentWindow() hiGetCurrentCmd(hiGetCurrentWindow())))', '(nil nil)')
     for cell in (top, leaf):
         check('fresh ' + cell, f'ddGetObj("{lib}" "{cell}" "layout")', 'nil')
     check('save state', 'progn(vbnGroupTestOriginalWin=hiGetCurrentWindow() '
           'vbnGroupTestMemory=vbnRememberedNumber vbnGroupTestEnabled=vbnEnabled '
+          'vbnGroupTestXY=vbnRememberedXY vbnRememberedXY=nil '
           'vbnGroupTestWin=nil vbnEnabled=t t)', 't')
     try:
         with c.layout.create(lib, leaf) as lay:
@@ -108,6 +109,32 @@ def main():
               '((200.0 100.0) (200.0 120.0))')
         check('leaf source unchanged', 'list(length(vbnGroupTestLeaf~>shapes) '
               'car(vbnGroupTestLeaf~>shapes)~>bBox)', '(1 ((0.0 0.0) (8.0 3.0)))')
+        check('start partial Stretch inside rotated child',
+              'progn(when(hiGetCurrentCmd(vbnGroupTestWin) cancelEnterFun(hiGetCurrentForm())) '
+              'vbnGroupTestRect=car(vbnGroupTestLeaf~>shapes) '
+              'geDeselectAllFig(vbnGroupTestLeaf) '
+              'geSelectFigPoint(vbnGroupTestRect list(nil nil t nil)) '
+              'hiEnqueueCmd("leHiStretch(vbnGroupTestWin)"))', 't')
+        check('rotated Stretch reference', 'progn(addPoint(197:108) t)', 't')
+        check('XY size follows window axes in rotated EIP',
+              'let((savedCursor) savedCursor=getd(quote(vbnContourCursorPoint)) '
+              'unwindProtect(progn(putd(quote(vbnContourCursorPoint) lambda(() 190:120)) '
+              'vbnHotkey(nil) vbnDigits="10,20" vbnConfirm()) '
+              'putd(quote(vbnContourCursorPoint) savedCursor)))', 't')
+        check('rotated rectangle local dimensions', 'vbnGroupTestRect~>bBox',
+              '((0.0 0.0) (20.0 10.0))')
+        check('rotated rectangle window dimensions',
+              'let((vbnWindow) vbnWindow=vbnGroupTestWin vbnBoxToWindow(vbnGroupTestRect~>bBox))',
+              '((190.0 100.0) (200.0 120.0))')
+        check('start absolute Move in rotated child',
+              'progn(when(hiGetCurrentCmd(vbnGroupTestWin) cancelEnterFun(hiGetCurrentForm())) '
+              'geDeselectAllFig(vbnGroupTestLeaf) geSelectFig(vbnGroupTestRect) '
+              'hiEnqueueCmd("leHiMove(vbnGroupTestWin)"))', 't')
+        check('absolute Move uses displayed window coordinates',
+              'progn(vbnHotkey(t) vbnDigits="220,150" vbnConfirm())', 't')
+        check('absolute Move result in rotated window',
+              'let((vbnWindow) vbnWindow=vbnGroupTestWin vbnBoxToWindow(vbnGroupTestRect~>bBox))',
+              '((215.0 140.0) (225.0 160.0))')
         check('save only fresh cells', 'progn(dbSave(vbnGroupTestLeaf) dbSave(vbnGroupTestCv) t)', 't')
     finally:
         check('restore caller', 'progn(when(vbnActive vbnStop()) '
@@ -115,7 +142,8 @@ def main():
               'hiSetCurrentWindow(vbnGroupTestWin) '
               'when(hiGetCurrentCmd(vbnGroupTestWin) cancelEnterFun(hiGetCurrentForm())) '
               'leReturnToTop(vbnGroupTestWin)) '
-              'vbnRememberedNumber=vbnGroupTestMemory vbnEnabled=vbnGroupTestEnabled '
+              'vbnRememberedNumber=vbnGroupTestMemory vbnRememberedXY=vbnGroupTestXY '
+              'vbnEnabled=vbnGroupTestEnabled '
               'hiSetActionChecked(vbnAction vbnEnabled nil) '
               'when(member(vbnGroupTestOriginalWin hiGetWindowList()) '
               'hiSetCurrentWindow(vbnGroupTestOriginalWin)) t)', 't')

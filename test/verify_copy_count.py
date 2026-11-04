@@ -7,7 +7,7 @@ from datetime import datetime
 import json
 from pathlib import Path
 
-from virtuoso_bridge import VirtuosoClient
+from virtuoso_bridge import VirtuosoClient, SSHClient
 from virtuoso_bridge.virtuoso.layout import layout_create_rect
 
 
@@ -16,7 +16,7 @@ def main():
     parser.add_argument('--lib', default=LIB)
     parser.add_argument('--layer', default=LAYER)
     args = parser.parse_args()
-    c = VirtuosoClient.from_env()
+    c = VirtuosoClient.from_tunnel(SSHClient.from_env())
     cell = 'VB_NUMERIC_COPY_N_' + datetime.now().strftime('%Y%m%d_%H%M%S')
     checks = []
 
@@ -35,10 +35,11 @@ def main():
             raise AssertionError(row)
         return r.output
 
-    check('idle caller', 'list(vbnActive hiGetCurrentCmd(hiGetCurrentWindow()))', '(nil nil)')
+    check('idle caller', 'list(vbnActive when(hiGetCurrentWindow() hiGetCurrentCmd(hiGetCurrentWindow())))', '(nil nil)')
     check('fresh cell', f'ddGetObj("{args.lib}" "{cell}" "layout")', 'nil')
     check('save caller state', 'progn(vbnCopyVerifyOriginalWin=hiGetCurrentWindow() '
           'vbnCopyVerifyMemory=vbnRememberedNumber vbnCopyVerifyEnabled=vbnEnabled '
+          'vbnCopyVerifyXY=vbnRememberedXY vbnRememberedXY=nil '
           'vbnCopyVerifyNumber=leGetEnv("copyNumber") '
           'vbnCopyVerifyOrder=leGetEnv("copyOrder") '
           'vbnCopyVerifyWin=nil vbnCopyVerifyForm=nil '
@@ -122,7 +123,7 @@ def main():
         check('Shift-J commits pending N digits',
               'progn(vbnCountHotkey() vbnDigit("2") vbnHotkey(t) '
               'list(vbnKind hiGetCurrentForm()~>number~>value '
-              'length(vbnCopyVerifyCv~>shapes)))', '(distance 2 1)')
+              'length(vbnCopyVerifyCv~>shapes)))', '(position 2 1)')
         check('invalid N does not switch into J',
               'progn(vbnCountHotkey() vbnDigit("0") vbnHotkey(nil))', 'nil',
               warning='positive integer copy count')
@@ -199,7 +200,8 @@ def main():
               'vbnSetFormField(vbnCopyVerifyForm~>segSnapMode vbnCopyVerifySnapOriginal) '
               'vbnSetFormField(vbnCopyVerifyForm~>copyRecursive vbnCopyVerifyRecursive)) '
               'when(hiGetCurrentCmd(vbnCopyVerifyWin) cancelEnterFun(hiGetCurrentForm()))) '
-              'vbnRememberedNumber=vbnCopyVerifyMemory vbnEnabled=vbnCopyVerifyEnabled '
+              'vbnRememberedNumber=vbnCopyVerifyMemory vbnRememberedXY=vbnCopyVerifyXY '
+              'vbnEnabled=vbnCopyVerifyEnabled '
               'hiSetActionChecked(vbnAction vbnEnabled nil) '
               'leSetEnv("copyNumber" vbnCopyVerifyNumber) '
               'leSetEnv("copyOrder" vbnCopyVerifyOrder) '
