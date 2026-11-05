@@ -2,6 +2,7 @@
 
 import argparse
 from pathlib import Path
+import re
 
 from PIL import Image
 from playwright.sync_api import sync_playwright
@@ -10,12 +11,28 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def save_gif(paths, durations, destination):
+    # One palette avoids color flicker and permits compact frame deltas.
+    samples = Image.new("RGB", (64 * 10, 64 * ((len(paths) + 9) // 10)))
+    for index, path in enumerate(paths):
+        with Image.open(path) as image:
+            samples.paste(image.convert("RGB").resize((64, 64), Image.Resampling.NEAREST), ((index % 10) * 64, (index // 10) * 64))
+    # Preserve the exact highlight/text colors even when thin strokes are rare
+    # in the sampled images; averaged thumbnails would wash those colors out.
+    source = (ROOT / "docs/demo/app.js").read_text(encoding="utf-8") + (ROOT / "docs/demo/style.css").read_text(encoding="utf-8")
+    colors = sorted(set(re.findall(r"#[0-9a-fA-F]{6}\b", source)))
+    assert len(colors) < 128
+    count = 256 - len(colors)
+    palette = samples.quantize(colors=count)
+    entries = palette.getpalette()
+    for index, color in enumerate(colors, count):
+        entries[index * 3:index * 3 + 3] = bytes.fromhex(color[1:])
+    palette.putpalette(entries)
     frames = []
     for path in paths:
         with Image.open(path) as image:
-            frames.append(image.convert("RGB").quantize(colors=128))
+            frames.append(image.convert("RGB").quantize(palette=palette, dither=Image.Dither.NONE))
     frames[0].save(destination, save_all=True, append_images=frames[1:],
-                   duration=durations, loop=0, optimize=True, disposal=2)
+                   duration=durations, loop=0, optimize=True, disposal=1)
 
 
 def main():
@@ -45,14 +62,17 @@ def main():
             directory = scratch / name
             directory.mkdir(exist_ok=True)
             paths, durations = [], []
+            page.evaluate("id => NumericDemo.show(id, 0, {}, 0)", name)
+            timeline = page.evaluate("NumericDemo.timeline")
             for step in range(len(scene["steps"])):
-                for frame in range(6):
+                frame_count = (timeline[step]["duration"] + 99) // 100
+                for frame in range(frame_count + 1):
                     page.evaluate("([id, step, fraction]) => NumericDemo.show(id, step, {}, fraction)",
-                                  [name, step, frame / 5])
+                                  [name, step, frame / frame_count])
                     path = directory / f"{step:02d}-{frame:02d}.png"
                     page.locator("#capture").screenshot(path=path)
                     paths.append(path)
-                    durations.append(180 if frame < 5 else 550)
+                    durations.append(100)
             durations[-1] = 1500
             save_gif(paths, durations, output / f"{name}.gif")
             all_paths[name], all_durations[name] = paths, durations

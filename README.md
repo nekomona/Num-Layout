@@ -30,7 +30,7 @@ Contour, and **N** sets the Copy count.
 geometry. [Open the interactive lab](docs/demo/index.html) to change values and
 step through every tool. The self-contained site runs locally by opening its
 HTML file; [preview instructions](docs/numeric_assist_guide.md#interactive-demonstrations)
-are in the guide.
+and [GitHub Pages deployment](docs/PUBLISHING.md) are documented separately.
 
 ## The tools
 

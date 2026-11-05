@@ -31,6 +31,38 @@ def main():
             page.get_by_role("button", name="Reset").click()
             assert page.evaluate("NumericDemo.state.step") == 0
 
+        for scene, index in (("pick", 0), ("pick", 2), ("stretch", 0), ("contour", 1)):
+            pointers = []
+            for fraction in (0, 0.5, 0.6):
+                page.evaluate("([id, step, fraction]) => NumericDemo.show(id, step, {}, fraction)",
+                              [scene, index, fraction])
+                assert page.locator('[data-role="hover-highlight"]').count() == (1 if fraction >= 0.55 else 0)
+                pointer = page.locator('[data-role="pointer"]')
+                pointers.append((pointer.get_attribute("data-x"), pointer.get_attribute("data-y")))
+            assert pointers[0] != pointers[1] != pointers[2]
+
+        decimal = {"value": "2.345678"}
+        page.evaluate("data => NumericDemo.show('width', 1, data, 0)", decimal)
+        assert page.evaluate("NumericDemo.state.values.value") == 2.3457
+        assert page.locator("#field-value").input_value() == "2.3457"
+        phase = page.evaluate("NumericDemo.timeline[1]")
+        assert phase["input"] == "2.3457"
+        typed = ""
+        for event in phase["events"]:
+            page.evaluate("([data, fraction]) => NumericDemo.show('width', 1, data, fraction)",
+                          [decimal, (event["start"] + 60) / phase["duration"]])
+            assert page.locator("#input-strip").get_attribute("data-pressed") == event["key"]
+            assert page.locator(".keycap.pressed").inner_text() == event["key"]
+            if event["type"] == "character":
+                typed += event["character"]
+            assert page.locator(".typed-value").get_attribute("data-typed") == typed
+            page.evaluate("([data, fraction]) => NumericDemo.show('width', 1, data, fraction)",
+                          [decimal, (event["end"] + 20) / phase["duration"]])
+            assert page.locator(".keycap.pressed").count() == 0
+        page.evaluate("NumericDemo.show('move', 1, {value:'-1.23456,6.78909'}, 1)")
+        assert page.evaluate("NumericDemo.state.values.value") == [-1.2346, 6.7891]
+        assert page.locator("#field-value").input_value() == "-1.2346,6.7891"
+
         page.locator('[data-tool="move"]').click()
         page.wait_for_function("NumericDemo.state.tool === 'move'")
         page.locator("#field-value").fill("12,6")
@@ -79,6 +111,8 @@ def main():
         browser.close()
     print("Passed: nine tools, step/reset controls, input validation, relative/absolute Move,")
     print("Copy count, Contour direction, play/pause, deep links, guide and three viewport sizes.")
+    print("Animation checks: pointer arrival before highlights, key-down/key-up timing,")
+    print("character-by-character entry, and four-decimal rounding for scalar and signed X/Y values.")
 
 
 if __name__ == "__main__":

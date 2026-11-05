@@ -286,6 +286,15 @@ Then visit `http://127.0.0.1:8000/docs/demo/`. Choose a tool, change its value,
 and use **Play**, **Next step**, or the step buttons. Tool selections are
 bookmarkable, for example `index.html#copy` or `index.html#contour`.
 
+The animations move the pointer onto a target before revealing its hover
+highlight. Keycaps depress at each input event and numbers appear one character
+at a time. Decimal values entered in the demo are rounded to four decimal
+places; copy counts remain integers. These presentation rules apply to the
+illustrations and do not change the native plugin's numeric precision.
+
+For a hosted site, use the repository-independent
+[GitHub Pages deployment workflow](PUBLISHING.md).
+
 The scenes are interactive illustrations made with synthetic geometry. They
 explain input, preview, and confirmation; they do not execute SKILL or reproduce
 the Cadence UI. Coordinates use an idealized grid. Native snapping, hierarchy,

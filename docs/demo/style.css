@@ -1,4 +1,81 @@
 @charset "UTF-8";
+.input-strip {
+  height: 64px;
+  padding: 10px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-top: 1px solid #31424f;
+  background: #17232e;
+  overflow: hidden;
+  font:
+    12px Consolas,
+    monospace;
+}
+.input-label {
+  color: #95adbd;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+.key-history {
+  display: flex;
+  gap: 7px;
+  min-width: 0;
+  overflow: hidden;
+  padding: 4px 2px 7px;
+}
+.keycap {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 31px;
+  height: 29px;
+  padding: 0 9px;
+  white-space: nowrap;
+  color: #dce5ec;
+  background: #2b3d4b;
+  border: 1px solid #657384;
+  border-radius: 5px;
+  box-shadow: 0 4px 0 #0d1720;
+}
+.keycap.pressed {
+  transform: translateY(3px);
+  background: #7951ac;
+  border-color: #e989f1;
+  color: #fff;
+  box-shadow: 0 1px 0 #0d1720;
+}
+.typed-value {
+  margin-left: auto;
+  color: #f0c4f3;
+  font-size: 16px;
+  white-space: nowrap;
+}
+.typing-caret {
+  color: #eee2af;
+}
+@media (max-width: 650px) {
+  .input-strip {
+    height: 59px;
+    padding: 8px 10px;
+    gap: 8px;
+  }
+  .input-label {
+    font-size: 8px;
+  }
+  .keycap {
+    min-width: 24px;
+    height: 25px;
+    font-size: 10px;
+    padding: 0 5px;
+  }
+  .key-history {
+    gap: 4px;
+  }
+  .typed-value {
+    font-size: 12px;
+  }
+}
 :root {
   --paper: #f5f3ed;
   --ink: #202328;

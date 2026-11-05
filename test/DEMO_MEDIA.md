@@ -27,11 +27,20 @@ to the capture and check scripts. This avoids installing Playwright Chromium.
 `render_demos.py --only copy,contour` regenerates selected scenes. A full run
 also creates `overview.gif` from Width, Copy, and Contour.
 
-The exporter captures six screenshots per step, then assembles the frames
-with short pauses around each operation. Intermediate PNGs stay under ignored
+The exporter samples the same event timeline as the interactive player at ten
+frames per second, then assembles the frames with a pause after each complete
+demonstration. Pointer arrival precedes hover highlights; key presses and
+digit-by-digit input are captured at their scheduled times. Intermediate PNGs stay under ignored
 `artifacts/demo-frames/`. Only the reviewed GIFs are tracked in `docs/media/`.
 `tools/build_guide.py` generates the browser guide from the canonical Markdown
 document; regenerate it when the Markdown changes.
+
+The demo rounds decimal inputs to four places before playback. Browser checks
+verify this rounding, hover timing, individual input characters, and key-down
+and key-up states. This rounding is specific to the illustrative website.
+
+See [GitHub Pages deployment](../docs/PUBLISHING.md) for building and publishing
+the reviewed site and animations.
 
 ## Recording an actual Virtuoso session
 

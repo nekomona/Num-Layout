@@ -19,6 +19,8 @@ live input and do not require Virtuoso or an X server.
 For the documentation website, animation capture, and browser checks, see
 [DEMO_MEDIA.md](DEMO_MEDIA.md). These checks use synthetic geometry and run
 separately from the native plugin tests.
+The Pages artifact and deployment checks are described in
+[GitHub Pages deployment](../docs/PUBLISHING.md).
 
 ## Live environment
 
