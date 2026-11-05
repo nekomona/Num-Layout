@@ -84,13 +84,33 @@
             ></div>
             <div class="scene-caption">
               <span id="scene-phase"></span><strong id="scene-result"></strong>
+              <p id="scene-description"></p>
             </div>
           </div>
           <div class="transport">
             <button id="play" class="primary" type="button">▶ Play</button
             ><button id="next" type="button">Next step →</button
             ><button id="reset" type="button" class="quiet">↺ Reset</button
-            ><span class="step-counter" id="step-counter"></span>
+            ><button
+              id="loop"
+              type="button"
+              aria-pressed="true"
+              title="Wait 3 seconds between loops"
+            >
+              ↻ Loop on
+            </button>
+            <label class="speed-label" for="speed"
+              >Speed
+              <select id="speed">
+                <option value="0.25">0.25×</option>
+                <option value="0.5">0.5×</option>
+                <option value="1" selected>1×</option>
+                <option value="1.5">1.5×</option>
+                <option value="2">2×</option>
+                <option value="3">3×</option>
+              </select>
+            </label>
+            <span class="step-counter" id="step-counter"></span>
           </div>
           <div class="steps" id="steps" aria-label="Demonstration steps"></div>
         </div>
@@ -99,7 +119,11 @@
           <form id="settings" novalidate>
             <div id="fields"></div>
             <p id="error" class="error" role="alert"></p>
-            <button type="submit" class="apply">Update preview ↗</button>
+            <button type="submit" class="apply">Apply &amp; replay ↗</button>
+            <p class="field-hint">
+              Changes replay automatically: choose an option, press Enter, leave
+              the input, or pause typing for 3 seconds.
+            </p>
           </form>
           <div class="readout">
             <p class="panel-heading">WHAT HAPPENS</p>

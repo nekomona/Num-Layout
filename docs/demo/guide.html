@@ -322,11 +322,24 @@ directly, or serve the repository locally:</p>
 <pre><code class="language-sh">python -m http.server 8000 --bind 127.0.0.1
 </code></pre>
 <p>Then visit <code>http://127.0.0.1:8000/docs/demo/</code>. Choose a tool, change its value,
-and use <strong>Play</strong>, <strong>Next step</strong>, or the step buttons. Tool selections are
+and use <strong>Play / Pause</strong>, <strong>Next step</strong>, or the step buttons. Tool selections are
 bookmarkable, for example <code>index.html#copy</code> or <code>index.html#contour</code>.</p>
+<p>Choosing a tool starts its animation from the beginning with <strong>Loop</strong> enabled.
+Use <strong>Speed</strong> (0.25×–3×) to adjust playback without losing your place, or toggle
+<strong>Loop</strong> off to play once. Each loop waits three seconds after completion;
+this wait stays three seconds at every playback speed. The pointer starts in
+empty space and returns there as the last action of the final step. The action
+bar then reads <strong>Done.</strong></p>
+<p><strong>Try a value</strong> replays automatically after a dropdown choice, Enter, leaving an
+input, or three seconds without typing. Valid decimal inputs are normalized
+before replay; invalid inputs show an error and keep the last valid values.
+<strong>Apply &amp; replay</strong> also starts over with the current values.</p>
 <p>The animations move the pointer onto a target before revealing its hover
 highlight. Keycaps depress at each input event and numbers appear one character
-at a time. Decimal values entered in the demo are rounded to four decimal
+at a time, 260 ms apart at 1× speed. Clicks and command keys leave at least
+1.2 seconds to inspect the result before the next action. Cursor balloons use
+the plugin's actual label text; explanations appear in the panel's bottom bar.
+Decimal values entered in the demo are rounded to four decimal
 places; copy counts remain integers. These presentation rules apply to the
 illustrations and do not change the native plugin's numeric precision.</p>
 <p>For a hosted site, use the repository-independent

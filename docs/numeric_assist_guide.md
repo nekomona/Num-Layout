@@ -283,12 +283,27 @@ python -m http.server 8000 --bind 127.0.0.1
 ```
 
 Then visit `http://127.0.0.1:8000/docs/demo/`. Choose a tool, change its value,
-and use **Play**, **Next step**, or the step buttons. Tool selections are
+and use **Play / Pause**, **Next step**, or the step buttons. Tool selections are
 bookmarkable, for example `index.html#copy` or `index.html#contour`.
+
+Choosing a tool starts its animation from the beginning with **Loop** enabled.
+Use **Speed** (0.25×–3×) to adjust playback without losing your place, or toggle
+**Loop** off to play once. Each loop waits three seconds after completion;
+this wait stays three seconds at every playback speed. The pointer starts in
+empty space and returns there as the last action of the final step. The action
+bar then reads **Done.**
+
+**Try a value** replays automatically after a dropdown choice, Enter, leaving an
+input, or three seconds without typing. Valid decimal inputs are normalized
+before replay; invalid inputs show an error and keep the last valid values.
+**Apply & replay** also starts over with the current values.
 
 The animations move the pointer onto a target before revealing its hover
 highlight. Keycaps depress at each input event and numbers appear one character
-at a time. Decimal values entered in the demo are rounded to four decimal
+at a time, 260 ms apart at 1× speed. Clicks and command keys leave at least
+1.2 seconds to inspect the result before the next action. Cursor balloons use
+the plugin's actual label text; explanations appear in the panel's bottom bar.
+Decimal values entered in the demo are rounded to four decimal
 places; copy counts remain integers. These presentation rules apply to the
 illustrations and do not change the native plugin's numeric precision.
 

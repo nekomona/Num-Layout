@@ -32,12 +32,6 @@
           ["length", "One edge length"],
         ]),
       ],
-      steps: ["Hover an edge", "Pick its length", "Choose the value"],
-      explanations: [
-        "The edge under the cursor turns yellow. These rectangles are synthetic examples.",
-        "The first selected edge turns magenta. Its length becomes the numeric input.",
-        "A second parallel edge changes the value to spacing. With a single edge, keep its length instead.",
-      ],
     },
     {
       id: "width",
@@ -48,12 +42,6 @@
         "Set the width while a native Path or Wire command is active. See the new contour before confirming.",
       anchor: "j-number-entry",
       fields: [numeric("value", "Width", 2, 0.2, 5, "Scene range: 0.2–5 µm")],
-      steps: ["Start a wire", "Enter a width", "Confirm"],
-      explanations: [
-        "Start the native command. This example begins with a narrow provisional segment.",
-        "Press J and enter or pick a width. The magenta contour previews the pending value.",
-        "Confirmation updates the width. Native Wire remains active for subsequent points.",
-      ],
     },
     {
       id: "rectangle",
@@ -71,12 +59,6 @@
           hint: "Scene range: width 2–28, height 2–15 µm",
         },
       ],
-      steps: ["Place a corner", "Enter X,Y", "Confirm"],
-      explanations: [
-        "Place the first corner with native Rectangle. The illustration fixes the upper-right quadrant.",
-        "Press J and enter width,height. Both dimensions appear in the preview.",
-        "Confirm to complete the rectangle. In the real tool, omitted dimensions retain the context-specific extent.",
-      ],
     },
     {
       id: "measure",
@@ -89,12 +71,6 @@
       fields: [
         numeric("value", "Ruler length", 20, 4, 35, "Scene range: 4–35 µm"),
       ],
-      steps: ["Place the start", "Set the length", "Save the ruler"],
-      explanations: [
-        "Start Measurement with K and place the first point. The scene uses a horizontal direction.",
-        "Press J, then type or pick a length. The line previews the second endpoint.",
-        "Confirm to save the ruler and finish Measurement. Diagonal lengths can be approximated by the manufacturing grid.",
-      ],
     },
     {
       id: "stretch",
@@ -106,12 +82,6 @@
       anchor: "j-number-entry",
       fields: [
         numeric("value", "Final X extent", 18, 4, 28, "Scene range: 4–28 µm"),
-      ],
-      steps: ["Select an edge", "Set final size", "Confirm"],
-      explanations: [
-        "Use native partial Stretch to select the right edge. The left edge is the fixed boundary.",
-        "Press J and enter the final X extent. The magenta contour shows the resized rectangle.",
-        "The final width is applied. Whole-object or multiple-object Stretch uses displacement instead; Shift+J is also relative.",
       ],
     },
     {
@@ -133,12 +103,6 @@
           value: "12,6",
           hint: "Relative: −8–20, −7–10. Absolute: 4–36, 3–20 µm.",
         },
-      ],
-      steps: ["Choose a reference", "Enter X,Y", "Confirm"],
-      explanations: [
-        "The cross marks this example's reference point at (10, 9). Native commands may use a different selected reference.",
-        "J interprets X,Y as a delta. Shift+J interprets it as the target position of the reference point.",
-        "Confirm to place the geometry at the target. The selected reference point, rather than a particular corner, defines the position.",
       ],
     },
     {
@@ -168,13 +132,6 @@
           "Scene range: 5–10 µm; direction is horizontal",
         ),
       ],
-      steps: ["Start Copy", "Set N", "Set J distance", "Place copies"],
-      explanations: [
-        "Select the source and start native Copy. The source remains in place.",
-        "Press N and confirm a positive integer. This sets the Step copy count without placing anything.",
-        "Transfer to J and enter the displacement. Each target is a successive multiple of the same pitch.",
-        "Confirm J to place the copies. The copy count resets after placement; entering or canceling the assist also resets it.",
-      ],
     },
     {
       id: "contour",
@@ -190,13 +147,6 @@
           ["outside", "Outside"],
           ["inside", "Inside"],
         ]),
-      ],
-      steps: ["Enter offset", "Pick pivot", "Choose a side", "Confirm"],
-      explanations: [
-        "Select one rectangle with no command active and press Shift+J. Enter a positive offset.",
-        "Choose a pivot rectangle or four bounding edges, then press Enter or Space. This example uses the source boundary itself.",
-        "Move inside or outside to preview the result. This demo's selector stands in for that pointer direction.",
-        "Confirm to resize the source. In Virtuoso, an inset that collapses a dimension is rejected.",
       ],
     },
     {
@@ -218,21 +168,24 @@
           1,
         ),
       ],
-      steps: ["Inspect the layout", "Use cleanup", "Objects removed"],
-      explanations: [
-        "Steiners are normally invisible. Crossed markers reveal their synthetic positions in this illustration.",
-        "Use the routing-node and broom toolbar action in an editable layout. It also works while Numeric Assist is toggled off.",
-        "The objects are removed and their count is reported in CIW. Shapes stay in place and the cellview is not saved automatically.",
-      ],
     },
   ];
+  const exporting = new URLSearchParams(location.search).has("export");
+  const LOOP_WAIT = 3000;
+  const ACTION_HOLD = 1200;
   let tool = tools[1],
     step = 0,
-    progress = 1,
+    progress = 0,
     values = {},
     playing = false,
     timer = 0,
-    started = 0;
+    lastTick = 0,
+    position = 0,
+    speed = 1,
+    loop = true,
+    holding = false,
+    holdElapsed = 0,
+    inputTimer = 0;
   const C = {
     bg: "#17232e",
     grid: "#283946",
@@ -291,41 +244,314 @@
       line(X(x), Y(y) - 6, X(x), Y(y) + 6, color)
     );
   }
-  function cursor(x, y, label, color = C.magenta) {
+  function cursor(x, y, label = "", color = C.magenta) {
     const a = X(x),
       b = Y(y);
     const width = label.length * 8 + 20;
     const labelX = Math.min(Math.max(18, a + 20), 880 - width);
     const labelY = Math.max(34, b - 28);
-    return `<path data-role="pointer" data-x="${x}" data-y="${y}" d="M${a} ${b}l0 22 6-6 5 10 5-2-5-10 9-1Z" fill="#f7f2e3" stroke="${C.bg}" stroke-width="2"/><rect x="${labelX}" y="${labelY - 20}" width="${width}" height="30" rx="4" fill="#243643" stroke="${color}"/>${text(labelX + 10, labelY + 1, label, color, 13)}`;
+    return `<path data-role="pointer" data-x="${x}" data-y="${y}" d="M${a} ${b}l0 22 6-6 5 10 5-2-5-10 9-1Z" fill="#f7f2e3" stroke="${C.bg}" stroke-width="2"/>${label ? `<g data-role="balloon"><rect x="${labelX}" y="${labelY - 20}" width="${width}" height="30" rx="4" fill="#243643" stroke="${color}"/>${text(labelX + 10, labelY + 1, label, color, 13)}</g>` : ""}`;
   }
   function base() {
     return `<defs><pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M30 0H0V30" fill="none" stroke="${C.grid}" stroke-width=".75"/></pattern></defs><rect width="900" height="460" fill="${C.bg}"/><rect x="30" y="25" width="840" height="395" fill="url(#grid)"/>${line(60, 380, 850, 380, "#3b505f", 1)}${line(90, 410, 90, 45, "#3b505f", 1)}${text(48, 407, "0", C.faint, 11)}${text(849, 403, "X", C.faint, 11)}${text(74, 40, "Y", C.faint, 11)}${text(830, 443, "µm", C.faint, 11)}${[10, 20, 30, 40].map((n) => text(X(n), 399, String(n), C.faint, 11, "middle")).join("")}`;
   }
-  function phaseSpec(index = step) {
-    let hotkey = "",
-      input = null,
-      confirm = false,
-      events = [];
-    const valueText = Array.isArray(values.value)
-      ? values.value.map(f).join(",")
-      : f(values.value ?? 0);
+  const HOME = [44, 2];
+  const phase = (id, title, description, point, extra = {}) => ({
+    id,
+    title,
+    description,
+    point,
+    ...extra,
+  });
+  const plans = {
+    pick: [
+      phase(
+        "start",
+        "Start Stretch",
+        "S → click the lower edge of the small rectangle at upper right.",
+        [39, 16],
+        { key: "S", select: true },
+      ),
+      phase(
+        "activate",
+        "Start J",
+        "J starts numeric entry for the selected Stretch edge.",
+        [39, 16],
+        { key: "J" },
+      ),
+      phase(
+        "first",
+        "Pick an edge",
+        "Move onto an edge, then click to use its length in the Stretch preview.",
+        [17, 9],
+        { select: true, hover: true },
+      ),
+      phase(
+        "second",
+        "Choose the value",
+        "Pick a second parallel edge for spacing, or keep the first edge's length.",
+        [17, 12],
+        { select: true, hover: true },
+      ),
+      phase(
+        "confirm",
+        "Apply dimension",
+        "Enter applies the picked dimension to the rectangle being stretched.",
+        [17, 12],
+        { confirm: true },
+      ),
+    ],
+    width: [
+      phase(
+        "start",
+        "Start Path",
+        "P → click the short path to pick it up and extend it.",
+        [5, 10],
+        { key: "P", select: true },
+      ),
+      phase(
+        "aim",
+        "Pull a segment",
+        "Pull right to preview a narrow path segment before setting its width.",
+        [31, 10],
+      ),
+      phase(
+        "input",
+        "Enter width",
+        "J → type the width. The entire extended path changes width, including the original segment.",
+        [31, 10],
+        { input: "value", key: "J" },
+      ),
+      phase(
+        "confirm",
+        "Apply width",
+        "Enter applies the width; native Path remains active for the next point.",
+        [31, 10],
+        { confirm: true },
+      ),
+    ],
+    rectangle: [
+      phase(
+        "start",
+        "Start Rectangle",
+        "R → click the first corner of the new rectangle.",
+        [8, 4],
+        { key: "R", select: true },
+      ),
+      phase(
+        "aim",
+        "Pull the corner",
+        "Move into the upper-right quadrant to preview the rectangle.",
+        [18, 10],
+      ),
+      phase(
+        "input",
+        "Enter X,Y",
+        "J → type width,height, one character at a time.",
+        [18, 10],
+        { input: "value", key: "J" },
+      ),
+      phase(
+        "confirm",
+        "Complete rectangle",
+        "Enter confirms both dimensions and completes the rectangle.",
+        [18, 10],
+        { confirm: true },
+      ),
+    ],
+    measure: [
+      phase(
+        "start",
+        "Start Measurement",
+        "K → click the starting point. No ruler exists before this click.",
+        [5, 10],
+        { key: "K", select: true },
+      ),
+      phase(
+        "aim",
+        "Choose direction",
+        "Pull the mouse right to give the new ruler a horizontal direction.",
+        [14, 10],
+      ),
+      phase(
+        "input",
+        "Enter length",
+        "J → type the length to preview an exact second endpoint.",
+        [14, 10],
+        { input: "value", key: "J" },
+      ),
+      phase(
+        "confirm",
+        "Save ruler",
+        "Enter saves the two-point ruler and finishes Measurement.",
+        [14, 10],
+        { confirm: true },
+      ),
+    ],
+    stretch: [
+      phase(
+        "start",
+        "Start Stretch",
+        "S → click the right edge. The opposite edge stays fixed.",
+        [17, 9.5],
+        { key: "S", select: true, hover: true },
+      ),
+      phase(
+        "input",
+        "Set final size",
+        "J → type the final X extent to resize the selected edge.",
+        [17, 9.5],
+        { input: "value", key: "J" },
+      ),
+      phase(
+        "confirm",
+        "Apply size",
+        "Enter applies the final extent. Whole-object Stretch instead uses displacement.",
+        [17, 9.5],
+        { confirm: true },
+      ),
+    ],
+    move: [
+      phase(
+        "start",
+        "Start Move",
+        "M → click the object. This scene uses its center as the reference point.",
+        [10, 9],
+        { key: "M", select: true },
+      ),
+      phase(
+        "input",
+        "Enter X,Y",
+        "J sets a relative delta; Shift+J sets an absolute reference-point position.",
+        [10, 9],
+        { input: "value", key: "J" },
+      ),
+      phase(
+        "confirm",
+        "Place object",
+        "Enter places the object at the previewed reference-point position.",
+        [10, 9],
+        { confirm: true },
+      ),
+    ],
+    copy: [
+      phase(
+        "start",
+        "Start Copy",
+        "C → click the first object. The source stays in place.",
+        [5, 10.5],
+        { key: "C", select: true },
+      ),
+      phase(
+        "aim",
+        "Pull a preview",
+        "Pull right to show the initial native Copy preview before pressing N.",
+        [12, 10.5],
+      ),
+      phase(
+        "count",
+        "Set count",
+        "N → type a positive integer → Enter. No copies are placed yet.",
+        [12, 10.5],
+        { input: "count", key: "N", confirm: true },
+      ),
+      phase(
+        "input",
+        "Set pitch",
+        "J → type the per-copy displacement to preview every Step target.",
+        [12, 10.5],
+        { input: "value", key: "J" },
+      ),
+      phase(
+        "confirm",
+        "Place copies",
+        "Enter places the copies at successive multiples of the pitch.",
+        [12, 10.5],
+        { confirm: true },
+      ),
+    ],
+    contour: [
+      phase(
+        "start",
+        "Select rectangle",
+        "Select one rectangle with no native drawing command active.",
+        [20, 10],
+        { select: true },
+      ),
+      phase(
+        "input",
+        "Enter offset",
+        "Shift+J → type a positive offset → Enter to choose a pivot.",
+        [34, 20],
+        { input: "value", key: "Shift+J", confirm: true },
+      ),
+      phase(
+        "pivot",
+        "Pick pivot",
+        "Shift+J selects a pivot rectangle. You can also pick four bounding edges with J.",
+        [20, 15],
+        { key: "Shift+J", select: true, confirm: true, hover: true },
+      ),
+      phase(
+        "side",
+        "Choose side",
+        "Move inside or outside the pivot to choose the contour direction.",
+        [34, 18],
+      ),
+      phase(
+        "confirm",
+        "Resize rectangle",
+        "Enter resizes the selected rectangle around the chosen pivot.",
+        [34, 18],
+        { confirm: true },
+      ),
+    ],
+    cleanup: [
+      phase(
+        "start",
+        "Inspect layout",
+        "Steiner objects are normally invisible; markers reveal them here for explanation.",
+        HOME,
+      ),
+      phase(
+        "cleanup",
+        "Use cleanup",
+        "Click the routing-node and broom toolbar action in an editable layout.",
+        [39, 20],
+        { key: "Cleanup", select: true },
+      ),
+      phase(
+        "confirm",
+        "Objects removed",
+        "CIW reports the removed count. Drawn shapes remain; the cellview is not saved.",
+        [39, 20],
+      ),
+    ],
+  };
+  for (const item of tools) {
+    item.phases = plans[item.id];
+    item.steps = item.phases.map((p) => p.title);
+    item.explanations = item.phases.map((p) => p.description);
+  }
+  function pointAt(index) {
+    const p = tool.phases[index];
+    if (!p) return HOME;
     if (
-      ["width", "rectangle", "measure", "stretch", "move"].includes(tool.id) &&
-      index === 1
-    ) {
-      hotkey =
-        tool.id === "move" && values.mode === "absolute" ? "Shift+J" : "J";
-      input = valueText;
-    } else if (tool.id === "copy" && (index === 1 || index === 2)) {
-      hotkey = index === 1 ? "N" : "J";
-      input = index === 1 ? String(values.count) : valueText;
-      confirm = index === 1;
-    } else if (tool.id === "contour" && index === 0) {
-      hotkey = "Shift+J";
-      input = valueText;
-      confirm = true;
-    }
+      tool.id === "pick" &&
+      values.kind === "length" &&
+      ["second", "confirm"].includes(p.id)
+    )
+      return [17, 9];
+    if (
+      tool.id === "contour" &&
+      ["side", "confirm"].includes(p.id) &&
+      values.side === "inside"
+    )
+      return [24, 11];
+    return p.point;
+  }
+  function phaseSpec(index = step) {
+    const p = tool.phases[index];
     const event = (key, start, type = "key", character = "") => ({
       key,
       start,
@@ -333,36 +559,74 @@
       type,
       character,
     });
-    let duration = 1900;
-    if (input !== null) {
-      events.push(event(hotkey, 180));
+    const key =
+      tool.id === "move" && p.input && values.mode === "absolute"
+        ? "Shift+J"
+        : p.key;
+    let duration = 1900,
+      events = [],
+      input = null;
+    const from = pointAt(index - 1),
+      to = pointAt(index);
+    const moving = from.some((value, axis) => value !== to[axis]);
+    const moveStart =
+      moving && key && !p.input && key !== "Cleanup"
+        ? 180 + 180 + ACTION_HOLD
+        : 0;
+    const moveDuration = moving ? 1000 : 0;
+    if (p.input) {
+      const value = values[p.input];
+      input = Array.isArray(value) ? value.map(f).join(",") : f(value);
+      const keyAt = moving ? moveDuration + 300 : 180;
+      const firstDigit = keyAt + 180 + ACTION_HOLD;
+      events.push(event(key, keyAt));
       [...input].forEach((character, i) =>
-        events.push(event(character, 550 + i * 260, "character", character)),
+        events.push(
+          event(character, firstDigit + i * 260, "character", character),
+        ),
       );
-      const end = 550 + input.length * 260;
-      if (confirm) events.push(event("Enter", end + 200, "confirm"));
-      duration = end + (confirm ? 850 : 550);
-    } else if (tool.id === "pick") {
-      if (index === 1) events.push(event("Click", 300, "select"));
-      if (index === 2 && values.kind === "spacing")
-        events.push(event("Click", 1400, "select"));
-    } else if (tool.id === "contour" && index === 1) {
-      events = [
-        event("Shift+J", 120),
-        event("Click", 1700, "select"),
-        event("Enter", 2150, "confirm"),
-      ];
-      duration = 2700;
-    } else if (tool.id === "cleanup") {
-      if (index === 1) events.push(event("Cleanup", 1250, "select"));
-    } else if (index === tool.steps.length - 1) {
-      events.push(event("Enter", 350, "confirm"));
-    } else if (index === 0) {
-      if (tool.id === "measure") events.push(event("K", 180));
-      if (["rectangle", "measure", "stretch", "move", "copy"].includes(tool.id))
-        events.push(event("Click", 1250, "select"));
+      if (p.confirm)
+        events.push(event("Enter", events.at(-1).end + ACTION_HOLD, "confirm"));
+      duration = events.at(-1).end + ACTION_HOLD;
+    } else {
+      if (key && key !== "Cleanup") events.push(event(key, 180));
+      const skipPick =
+        tool.id === "pick" && p.id === "second" && values.kind === "length";
+      if (p.select && !skipPick)
+        events.push(
+          event(
+            key === "Cleanup" ? "Cleanup" : "Click",
+            moveStart + moveDuration + 300,
+            "select",
+          ),
+        );
+      if (p.confirm) {
+        events.push(
+          event(
+            "Enter",
+            p.select ? events.at(-1).end + ACTION_HOLD : 350,
+            "confirm",
+          ),
+        );
+      }
+      duration =
+        Math.max(moveStart + moveDuration, events.at(-1)?.end || 0) +
+        ACTION_HOLD;
+      if (!moving && !events.length) duration = 1900;
     }
-    return { duration, events, input };
+    const returnStart = index === tool.phases.length - 1 ? duration : null;
+    if (returnStart !== null) duration += 1400;
+    return {
+      ...p,
+      duration,
+      events,
+      input,
+      from,
+      to,
+      moveStart,
+      moveDuration,
+      returnStart,
+    };
   }
   function phaseState() {
     const spec = phaseSpec(),
@@ -371,460 +635,325 @@
     return {
       ...spec,
       time,
+      arrived: time >= spec.moveStart + spec.moveDuration,
+      finished: spec.returnStart !== null && time >= spec.returnStart,
       typed: occurred
         .filter((event) => event.type === "character")
         .map((event) => event.character)
         .join(""),
       pressed: occurred.findLast((event) => time < event.end)?.key || "",
+      activated: occurred.some((event) => event.type === "key"),
       selected: occurred.some((event) => event.type === "select"),
       confirmed: occurred.some((event) => event.type === "confirm"),
     };
   }
   function renderInput(animation) {
-    const occurred = animation.events.filter(
-      (event) => animation.time >= event.start,
-    );
-    const recent = occurred.slice(-6);
-    const pointerPhase =
-      (tool.id === "pick" && step !== 1) ||
-      (tool.id === "stretch" && step === 0) ||
-      (tool.id === "contour" && step === 1);
-    const hint =
-      animation.input !== null
-        ? "INPUT"
-        : recent.length
-          ? "ACTION"
-          : pointerPhase
-            ? "POINTER"
-            : "READY";
-    const idle = pointerPhase
-      ? progress >= 0.55
-        ? "Target reached"
-        : "Move to target"
-      : tool.id === "contour" && step === 2
-        ? values.side + " preview"
-        : tool.id === "cleanup"
-          ? "Inspect geometry"
-          : "Native command active";
-    const typed =
-      animation.input !== null
-        ? animation.typed
-        : recent.length
-          ? recent.at(-1).key
-          : idle;
+    const recent = animation.events
+      .filter((event) => animation.time >= event.start)
+      .slice(-8);
+    const currentAction = animation.finished
+      ? "Done."
+      : animation.input !== null
+        ? animation.typed || " "
+        : recent.at(-1)?.key || animation.title;
     $("input-strip").innerHTML =
-      `<span class="input-label">${hint}</span><div class="key-history">${recent.map((event) => `<span class="keycap ${animation.time < event.end ? "pressed" : ""}">${esc(event.key)}</span>`).join("")}</div><span class="typed-value" data-typed="${esc(animation.typed)}">${esc(typed || " ")}<span class="typing-caret">${animation.input !== null && animation.typed !== animation.input ? "▏" : ""}</span></span>`;
+      `<span class="input-label">${animation.input !== null ? "INPUT" : "ACTION"}</span><div class="key-history">${recent.map((event) => `<span class="keycap ${animation.time < event.end ? "pressed" : ""}">${esc(event.key)}</span>`).join("")}</div><span class="typed-value" data-typed="${esc(animation.typed)}">${esc(currentAction)}<span class="typing-caret">${animation.input !== null && animation.typed !== animation.input ? "▏" : ""}</span></span>`;
     $("input-strip").dataset.pressed = animation.pressed;
   }
   function approach(from, to, fraction) {
-    const t = Math.max(0, Math.min(1, fraction / 0.55));
-    const eased = t * t * (3 - 2 * t);
+    const t = Math.max(0, Math.min(1, fraction)),
+      eased = t * t * (3 - 2 * t);
     return [
       from[0] + (to[0] - from[0]) * eased,
       from[1] + (to[1] - from[1]) * eased,
     ];
   }
   function geometry() {
-    const animation = phaseState(),
-      q = Math.max(0, Math.min(1, progress));
-    const finalStep = step === tool.steps.length - 1;
+    const a = phaseState(),
+      id = a.id,
+      point = a.finished
+        ? approach(a.to, HOME, (a.time - a.returnStart) / 1400)
+        : approach(
+            a.from,
+            a.to,
+            a.moveDuration ? (a.time - a.moveStart) / a.moveDuration : 1,
+          );
+    const index = (name) => tool.phases.findIndex((p) => p.id === name);
+    const after = (name) => index(name) >= 0 && step > index(name);
     const done =
-      finalStep &&
-      (!animation.events.some((event) => event.type === "confirm") ||
-        animation.confirmed);
+      after("confirm") || (id === "confirm" && (!a.confirm || a.confirmed));
+    const selected = after("start") || a.selected;
+    const startedInput = after("input") || (id === "input" && a.activated);
+    const entry =
+      id === "input" || id === "count"
+        ? a.typed
+        : Array.isArray(values.value)
+          ? values.value.map(f).join(",")
+          : f(values.value ?? 0);
     let v = values.value,
       n = values.count,
       hasInput = true;
-    if (animation.input !== null) {
+    if (a.input !== null) {
       if (Array.isArray(v)) {
-        const parts = animation.typed.split(","),
-          x = Number(parts[0]);
-        hasInput = parts[0].trim() !== "" && Number.isFinite(x);
-        const fallbackY =
-          tool.id === "rectangle" ? 6 : values.mode === "absolute" ? 9 : 0;
-        const y =
-          parts.length > 1 &&
-          parts[1].trim() &&
-          Number.isFinite(Number(parts[1]))
-            ? Number(parts[1])
-            : fallbackY;
-        v = [
-          hasInput
-            ? x
-            : tool.id === "rectangle"
-              ? 10
-              : values.mode === "absolute"
-                ? 10
-                : 0,
-          y,
-        ];
-        if (tool.id === "rectangle" && (v[0] <= 0 || v[1] <= 0))
+        const parts = a.typed.split(",");
+        const fallback =
+          tool.id === "rectangle"
+            ? [10, 6]
+            : values.mode === "absolute"
+              ? [10, 9]
+              : [0, 0];
+        v = fallback.map((value, i) =>
+          parts[i]?.trim() && Number.isFinite(Number(parts[i]))
+            ? Number(parts[i])
+            : value,
+        );
+        hasInput = !!parts[0]?.trim() && Number.isFinite(Number(parts[0]));
+        if (tool.id === "rectangle" && v.some((value) => value <= 0))
           hasInput = false;
       } else {
-        const number = Number(animation.typed);
-        hasInput =
-          animation.typed.trim() !== "" &&
-          Number.isFinite(number) &&
-          number > 0;
-        if (tool.id === "copy" && step === 1) n = hasInput ? number : 1;
+        const number = Number(a.typed);
+        hasInput = !!a.typed.trim() && Number.isFinite(number) && number > 0;
+        if (id === "count") n = hasInput ? number : 1;
         else
           v = hasInput
             ? number
-            : tool.id === "width"
-              ? 0.6
-              : tool.id === "stretch"
-                ? 10
-                : tool.id === "measure"
-                  ? 9
-                  : 0;
+            : { width: 0.6, stretch: 10, measure: 9 }[tool.id] || 0;
       }
     }
-    const entry =
-      animation.input !== null
-        ? animation.typed || "▏"
-        : Array.isArray(v)
-          ? v.map(f).join(",")
-          : f(v ?? 0);
     let s = base(),
-      result = "",
-      caption = tool.steps[step];
+      label = "",
+      result = a.description;
+    const numericLabel = (mode) => (entry ? `${entry}  |  ${mode}` : mode);
+    const previewStyle = {
+      color: done ? C.geometry : C.magenta,
+      fill: done ? C.fill : "#e989f115",
+    };
+    const hover = (content) => `<g data-role="hover-highlight">${content}</g>`;
     if (tool.id === "pick") {
+      const first = after("first") || (id === "first" && a.selected);
+      const second =
+        values.kind === "spacing" &&
+        (after("second") || (id === "second" && a.selected));
+      const size = second ? 3 : first ? 12 : 4;
       s += rect(8, 5, 12, 4) + rect(8, 12, 12, 4);
-      if (step === 0) {
-        const point = approach([29, 18], [17, 9], q),
-          reached = q >= 0.55;
-        if (reached)
-          s += `<g data-role="hover-highlight">${line(X(8), Y(9), X(20), Y(9), C.yellow, 4)}</g>`;
-        s += cursor(
-          ...point,
-          reached ? "EDGE CANDIDATE" : "MOVE TO THE EDGE",
-          reached ? C.yellow : C.text,
-        );
-        result = reached
-          ? "Pointer on edge → highlight"
-          : "Approaching edge · no highlight";
-      } else if (step === 1) {
-        s += line(
-          X(8),
-          Y(9),
-          X(20),
-          Y(9),
-          animation.selected ? C.magenta : C.yellow,
-          4,
-        );
-        if (animation.selected) s += dim(8, 10.5, 20, 10.5, "12 µm");
-        s += cursor(
-          17,
-          9,
-          animation.selected ? "12 | EDGE LENGTH" : "CLICK THE EDGE",
-        );
-        result = animation.selected
-          ? "Picked length: 12 µm"
-          : "Click to select the edge";
-      } else if (values.kind === "length") {
-        s +=
-          line(X(8), Y(9), X(20), Y(9), C.magenta, 4) +
-          dim(8, 10.5, 20, 10.5, "12 µm") +
-          cursor(17, 9, "12 | EDGE LENGTH");
-        result = "Picked length: 12 µm";
-      } else {
-        const point = approach([17, 9], [17, 12], q),
-          reached = q >= 0.55;
-        s += line(X(8), Y(9), X(20), Y(9), C.magenta, 4);
-        if (reached)
-          s += `<g data-role="hover-highlight">${line(X(8), Y(12), X(20), Y(12), animation.selected ? C.magenta : C.yellow, 4)}</g>`;
-        if (animation.selected) s += vdim(23, 9, 12, "3 µm");
-        s += cursor(
-          ...point,
-          animation.selected
-            ? "3 | EDGE SPACING"
-            : reached
-              ? "PARALLEL EDGE"
-              : "MOVE TO SECOND EDGE",
-          animation.selected ? C.magenta : reached ? C.yellow : C.text,
-        );
-        result = animation.selected
-          ? "Picked spacing: 3 µm"
-          : reached
-            ? "Second edge reached → highlight"
-            : "Approaching parallel edge";
+      s += rect(35, 16, 8, 4, { opacity: done ? 0.25 : 1 });
+      if (selected) {
+        s += `<g data-role="stretch-preview" data-size="${size}">${rect(35, 20 - size, 8, size, previewStyle)}</g>`;
+        if (first)
+          s += vdim(
+            45,
+            20 - size,
+            20,
+            `${size} µm`,
+            done ? C.geometry : C.magenta,
+          );
       }
-    } else if (tool.id === "width") {
-      const width = done ? v : 0.6;
-      s += rect(5, 10 - width / 2, 29, width);
-      if (step && !done && hasInput)
-        s += rect(5, 10 - v / 2, 29, v, {
-          color: C.magenta,
-          fill: "#e989f115",
-        });
-      if (step && hasInput)
-        s += vdim(
-          36,
-          10 - v / 2,
-          10 + v / 2,
-          `${f(v)} µm`,
-          done ? C.geometry : C.magenta,
-        );
-      s += cursor(
-        31,
-        10 + (step ? v : 0.6) / 2,
-        step ? `${entry} | WIRE WIDTH` : "NATIVE WIRE · J",
-        step ? C.magenta : C.text,
-      );
-      result = step
-        ? hasInput
-          ? `Width = ${f(v)} µm`
-          : "Press J, then type a width"
-        : "Current width: 0.6 µm";
-    } else if (tool.id === "rectangle") {
-      const [w, h] = v;
-      s +=
-        cross(8, 4) +
-        (step === 0 ? text(X(8), Y(4) + 30, "first corner", C.faint, 12) : "");
-      if (step && hasInput)
+      if (first) s += line(X(8), Y(9), X(20), Y(9), C.magenta, 4);
+      if (second)
         s +=
-          rect(8, 4, w, h, {
-            color: done ? C.geometry : C.magenta,
-            fill: done ? C.fill : "#e989f115",
-          }) +
-          dim(8, 2.3, 8 + w, 2.3, `${f(w)} µm`) +
-          vdim(10 + w, 4, 4 + h, `${f(h)} µm`);
-      else
-        s += rect(8, 4, 10, 6, { color: C.faint, fill: "none", dash: "5 5" });
-      s += cursor(
-        8 + (step ? w : 10),
-        4 + (step ? h : 6),
-        step ? `${entry} | RECTANGLE` : "FIRST CORNER · J",
-        step ? C.magenta : C.text,
-      );
-      result =
-        step && hasInput
-          ? `${f(w)} × ${f(h)} µm`
-          : "Place the first corner, then enter X,Y";
+          line(X(8), Y(12), X(20), Y(12), C.magenta, 4) +
+          vdim(23, 9, 12, "3 µm");
+      if (
+        ["first", "second"].includes(id) &&
+        a.arrived &&
+        !(id === "second" && values.kind === "length")
+      )
+        s += hover(
+          line(
+            X(8),
+            Y(id === "first" ? 9 : 12),
+            X(20),
+            Y(id === "first" ? 9 : 12),
+            a.selected ? C.magenta : C.yellow,
+            4,
+          ),
+        );
+      const active = after("activate") || (id === "activate" && a.activated);
+      if (active && !done)
+        label = first
+          ? `${size} [${second ? "2 edges" : "1 edge"}]  |  STRETCH LENGTH`
+          : "STRETCH LENGTH";
+      if (first)
+        result = `Picked ${second ? "spacing" : "length"}: ${size} µm → Stretch preview on the right`;
+    } else if (tool.id === "width") {
+      if (selected) {
+        const end = id === "start" ? 5 : id === "aim" ? point[0] : 31;
+        const width = startedInput && hasInput ? v : 0.6;
+        s += `<g data-role="extended-path">${rect(
+          2,
+          10 - width / 2,
+          end - 2,
+          width,
+          startedInput ? previewStyle : { color: C.faint, fill: "none" },
+        )}</g>`;
+        if (startedInput && hasInput)
+          s += vdim(
+            34,
+            10 - v / 2,
+            10 + v / 2,
+            `${f(v)} µm`,
+            done ? C.geometry : C.magenta,
+          );
+      } else s += rect(2, 9.7, 3, 0.6);
+      if (startedInput && !done) label = numericLabel("PATH WIDTH");
+      if (startedInput && hasInput)
+        result = `Width = ${f(v)} µm${done ? " · native Path continues" : " · preview"}`;
+    } else if (tool.id === "rectangle") {
+      if (selected) s += cross(8, 4);
+      if (after("start")) {
+        const [w, h] =
+          startedInput && hasInput
+            ? v
+            : id === "aim"
+              ? [point[0] - 8, point[1] - 4]
+              : [10, 6];
+        s += rect(
+          8,
+          4,
+          w,
+          h,
+          startedInput ? previewStyle : { color: C.faint, fill: "none" },
+        );
+        if (startedInput && hasInput)
+          s +=
+            dim(8, 2.3, 8 + w, 2.3, `${f(w)} µm`) +
+            vdim(10 + w, 4, 4 + h, `${f(h)} µm`);
+      }
+      if (startedInput && !done) label = numericLabel("RECT SIZE X,Y");
+      if (startedInput && hasInput)
+        result = `${f(v[0])} × ${f(v[1])} µm${done ? " · rectangle completed" : " · preview"}`;
     } else if (tool.id === "measure") {
       s +=
         rect(6, 5, 8, 3, { opacity: 0.3 }) +
-        rect(28, 12, 5, 5, { opacity: 0.3 }) +
-        cross(5, 10);
-      const end = 5 + (step && hasInput ? v : 9);
-      s += dim(
-        5,
-        10,
-        end,
-        10,
-        step && hasInput ? `${f(v)} µm` : "direction",
-        done ? C.geometry : step ? C.magenta : C.faint,
-      );
-      s +=
-        line(X(5), Y(10) - 8, X(5), Y(10) + 8, C.geometry) +
-        line(
-          X(end),
-          Y(10) - 8,
-          X(end),
-          Y(10) + 8,
-          done ? C.geometry : C.magenta,
-        );
-      if (!done)
-        s += cursor(
-          end,
-          10,
-          step ? `${entry} | MEASUREMENT LENGTH` : "START → DIRECTION · J",
-        );
-      else s += text(X(5), Y(7), "Saved two-point ruler", C.geometry, 14);
-      result = done
-        ? `Ruler saved: ${f(v)} µm`
-        : step
-          ? `Preview length: ${f(v)} µm`
-          : "K → first point";
-    } else if (tool.id === "stretch") {
-      s += rect(7, 6, 10, 7, {
-        color: done ? C.faint : C.geometry,
-        fill: done ? "none" : C.fill,
-        dash: done ? "5 6" : "",
-      });
-      if (step && hasInput)
-        s += rect(7, 6, v, 7, {
-          color: done ? C.geometry : C.magenta,
-          fill: done ? C.fill : "#e989f115",
-        });
-      s +=
-        line(X(7), Y(5), X(7), Y(15), C.yellow, 2, "4 5") +
-        text(X(7), Y(17), "fixed boundary", C.yellow, 12);
-      const edge = step ? 7 + v : 17;
-      if (step || q >= 0.55)
-        s += `<g data-role="hover-highlight">${line(X(edge), Y(6), X(edge), Y(13), step || animation.selected ? C.magenta : C.yellow, 4)}</g>`;
-      s += dim(7, 3.7, edge, 3.7, `${f(step ? v : 10)} µm`);
-      const point = step ? [edge, 9.5] : approach([27, 18], [17, 9.5], q);
-      s += cursor(
-        ...point,
-        step
-          ? `${entry} | STRETCH LENGTH`
-          : q >= 0.55
-            ? "SELECT ONE EDGE · J"
-            : "MOVE TO THE EDGE",
-      );
-      result = step ? `Final X extent: ${f(v)} µm` : "Original X extent: 10 µm";
-    } else if (tool.id === "move") {
-      const [a, b] = v,
-        tx = values.mode === "absolute" ? a : 10 + a,
-        ty = values.mode === "absolute" ? b : 9 + b;
-      s +=
-        rect(6.5, 6.5, 7, 5, {
-          color: done ? C.faint : C.geometry,
-          fill: done ? "none" : C.fill,
-          dash: done ? "5 6" : "",
-        }) +
-        cross(10, 9, C.yellow) +
-        text(X(6.5), Y(4.5), "reference (10, 9)", C.faint, 12);
-      if (step && hasInput)
-        s +=
-          line(X(10), Y(9), X(tx), Y(ty), C.magenta, 1.5, "5 5") +
-          rect(tx - 3.5, ty - 2.5, 7, 5, {
-            color: done ? C.geometry : C.magenta,
-            fill: done ? C.fill : "#e989f115",
-          }) +
-          cross(tx, ty, C.magenta);
-      s += cursor(
-        step ? tx : 10,
-        step ? ty : 9,
-        step
-          ? `${entry} | ${values.mode === "absolute" ? "POSITION" : "DELTA"}`
-          : "PICK A REFERENCE",
-      );
-      result =
-        step && hasInput
-          ? `Reference → (${f(tx)}, ${f(ty)}) µm`
-          : "Reference at (10, 9) µm";
-    } else if (tool.id === "copy") {
-      s +=
-        rect(3, 8, 4, 5) + text(X(5), Y(6), "source", C.geometry, 12, "middle");
-      if (step >= 2 && hasInput) {
-        for (let i = 1; i <= n; i++)
-          s +=
-            rect(3 + i * v, 8, 4, 5, {
-              color: done ? C.geometry : C.magenta,
-              fill: done ? C.fill : "#e989f115",
-            }) +
-            text(
-              X(5 + i * v),
-              Y(6),
-              String(i),
-              done ? C.geometry : C.magenta,
-              13,
-              "middle",
-            );
-        s += dim(5, 4, 5 + v, 4, `${f(v)} µm / copy`);
+        rect(28, 12, 5, 5, { opacity: 0.3 });
+      if (selected) s += cross(5, 10);
+      if (after("start")) {
+        const length =
+          startedInput && hasInput ? v : id === "aim" ? point[0] - 5 : 9;
+        s += `<g data-role="ruler">${dim(5, 10, 5 + length, 10, `${f(length)} µm`, done ? C.geometry : startedInput ? C.magenta : C.faint)}</g>`;
       }
-      s += cursor(
-        step >= 2 ? 5 + v : 5,
-        14,
-        step === 0
-          ? "NATIVE COPY · N"
-          : step === 1
-            ? `${entry} | COPY COUNT`
-            : `${entry} | COPY DISTANCE [${n} copies]`,
-      );
-      result =
-        step < 2
-          ? step === 0
-            ? "Source selected"
-            : `Count = ${n}; nothing placed`
-          : done
-            ? `${n} copies placed; source retained`
-            : hasInput
-              ? `${n} preview targets at ${f(v)} µm pitch`
-              : "Press J, then type the displacement";
-    } else if (tool.id === "contour") {
-      const d = values.side === "outside" ? v : -v;
-      const hover = step === 1 && q >= 0.55;
-      s += `<g ${hover ? 'data-role="hover-highlight"' : ""}>${rect(11, 6, 18, 9, { color: hover ? (animation.selected ? C.magenta : C.yellow) : done ? C.faint : C.geometry, fill: done ? "none" : C.fill, dash: done ? "5 6" : "" })}</g>`;
-      if (step >= 2)
+      if (startedInput && !done) label = numericLabel("MEASUREMENT LENGTH");
+      if (startedInput && hasInput)
+        result = `${done ? "Ruler saved" : "Preview length"}: ${f(v)} µm`;
+    } else if (tool.id === "stretch") {
+      s += rect(7, 6, 10, 7, { opacity: done ? 0.25 : 1 });
+      if (startedInput && hasInput)
         s +=
-          rect(11 - d, 6 - d, 18 + 2 * d, 9 + 2 * d, {
-            color: done ? C.geometry : C.magenta,
-            fill: done ? C.fill : "#e989f115",
-          }) + dim(11 - d, 3 - d, 11, 3 - d, `${f(v)} µm`);
-      if (hover)
-        s += text(
-          X(20),
-          Y(17),
-          "PIVOT BOUNDARY",
-          animation.selected ? C.magenta : C.yellow,
-          13,
-          "middle",
+          rect(7, 6, v, 7, previewStyle) +
+          dim(7, 3.7, 7 + v, 3.7, `${f(v)} µm`);
+      if (id === "start" && a.arrived)
+        s += hover(
+          line(X(17), Y(6), X(17), Y(13), a.selected ? C.magenta : C.yellow, 4),
         );
-      const point =
-        step === 1
-          ? approach([34, 20], [20, 15], q)
-          : step >= 2
-            ? [30 + d, 16 + d]
-            : [34, 20];
-      s += cursor(
-        ...point,
-        step === 0
-          ? `${entry} | CONTOUR OFFSET`
-          : step === 1
-            ? hover
-              ? "PICK PIVOT · ENTER"
-              : "MOVE TO THE PIVOT"
-            : `${f(v)} | CONTOUR ${values.side.toUpperCase()}`,
-      );
-      result =
-        step >= 2
-          ? `${values.side} offset: ${f(v)} µm`
-          : step === 1
-            ? animation.selected
-              ? "Source boundary chosen as pivot"
-              : "Approach, then select the pivot"
-            : hasInput
-              ? `Offset = ${f(v)} µm`
-              : "Shift+J → enter an offset";
-    } else if (tool.id === "cleanup") {
+      if (startedInput && !done) label = numericLabel("STRETCH LENGTH");
+      if (startedInput && hasInput)
+        result = `Final X extent: ${f(v)} µm · opposite edge fixed`;
+    } else if (tool.id === "move") {
+      if (!done) {
+        s += `<g data-role="move-source">${rect(6.5, 6.5, 7, 5)}</g>`;
+        if (selected) s += cross(10, 9);
+      }
+      if (startedInput && hasInput) {
+        const [x, y] = values.mode === "absolute" ? v : [10 + v[0], 9 + v[1]];
+        if (!done)
+          s +=
+            line(X(10), Y(9), X(x), Y(y), C.magenta, 1.5, "5 5") +
+            cross(x, y, C.magenta);
+        s += `<g data-role="move-target">${rect(x - 3.5, y - 2.5, 7, 5, previewStyle)}</g>`;
+        result = `Reference → (${f(x)}, ${f(y)}) µm`;
+      }
+      if (startedInput && !done)
+        label = numericLabel(
+          values.mode === "absolute"
+            ? `MOVE ABSOLUTE ${entry.includes(",") ? "X,Y" : "X"}`
+            : entry.includes(",")
+              ? "MOVE DELTA X,Y"
+              : "MOVE DISTANCE",
+        );
+    } else if (tool.id === "copy") {
+      s += rect(3, 8, 4, 5);
+      if (after("start")) {
+        const pitch =
+          startedInput && hasInput ? v : id === "aim" ? point[0] - 5 : 7;
+        const count =
+          after("count") || (id === "count" && a.confirmed) ? values.count : 1;
+        for (let i = 1; i <= count; i++)
+          s += `<g data-role="copy-preview">${rect(3 + i * pitch, 8, 4, 5, previewStyle)}</g>`;
+        if (startedInput && hasInput)
+          s += dim(5, 5, 5 + v, 5, `${f(v)} µm / copy`);
+      }
+      if (id === "count" && a.activated && !a.confirmed)
+        label = numericLabel("COPY COUNT");
+      if (startedInput && !done)
+        label = numericLabel(
+          `COPY DISTANCE${values.count > 1 ? ` [${values.count} copies]` : ""}`,
+        );
+      if (startedInput && hasInput)
+        result = done
+          ? `${n} copies placed; source retained`
+          : `${n} preview targets at ${f(v)} µm pitch`;
+      else if (id === "count") result = `Count = ${n}; nothing placed`;
+    } else if (tool.id === "contour") {
+      const inside = done
+        ? values.side === "inside"
+        : point[0] > 11 && point[0] < 29 && point[1] > 6 && point[1] < 15;
+      const d = inside ? -v : v;
+      const hovering = id === "pivot" && a.arrived;
+      const source = rect(11, 6, 18, 9, {
+        color: hovering ? (a.selected ? C.magenta : C.yellow) : C.geometry,
+        opacity: done ? 0.25 : 1,
+      });
+      s += hovering ? hover(source) : source;
+      if (after("pivot") || (id === "pivot" && a.confirmed))
+        s += rect(11 - d, 6 - d, 18 + 2 * d, 9 + 2 * d, previewStyle);
+      if (id === "input" && a.activated)
+        label = a.confirmed
+          ? `PIVOT EDGE  ${f(v)}  [0/4 edges]`
+          : numericLabel("CONTOUR OFFSET");
+      if (id === "pivot")
+        label = a.confirmed
+          ? `CONTOUR OUTSIDE  ${f(v)}`
+          : `PIVOT ${a.activated ? "RECT" : "EDGE"}  ${f(v)}  [0/4 edges]`;
+      if (["side", "confirm"].includes(id) && !done) {
+        const inside =
+          point[0] > 11 && point[0] < 29 && point[1] > 6 && point[1] < 15;
+        label = `CONTOUR ${inside ? "INSIDE" : "OUTSIDE"}  ${f(v)}`;
+      }
+      if (after("pivot"))
+        result = `${values.side} offset: ${f(v)} µm · pivot can also be four edges`;
+    } else {
       s +=
         rect(5, 5, 10, 4) +
         rect(28, 13, 9, 4) +
         `<path d="M${X(15)} ${Y(7)}H${X(22)}V${Y(15)}H${X(28)}" stroke="${C.geometry}" stroke-width="8" fill="none"/>`;
-      const points = [
-        [22, 7],
-        [22, 15],
-        [18, 7],
-        [25, 15],
-        [12, 7],
-        [32, 15],
-      ];
-      if (!done)
-        for (let i = 0; i < n; i++) {
-          const [x, y] = points[i];
+      const removed = after("cleanup") || (id === "cleanup" && a.selected);
+      if (!removed)
+        for (const [x, y] of [
+          [22, 7],
+          [22, 15],
+          [18, 7],
+          [25, 15],
+          [12, 7],
+          [32, 15],
+        ].slice(0, n))
           s +=
-            `<circle cx="${X(x)}" cy="${Y(y)}" r="12" fill="${C.bg}" stroke="${step ? C.magenta : C.yellow}" stroke-dasharray="3 3"/>` +
-            cross(x, y, step ? C.magenta : C.yellow);
-        }
-      s += text(
-        450,
-        80,
-        done
-          ? "DRAWN GEOMETRY PRESERVED"
-          : "STEINER MARKERS REVEALED FOR ILLUSTRATION",
-        done ? C.geometry : C.yellow,
-        13,
-        "middle",
-      );
-      if (step === 1) s += cursor(34, 8, "TOOLBAR · CLEANUP");
-      if (done)
-        s += text(
-          450,
-          330,
-          `${n} Steiner objects removed`,
-          C.geometry,
-          16,
-          "middle",
-        );
-      result = done
-        ? `${n} removed · cellview not saved`
-        : `${n} synthetic Steiner objects`;
+            `<circle cx="${X(x)}" cy="${Y(y)}" r="12" fill="${C.bg}" stroke="${C.yellow}" stroke-dasharray="3 3"/>` +
+            cross(x, y);
+      s += `<g data-role="cleanup-button"><rect x="${X(36)}" y="${Y(22)}" width="112" height="48" rx="5" fill="#2b3d4b" stroke="${C.faint}"/>${text(X(39.7), Y(20) + 4, "Cleanup", C.text, 14, "middle")}</g>`;
+      result = removed
+        ? `${n} Steiner objects removed · cellview not saved`
+        : `${n} synthetic Steiner objects · markers revealed for illustration`;
     }
-    return { svg: s, result, caption, animation };
+    s += cursor(...point, label);
+    return {
+      svg: s,
+      result,
+      caption: a.title,
+      description: a.description,
+      animation: a,
+    };
   }
+
   function defaults() {
     return Object.fromEntries(
       tool.fields.map((field) => [field.key, field.value]),
@@ -904,42 +1033,118 @@
       `<title>${esc(tool.name)} — ${esc(tool.steps[step])}</title>` + view.svg;
     $("scene").setAttribute("aria-label", `${tool.name}: ${view.result}`);
     $("scene-result").textContent = view.result;
+    $("scene-description").textContent = view.description;
     $("scene-phase").textContent =
       `${String(step + 1).padStart(2, "0")} / ${view.caption}`;
-    $("step-counter").textContent = `${step + 1} / ${tool.steps.length}`;
-    if ($("explanation").textContent !== tool.explanations[step])
-      $("explanation").textContent = tool.explanations[step];
+    $("step-counter").textContent = holding
+      ? "Done."
+      : `${step + 1} / ${tool.steps.length}`;
+    if ($("explanation").textContent !== view.description)
+      $("explanation").textContent = view.description;
     document.querySelectorAll(".step").forEach((button, i) => {
       button.classList.toggle("active", i === step);
       button.setAttribute("aria-pressed", String(i === step));
     });
     $("next").disabled = step === tool.steps.length - 1;
-    $("play").textContent = playing ? "Ⅱ Pause" : "▶ Play";
+    $("play").textContent = playing
+      ? "Ⅱ Pause"
+      : position >= totalDuration()
+        ? "↺ Replay"
+        : "▶ Play";
+    $("loop").textContent = loop ? "↻ Loop on" : "↻ Loop off";
+    $("loop").setAttribute("aria-pressed", String(loop));
+  }
+  function totalDuration() {
+    return tool.phases.reduce((sum, _, i) => sum + phaseSpec(i).duration, 0);
+  }
+  function locate() {
+    let rest = position;
+    step = 0;
+    while (step < tool.phases.length - 1 && rest >= phaseSpec(step).duration) {
+      rest -= phaseSpec(step).duration;
+      step++;
+    }
+    progress = Math.min(1, rest / phaseSpec(step).duration);
   }
   function stop() {
     playing = false;
     cancelAnimationFrame(timer);
   }
-  function setStep(next) {
+  // Motion scales with speed. The deliberate pause between loops is always 3 real seconds.
+  function advance(milliseconds) {
+    const total = totalDuration();
+    let remaining = milliseconds;
+    while (remaining > 0) {
+      if (position < total) {
+        const consumed = Math.min(remaining, (total - position) / speed);
+        position = Math.min(total, position + consumed * speed);
+        remaining -= consumed;
+        if (position < total) break;
+      }
+      if (!loop) {
+        holding = false;
+        stop();
+        break;
+      }
+      holding = true;
+      const consumed = Math.min(remaining, LOOP_WAIT - holdElapsed);
+      holdElapsed += consumed;
+      remaining -= consumed;
+      if (holdElapsed < LOOP_WAIT) break;
+      position = 0;
+      holdElapsed = 0;
+      holding = false;
+    }
+    locate();
+  }
+  function tick(now) {
+    advance(now - lastTick);
+    lastTick = now;
+    render();
+    if (playing) timer = requestAnimationFrame(tick);
+  }
+  function play() {
+    if (position >= totalDuration() && !holding) {
+      position = 0;
+      locate();
+    }
+    playing = true;
+    lastTick = performance.now();
+    render();
+    timer = requestAnimationFrame(tick);
+  }
+  function setStep(next, fraction = 1) {
     stop();
     step = Math.max(0, Math.min(tool.steps.length - 1, next));
-    progress = 1;
+    progress = Math.max(0, Math.min(1, fraction));
+    position =
+      tool.phases
+        .slice(0, step)
+        .reduce((sum, _, i) => sum + phaseSpec(i).duration, 0) +
+      progress * phaseSpec(step).duration;
+    holding = false;
+    holdElapsed = 0;
     render();
   }
-  function load(id) {
+  function load(id, autoplay = !exporting) {
     stop();
+    clearTimeout(inputTimer);
     tool = tools.find((t) => t.id === id) || tools[1];
     step = 0;
     progress = 0;
-    const raw = defaults();
-    values = parse(raw);
+    position = 0;
+    holdElapsed = 0;
+    holding = false;
+    loop = true;
+    values = parse(defaults());
     renderFields(values);
     $("error").textContent = "";
     $("tool-category").textContent = tool.category;
     $("tool-title").textContent = tool.name;
     $("key-badge").textContent = tool.key;
     $("tool-description").textContent = tool.description;
-    $("scene-name").textContent = tool.name.toUpperCase();
+    $("scene-name").textContent =
+      `${String(tools.indexOf(tool) + 1).padStart(2, "0")} / ${tool.name.toUpperCase()}`;
     $("reference").href = `guide.html#${tool.anchor}`;
     $("steps").innerHTML = tool.steps
       .map(
@@ -951,10 +1156,8 @@
       b.classList.toggle("active", b.dataset.tool === tool.id);
       b.setAttribute("aria-pressed", String(b.dataset.tool === tool.id));
     });
-    document
-      .querySelector(`.tool[data-tool="${tool.id}"]`)
-      .scrollIntoView({ block: "nearest", inline: "nearest" });
     render();
+    if (autoplay) play();
   }
   $("tools").innerHTML = tools
     .map(
@@ -979,12 +1182,21 @@
   $("reset").addEventListener("click", () => load(tool.id));
   function apply(event) {
     if (event) event.preventDefault();
+    clearTimeout(inputTimer);
     try {
-      const raw = Object.fromEntries(new FormData($("settings")));
-      values = parse(raw);
-      renderFields(values);
+      const parsed = parse(Object.fromEntries(new FormData($("settings"))));
+      const changed = JSON.stringify(values) !== JSON.stringify(parsed);
+      values = parsed;
+      for (const field of tool.fields)
+        $("field-" + field.key).value = Array.isArray(values[field.key])
+          ? values[field.key].map(f).join(",")
+          : values[field.key];
       $("error").textContent = "";
-      setStep(tool.id === "copy" || tool.id === "contour" ? 2 : 1);
+      if (changed || event?.type === "submit") {
+        loop = true;
+        setStep(0, 0);
+        play();
+      }
     } catch (error) {
       $("error").textContent = error.message;
     }
@@ -993,55 +1205,59 @@
   $("settings").addEventListener("change", (event) => {
     if (event.target.tagName === "SELECT") apply();
   });
+  $("fields").addEventListener("input", (event) => {
+    if (event.target.tagName !== "INPUT") return;
+    clearTimeout(inputTimer);
+    inputTimer = setTimeout(() => apply(), 3000);
+  });
+  $("fields").addEventListener("focusout", (event) => {
+    if (event.target.tagName === "INPUT") apply();
+  });
   $("play").addEventListener("click", () => {
     if (playing) {
+      advance(performance.now() - lastTick);
       stop();
       render();
-      return;
-    }
-    playing = true;
-    step = 0;
-    progress = 0;
-    started = performance.now();
-    render();
-    function tick(now) {
-      let remaining = now - started;
-      step = 0;
-      while (
-        step < tool.steps.length - 1 &&
-        remaining >= phaseSpec(step).duration
-      ) {
-        remaining -= phaseSpec(step).duration;
-        step += 1;
-      }
-      const duration = phaseSpec(step).duration;
-      progress = Math.min(1, remaining / duration);
-      if (step === tool.steps.length - 1 && remaining >= duration) {
-        stop();
-        progress = 1;
-        render();
-        return;
-      }
-      render();
-      timer = requestAnimationFrame(tick);
-    }
-    timer = requestAnimationFrame(tick);
+    } else play();
   });
-  if (new URLSearchParams(location.search).has("export"))
-    document.body.classList.add("export");
+  $("speed").addEventListener("change", () => {
+    if (playing) {
+      const now = performance.now();
+      advance(now - lastTick);
+      lastTick = now;
+    }
+    speed = Number($("speed").value);
+    render();
+  });
+  $("loop").addEventListener("click", () => {
+    loop = !loop;
+    if (!loop && holding) {
+      holding = false;
+      holdElapsed = 0;
+      stop();
+    }
+    render();
+  });
+  if (exporting) document.body.classList.add("export");
   load(location.hash.slice(1));
-  // Deterministic frames for documentation capture and offline browser checks.
+  // Capture uses the same timeline as playback, without a running animation clock.
   window.NumericDemo = {
-    tools: tools.map(({ id, steps }) => ({ id, steps: [...steps] })),
+    tools: tools.map(({ id, steps, phases }) => ({
+      id,
+      steps: [...steps],
+      phases: phases.map((p) => p.id),
+    })),
     show(id, frame, overrides = {}, fraction = 1) {
-      load(id);
-      const raw = { ...defaults(), ...overrides };
-      values = parse(raw);
+      load(id, false);
+      values = parse({ ...defaults(), ...overrides });
       renderFields(values);
-      step = Math.max(0, Math.min(tool.steps.length - 1, frame));
-      progress = fraction;
-      render();
+      setStep(frame, fraction);
       return $("scene-result").textContent;
+    },
+    advance(milliseconds) {
+      stop();
+      advance(milliseconds);
+      render();
     },
     get timeline() {
       return tool.steps.map((_, index) => phaseSpec(index));
@@ -1050,7 +1266,15 @@
       return {
         tool: tool.id,
         step,
+        progress,
+        position,
+        total: totalDuration(),
         playing,
+        speed,
+        loop,
+        holding,
+        holdElapsed,
+        loopWait: LOOP_WAIT,
         animation: phaseState(),
         values: JSON.parse(JSON.stringify(values)),
       };

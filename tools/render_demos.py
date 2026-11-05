@@ -1,13 +1,58 @@
 """Capture the synthetic browser scenes and assemble documentation GIFs."""
 
 import argparse
+import json
 from pathlib import Path
 import re
 
-from PIL import Image
+from PIL import Image, ImageDraw
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
+OVERVIEW = ("pick", "width", "measure", "copy")
+LOOP_WAIT = 3000
+OVERVIEW_GAP = 1000
+
+
+def overview_schedule(all_paths, all_durations):
+    """A single changing panel, followed by a one-second all-still interval."""
+    for active in OVERVIEW:
+        for path, duration in zip(all_paths[active][:-1], all_durations[active][:-1]):
+            yield active, path, duration
+        yield None, all_paths[active][-1], OVERVIEW_GAP
+
+
+def render_overview(all_paths, all_durations, scratch, destination):
+    directory = scratch / "overview"
+    directory.mkdir(exist_ok=True)
+    panel_width, gutter = 600, 12
+    with Image.open(all_paths[OVERVIEW[0]][0]) as first:
+        panel_height = round(first.height * panel_width / first.width)
+    size = (panel_width, panel_height)
+    positions = [(gutter + (i % 2) * (panel_width + gutter),
+                  gutter + (i // 2) * (panel_height + gutter)) for i in range(4)]
+    canvas = Image.new("RGB", (panel_width * 2 + gutter * 3, panel_height * 2 + gutter * 3), "#101a23")
+    # Inactive panels hold their completed result throughout the entire cycle.
+    for name, position in zip(OVERVIEW, positions):
+        with Image.open(all_paths[name][-1]) as frame:
+            canvas.paste(frame.convert("RGB").resize(size, Image.Resampling.LANCZOS), position)
+    paths, durations, manifest = [], [], []
+    for index, (active, source, duration) in enumerate(overview_schedule(all_paths, all_durations)):
+        frame = canvas.copy()
+        if active:
+            x, y = positions[OVERVIEW.index(active)]
+            with Image.open(source) as panel:
+                frame.paste(panel.convert("RGB").resize(size, Image.Resampling.LANCZOS), (x, y))
+            ImageDraw.Draw(frame).rectangle((x - 3, y - 3, x + panel_width + 2, y + panel_height + 2), outline="#e989f1", width=2)
+        path = directory / f"{index:04d}.png"
+        frame.save(path)
+        paths.append(path)
+        durations.append(duration)
+        manifest.append({"frame": path.name, "active": active, "duration": duration})
+    (directory / "schedule.json").write_text(json.dumps({"panels": OVERVIEW, "size": size,
+        "positions": positions, "frames": manifest}, indent=2) + "\n", encoding="utf-8")
+    save_gif(paths, durations, destination)
+    print(f"Rendered 2x2 overview: {len(paths)} frames; one active panel, 1 s gaps", flush=True)
 
 
 def save_gif(paths, durations, destination):
@@ -65,24 +110,25 @@ def main():
             page.evaluate("id => NumericDemo.show(id, 0, {}, 0)", name)
             timeline = page.evaluate("NumericDemo.timeline")
             for step in range(len(scene["steps"])):
-                frame_count = (timeline[step]["duration"] + 99) // 100
-                for frame in range(frame_count + 1):
+                duration = timeline[step]["duration"]
+                for frame, time in enumerate(range(0, duration, 100)):
                     page.evaluate("([id, step, fraction]) => NumericDemo.show(id, step, {}, fraction)",
-                                  [name, step, frame / frame_count])
+                                  [name, step, time / duration])
                     path = directory / f"{step:02d}-{frame:02d}.png"
                     page.locator("#capture").screenshot(path=path)
                     paths.append(path)
-                    durations.append(100)
-            durations[-1] = 1500
+                    durations.append(min(100, duration - time))
+            page.evaluate("([id, step]) => NumericDemo.show(id, step)", [name, len(scene["steps"]) - 1])
+            path = directory / "final.png"
+            page.locator("#capture").screenshot(path=path)
+            paths.append(path)
+            durations.append(LOOP_WAIT)
             save_gif(paths, durations, output / f"{name}.gif")
             all_paths[name], all_durations[name] = paths, durations
             print(f"Rendered {name}: {len(paths)} frames", flush=True)
         browser.close()
-    overview = ["width", "copy", "contour"]
-    if all(name in all_paths for name in overview):
-        save_gif([path for name in overview for path in all_paths[name]],
-                 [duration for name in overview for duration in all_durations[name]],
-                 output / "overview.gif")
+    if all(name in all_paths for name in OVERVIEW):
+        render_overview(all_paths, all_durations, scratch, output / "overview.gif")
 
 
 if __name__ == "__main__":

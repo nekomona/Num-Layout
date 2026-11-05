@@ -20,24 +20,43 @@ uv pip install --python .venv/Scripts/python.exe -r test/demo-requirements.txt
 .venv/Scripts/python.exe tools/build_guide.py
 .venv/Scripts/python.exe tools/render_demos.py
 .venv/Scripts/python.exe test/check_demo.py
+.venv/Scripts/python.exe test/check_demo_media.py
 ```
 
 If an installed Microsoft Edge browser is preferred, pass `--channel msedge`
 to the capture and check scripts. This avoids installing Playwright Chromium.
 `render_demos.py --only copy,contour` regenerates selected scenes. A full run
-also creates `overview.gif` from Width, Copy, and Contour.
+also creates `overview.gif` as a synchronized 2×2 grid of Dimension picker,
+Path width, Measurement, and Copy (01, 02, 04, 07). Regenerating those four
+scenes together also rebuilds the grid.
 
 The exporter samples the same event timeline as the interactive player at ten
-frames per second, then assembles the frames with a pause after each complete
-demonstration. Pointer arrival precedes hover highlights; key presses and
-digit-by-digit input are captured at their scheduled times. Intermediate PNGs stay under ignored
+frames per second, then assembles the frames with a three-second pause after
+each complete demonstration. The README uses one composited GIF: exactly one
+panel animates while the others hold their completed results, with a one-second
+all-still gap between panels, including the last-to-first transition. Its
+schedule is saved under `artifacts/demo-frames/overview/schedule.json` for checks.
+Run `test/check_demo_media.py` after a full render to verify loop delays and that
+every inactive panel stays pixel-identical throughout the decoded README GIF.
+
+Pointer arrival precedes hover highlights; key presses and digit-by-digit
+input are captured at their scheduled times. Digits are 260 ms apart. Command
+keys and clicks leave at least 1.2 seconds for the result to be read, at 1× speed.
+Every scene begins with its native command and ends by moving the pointer back
+to empty space within the final step; the action bar then reads **Done.**
+Cursor balloons use `vbnModeText`, `vbnDisplayText`, and `vbnPositionHint` labels
+from the plugin. Explanatory text belongs in the bottom bar.
+
+Intermediate PNGs stay under ignored
 `artifacts/demo-frames/`. Only the reviewed GIFs are tracked in `docs/media/`.
 `tools/build_guide.py` generates the browser guide from the canonical Markdown
 document; regenerate it when the Markdown changes.
 
 The demo rounds decimal inputs to four places before playback. Browser checks
-verify this rounding, hover timing, individual input characters, and key-down
-and key-up states. This rounding is specific to the illustrative website.
+verify this rounding, native command order, balloon labels, hover timing,
+individual input characters, key-down and key-up states, playback speed,
+three-second loops, and auto-replay after confirmed inputs. This rounding is
+specific to the illustrative website.
 
 See [GitHub Pages deployment](../docs/PUBLISHING.md) for building and publishing
 the reviewed site and animations.
@@ -53,13 +72,13 @@ For each tool, record a short sequence:
 
 | Tool | Sequence |
 | --- | --- |
-| Picking | Hover → select one edge → select a parallel edge → inspect the value |
-| Path / Wire | Start command → J → enter width → confirm → place a segment |
-| Rectangle | First corner → J → `12,6` → preview → confirm |
-| Measurement | K → first point → J → length → confirm |
-| Stretch | Partial edge selection → J → final size → confirm |
-| Move | Reference point → J relative entry → repeat with Shift+J absolute entry |
-| Copy | Select source → N → count → J → pitch → preview all targets → confirm |
+| Picking | S → click lower edge of separate rectangle → J → pick length or spacing → inspect stretch preview → confirm |
+| Path / Wire | P → click wire → pull segment → J → enter width → confirm |
+| Rectangle | R → first corner → pull preview → J → `12,6` → confirm |
+| Measurement | K → first point → pull right → J → length → confirm |
+| Stretch | S → partial edge selection → J → final size → confirm |
+| Move | M → click object → J relative entry → repeat with Shift+J absolute entry |
+| Copy | C → click source → pull preview → N → count → J → pitch → confirm |
 | Contour | Idle rectangle → Shift+J → offset → pivot → inside/outside → confirm |
 | Cleanup | Prepare disposable Steiner objects → toolbar action → inspect CIW count |
 

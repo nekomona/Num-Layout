@@ -23,12 +23,13 @@ Contour, and **N** sets the Copy count.
 ## See it in motion
 
 <p align="center">
-  <a href="docs/demo/index.html"><img src="docs/media/overview.gif" alt="Animated examples: set a wire width, preview repeated copies, and offset a rectangle contour." width="900"></a>
+  <a href="docs/demo/index.html"><img src="docs/media/overview.gif" alt="Four tools in a 2×2 grid: pick a dimension, set a path width, create an exact ruler, and place repeated copies. One panel plays at a time." width="100%"></a>
 </p>
 
-**Width → Copy → Contour.** These are illustrative animations using synthetic
-geometry. [Open the interactive lab](docs/demo/index.html) to change values and
-step through every tool. The self-contained site runs locally by opening its
+**Pick → Width → Measurement → Copy.** One panel plays at a time, with a
+one-second pause between tools. These are illustrative animations using synthetic
+geometry. [Open the interactive lab](docs/demo/index.html) to change values,
+adjust playback speed, or step through every tool. The self-contained site runs locally by opening its
 HTML file; [preview instructions](docs/numeric_assist_guide.md#interactive-demonstrations)
 and [GitHub Pages deployment](docs/PUBLISHING.md) are documented separately.
 
