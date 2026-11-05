@@ -5,9 +5,6 @@ stages:
 validate_pages:
   stage: build
   image: python:3.12-slim
-  rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "lab"'
-    - if: '$CI_COMMIT_BRANCH == "lab" && $CI_PIPELINE_SOURCE != "merge_request_event"'
   script:
     - python -m venv .venv
     - .venv/bin/pip install -r test/pages-requirements.txt
@@ -23,11 +20,11 @@ pages:
   needs:
     - job: validate_pages
       artifacts: true
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "lab" && $CI_PIPELINE_SOURCE != "merge_request_event"'
   script:
     - mkdir -p public
     - cp -a artifacts/pages/. public/
   artifacts:
     paths:
       - public/
+  only:
+    - main
