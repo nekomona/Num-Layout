@@ -1,10 +1,16 @@
-# Deploy the interactive lab with GitHub Pages
+# Deploy the interactive lab with Pages
+
+The same static site can be deployed with GitHub Pages or GitLab Pages. Both
+pipelines build and validate the public artifact without repository-specific
+URLs, names, or secrets.
+
+## GitHub Pages
 
 The `Deploy Pages` workflow in `.github/workflows/pages.yml` is ready for a
 future GitHub repository. No owner, repository name, hostname, or custom domain
 is configured. GitHub supplies the deployment URL when the workflow runs.
 
-## After pushing the repository
+### After pushing to GitHub
 
 1. Open **Settings → Pages** in the GitHub repository.
 2. Under **Build and deployment**, select **GitHub Actions** as the source.
@@ -22,16 +28,34 @@ needs no personal access token, repository-specific secret, or dedicated
 deployment branch. Enable Actions if the repository or organization restricts
 them, and allow deployments to the `github-pages` environment from `main`.
 
+## GitLab Pages
+
+The `.gitlab-ci.yml` pipeline builds and validates the site on the `lab` branch
+and for merge requests targeting `lab`. A successful `lab` branch pipeline
+passes the validated artifact to the `pages` job, which publishes its contents
+from `public/`. Merge request pipelines validate only and do not deploy.
+
+After pushing this configuration and the `lab` branch to GitLab, make sure a
+runner that can use the `python:3.12-slim` image is available and GitLab Pages
+is enabled for the project. Check **Build → Pipelines** for the job results and
+**Deploy → Pages** for the URL and access settings. Menu names and Pages
+availability can vary with the GitLab instance and its configuration.
+
+The pipeline does not require a personal access token or a hard-coded domain.
+To deploy from a different branch later, update the branch rules in
+`.gitlab-ci.yml`.
+
 ## What is published
 
 `tools/build_pages.py` stages an explicit set of public files in the ignored
 `artifacts/pages/` directory. It includes the interactive lab, rendered guide,
 project overview, testing and recording instructions, MIT license, and reviewed
 media. Local notes, raw screenshots, Git history, and the rest of the workspace
-are excluded. The workflow uploads only that staging directory.
+are excluded. GitHub uploads that staging directory; GitLab copies its validated
+contents into the `public/` Pages artifact.
 
 All site navigation and assets use relative URLs. The same artifact works at
-a domain root or beneath a GitHub repository path. Repository README links stay
+a domain root or beneath a repository path. Repository README links stay
 relative until the repository's final hosted URL is known.
 
 The GIFs are committed, reviewed assets. Deployment does not record a browser

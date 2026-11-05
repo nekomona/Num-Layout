@@ -20,7 +20,7 @@ For the documentation website, animation capture, and browser checks, see
 [DEMO_MEDIA.md](DEMO_MEDIA.md). These checks use synthetic geometry and run
 separately from the native plugin tests.
 The Pages artifact and deployment checks are described in
-[GitHub Pages deployment](../docs/PUBLISHING.md).
+[Pages deployment](../docs/PUBLISHING.md).
 
 ## Live environment
 

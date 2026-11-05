@@ -31,7 +31,7 @@ one-second pause between tools. These are illustrative animations using syntheti
 geometry. [Open the interactive lab](docs/demo/index.html) to change values,
 adjust playback speed, or step through every tool. The self-contained site runs locally by opening its
 HTML file; [preview instructions](docs/numeric_assist_guide.md#interactive-demonstrations)
-and [GitHub Pages deployment](docs/PUBLISHING.md) are documented separately.
+and [Pages deployment](docs/PUBLISHING.md) are documented separately.
 
 ## The tools
 

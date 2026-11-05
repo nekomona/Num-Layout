@@ -1,4 +1,4 @@
-"""Build a repository-independent GitHub Pages artifact from public files only."""
+"""Build a repository-independent Pages artifact from public files only."""
 
 from html import escape, unescape
 from pathlib import Path, PurePosixPath
@@ -15,7 +15,7 @@ OUTPUT = ROOT / "artifacts" / "pages"
 DOCUMENTS = {
     "README.md": ("overview.html", "Project overview"),
     "docs/numeric_assist_guide.md": ("guide.html", "User guide"),
-    "docs/PUBLISHING.md": ("publishing.html", "GitHub Pages deployment"),
+    "docs/PUBLISHING.md": ("publishing.html", "Pages deployment"),
     "test/README.md": ("testing.html", "Testing"),
     "test/DEMO_MEDIA.md": ("recordings.html", "Demo recordings"),
 }

@@ -58,7 +58,7 @@ individual input characters, key-down and key-up states, playback speed,
 three-second loops, and auto-replay after confirmed inputs. This rounding is
 specific to the illustrative website.
 
-See [GitHub Pages deployment](../docs/PUBLISHING.md) for building and publishing
+See [Pages deployment](../docs/PUBLISHING.md) for building and publishing
 the reviewed site and animations.
 
 ## Recording an actual Virtuoso session
