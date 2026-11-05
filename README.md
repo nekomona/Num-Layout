@@ -3,6 +3,10 @@
 </p>
 
 <p align="center">
+  <a href="README.md"><b>English</b></a> &nbsp;·&nbsp; <a href="README.zh-CN.md">简体中文</a>
+</p>
+
+<p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-6b45b9?style=flat-square" alt="MIT license"></a>
   <a href="docs/numeric_assist_guide.md"><img src="https://img.shields.io/badge/Virtuoso-IC23.1-527c79?style=flat-square" alt="Virtuoso IC23.1"></a>
   <a href="src/numeric_assist.il"><img src="https://img.shields.io/badge/built_with-SKILL-bb667f?style=flat-square" alt="Built with SKILL"></a>
@@ -12,7 +16,8 @@
   <b><a href="docs/numeric_assist_guide.md">User guide</a></b> &nbsp;·&nbsp;
   <b><a href="docs/demo/index.html">Interactive lab</a></b> &nbsp;·&nbsp;
   <a href="docs/numeric_assist_guide.md#installation">Installation</a> &nbsp;·&nbsp;
-  <a href="test/README.md">Testing</a>
+  <a href="test/README.md">Testing</a> &nbsp;·&nbsp;
+  <a href="CONTRIBUTING.md">Contributing</a>
 </p>
 
 Add precise numeric input to native **Virtuoso Layout** commands. Pick a length

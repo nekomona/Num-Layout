@@ -9,15 +9,19 @@ from urllib.parse import urlsplit, urlunsplit
 
 import markdown
 
-from build_guide import ROOT, document_page
+from build_guide import MARKDOWN_EXTENSIONS, ROOT, document_page
 
 OUTPUT = ROOT / "artifacts" / "pages"
 DOCUMENTS = {
-    "README.md": ("overview.html", "Project overview"),
-    "docs/numeric_assist_guide.md": ("guide.html", "User guide"),
-    "docs/PUBLISHING.md": ("publishing.html", "Pages deployment"),
-    "test/README.md": ("testing.html", "Testing"),
-    "test/DEMO_MEDIA.md": ("recordings.html", "Demo recordings"),
+    "README.md": ("overview.html", "Project overview", "en"),
+    "README.zh-CN.md": ("overview.zh-CN.html", "项目概览", "zh-CN"),
+    "docs/numeric_assist_guide.md": ("guide.html", "User guide", "en"),
+    "docs/numeric_assist_guide.zh-CN.md": ("guide.zh-CN.html", "用户教程", "zh-CN"),
+    "CONTRIBUTING.md": ("contributing.html", "Contributing", "en"),
+    "CONTRIBUTING.zh-CN.md": ("contributing.zh-CN.html", "参与贡献", "zh-CN"),
+    "docs/PUBLISHING.md": ("publishing.html", "Pages deployment", "en"),
+    "test/README.md": ("testing.html", "Testing", "en"),
+    "test/DEMO_MEDIA.md": ("recordings.html", "Demo recordings", "en"),
 }
 
 
@@ -39,10 +43,11 @@ def rewrite_links(content, source, mapping):
 def main():
     media = sorted((ROOT / "docs/media").glob("*"))
     media = [path for path in media if path.suffix in (".gif", ".svg", ".png", ".webp")]
-    mapping = {source: target for source, (target, _) in DOCUMENTS.items()}
+    mapping = {source: target for source, (target, _, _) in DOCUMENTS.items()}
     mapping.update({
         "docs/demo/index.html": "index.html",
         "docs/demo/guide.html": "guide.html",
+        "docs/demo/guide.zh-CN.html": "guide.zh-CN.html",
         "docs/demo/style.css": "style.css",
         "docs/demo/app.js": "app.js",
         "LICENSE": "license.html",
@@ -62,10 +67,31 @@ def main():
         shutil.copyfile(ROOT / "docs/demo" / filename, OUTPUT / filename)
     source = "docs/demo/index.html"
     (OUTPUT / "index.html").write_text(rewrite_links((ROOT / source).read_text(encoding="utf-8"), source, mapping), encoding="utf-8")
-    for source, (destination, title) in DOCUMENTS.items():
-        body = markdown.markdown((ROOT / source).read_text(encoding="utf-8"), extensions=["tables", "fenced_code", "toc"])
+    for source, (destination, title, lang) in DOCUMENTS.items():
+        body = markdown.markdown((ROOT / source).read_text(encoding="utf-8"), extensions=MARKDOWN_EXTENSIONS)
         body = rewrite_links(body, source, mapping)
-        (OUTPUT / destination).write_text(document_page(body, title, "license.html"), encoding="utf-8")
+        alternates = {
+            "overview.html": ("overview.zh-CN.html", "简体中文"),
+            "overview.zh-CN.html": ("overview.html", "English"),
+            "guide.html": ("guide.zh-CN.html", "简体中文"),
+            "guide.zh-CN.html": ("guide.html", "English"),
+            "contributing.html": ("contributing.zh-CN.html", "简体中文"),
+            "contributing.zh-CN.html": ("contributing.html", "English"),
+        }
+        alternate_href, alternate_label = alternates.get(destination, ("", ""))
+        (OUTPUT / destination).write_text(
+            document_page(
+                body,
+                title,
+                "license.html",
+                lang=lang,
+                alternate_href=alternate_href,
+                alternate_label=alternate_label,
+                lab_label="Interactive lab" if lang == "en" else "交互演示",
+                license_label="MIT license" if lang == "en" else "MIT 许可证",
+            ),
+            encoding="utf-8",
+        )
     license_body = "<h1>MIT License</h1><pre>" + escape((ROOT / "LICENSE").read_text(encoding="utf-8")) + "</pre>"
     (OUTPUT / "license.html").write_text(document_page(license_body, "License", "license.html"), encoding="utf-8")
     for path in media:

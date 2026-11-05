@@ -637,6 +637,11 @@ footer p {
 footer > a {
   white-space: nowrap;
 }
+.footer-links {
+  display: flex;
+  gap: 16px;
+  white-space: nowrap;
+}
 .skip-link {
   position: absolute;
   top: -80px;

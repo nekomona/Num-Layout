@@ -50,7 +50,9 @@ To deploy from a different branch later, update the branch filter in
 `tools/build_pages.py` stages an explicit set of public files in the ignored
 `artifacts/pages/` directory. It includes the interactive lab, rendered guide,
 project overview, testing and recording instructions, MIT license, and reviewed
-media. Local notes, raw screenshots, Git history, and the rest of the workspace
+media. The public documentation is available in English and Simplified Chinese,
+including matching overview, user-guide, and contribution pages. Local notes,
+raw screenshots, Git history, and the rest of the workspace
 are excluded. GitHub uploads that staging directory; GitLab copies its validated
 contents into the `public/` Pages artifact.
 

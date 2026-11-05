@@ -29,7 +29,9 @@ class Links(HTMLParser):
 
 
 def check_artifact():
-    expected = {"index.html", "app.js", "style.css", "guide.html", "overview.html",
+    expected = {"index.html", "app.js", "style.css", "guide.html", "guide.zh-CN.html",
+                "overview.html", "overview.zh-CN.html", "contributing.html",
+                "contributing.zh-CN.html",
                 "publishing.html", "testing.html", "recordings.html", "license.html", ".nojekyll"}
     expected.update("media/" + path.name for path in (ROOT / "docs/media").iterdir()
                     if path.suffix in (".gif", ".svg", ".png", ".webp"))
@@ -90,7 +92,15 @@ def check_browser(channel):
             page.get_by_role("link", name="User guide").click()
             assert page.url == base + "guide.html"
             assert page.locator("#installation").count() == 1
-            for document in ("overview.html", "testing.html", "publishing.html", "recordings.html", "license.html"):
+            page.locator('.topbar a[href="guide.zh-CN.html"]').click()
+            assert page.url == base + "guide.zh-CN.html"
+            assert page.locator("h1").inner_text() == "Numeric Layout Assist — 用户教程"
+            assert page.locator("#安装").count() == 1
+            page.locator('.topbar a[href="guide.html"]').click()
+            assert page.url == base + "guide.html"
+            for document in ("overview.html", "overview.zh-CN.html", "contributing.html",
+                             "contributing.zh-CN.html",
+                             "testing.html", "publishing.html", "recordings.html", "license.html"):
                 assert page.goto(base + document).status == 200
                 assert page.locator("main").inner_text()
             assert page.request.get(base + "media/overview.gif").status == 200

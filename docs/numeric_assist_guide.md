@@ -1,5 +1,7 @@
 # Numeric Layout Assist — user guide
 
+[English](numeric_assist_guide.md) · [简体中文](numeric_assist_guide.zh-CN.md)
+
 [Project overview](../README.md) · [Interactive demonstrations](demo/index.html) · [Tests](../test/README.md)
 
 Numeric Layout Assist adds numeric entry and geometry picking to native Virtuoso
@@ -340,3 +342,5 @@ reviewed documentation assets. `test/` contains test scripts and manual checks. 
 belong in `.local/agent/`; screenshots,
 verification reports, and other test output belong in `artifacts/`. Both local
 folders are ignored by Git.
+
+See [CONTRIBUTING.md](../CONTRIBUTING.md) for development, testing, and pre-PR checks.
