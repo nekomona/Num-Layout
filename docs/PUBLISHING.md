@@ -30,19 +30,19 @@ them, and allow deployments to the `github-pages` environment from `main`.
 
 ## GitLab Pages
 
-The `.gitlab-ci.yml` pipeline builds and validates the site on the `lab` branch
-and for merge requests targeting `lab`. A successful `lab` branch pipeline
-passes the validated artifact to the `pages` job, which publishes its contents
-from `public/`. Merge request pipelines validate only and do not deploy.
+The `.gitlab-ci.yml` pipeline builds and validates the site on branch and tag
+pipelines. A successful pipeline on `main` passes the validated artifact to the
+`pages` job, which publishes its contents from `public/`. Merge request pipelines
+are not explicitly configured.
 
-After pushing this configuration and the `lab` branch to GitLab, make sure a
+After pushing this configuration and the `main` branch to GitLab, make sure a
 runner that can use the `python:3.12-slim` image is available and GitLab Pages
 is enabled for the project. Check **Build → Pipelines** for the job results and
 **Deploy → Pages** for the URL and access settings. Menu names and Pages
 availability can vary with the GitLab instance and its configuration.
 
 The pipeline does not require a personal access token or a hard-coded domain.
-To deploy from a different branch later, update the branch rules in
+To deploy from a different branch later, update the branch filter in
 `.gitlab-ci.yml`.
 
 ## What is published

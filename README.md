@@ -50,3 +50,7 @@ and [Pages deployment](docs/PUBLISHING.md) are documented separately.
 The ruler toolbar button toggles Numeric Assist. Full command behavior,
 installation, grid handling, and key restoration are in the
 **[user guide](docs/numeric_assist_guide.md)**.
+
+## Thanks
+
+Built with help from [Virtuoso Bridge Lite](https://github.com/Arcadia-1/virtuoso-bridge-lite) — a handy bridge for developing and testing with Virtuoso.
