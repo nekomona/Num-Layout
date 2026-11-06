@@ -15,9 +15,46 @@ def main():
         page = browser.new_page(viewport={"width": 1440, "height": 1050})
         errors = []
         page.on("pageerror", lambda error: errors.append(str(error)))
-        url = (ROOT / "docs/demo/index.html").as_uri()
+        base_url = (ROOT / "docs/demo/index.html").as_uri()
+        url = base_url + "?lang=en"
         page.goto(url)
         page.wait_for_function("window.NumericDemo")
+        assert page.evaluate("NumericDemo.state.showcase") is True
+        assert page.evaluate("NumericDemo.state.language") == "en"
+
+        zh_context = browser.new_context(
+            locale="zh-CN", viewport={"width": 1440, "height": 1050}
+        )
+        zh_page = zh_context.new_page()
+        zh_page.goto(base_url)
+        zh_page.wait_for_function("window.NumericDemo")
+        assert zh_page.evaluate("NumericDemo.state.language") == "zh"
+        assert zh_page.locator("#tool-title").inner_text() == "Path / Wire 宽度"
+        assert zh_page.locator("#showcase").inner_text() == "⇄ 循环展示"
+        assert zh_page.locator('label[for="field-value"]').inner_text() == "宽度"
+        assert zh_page.locator("#guide-link").inner_text() == "用户教程 ↗"
+        assert zh_page.locator("#guide-link").get_attribute("href") == "guide.zh-CN.html"
+        zh_names = {
+            "pick": "选择尺寸", "width": "Path / Wire 宽度", "rectangle": "矩形",
+            "measure": "测量", "stretch": "拉伸", "move": "移动",
+            "copy": "复制 + 数量", "contour": "轮廓偏移", "cleanup": "Steiner 清理",
+        }
+        for scene_id, name in zh_names.items():
+            zh_page.locator(f'[data-tool="{scene_id}"]').click()
+            zh_page.wait_for_function("id => NumericDemo.state.tool === id", arg=scene_id)
+            assert zh_page.locator("#tool-title").inner_text() == name
+            assert zh_page.locator("#steps").inner_text()
+        zh_page.locator('[data-tool="width"]').click()
+        zh_page.wait_for_function("NumericDemo.state.tool === 'width'")
+        assert "开始 Path" in zh_page.locator("#steps").inner_text()
+        zh_page.locator('[data-language="en"]').click()
+        assert zh_page.evaluate("NumericDemo.state.language") == "en"
+        assert zh_page.locator("#tool-title").inner_text() == "Path / Wire width"
+        assert zh_page.evaluate("localStorage.getItem('numeric-layout-assist-language')") == "en"
+        zh_page.reload()
+        zh_page.wait_for_function("window.NumericDemo")
+        assert zh_page.evaluate("NumericDemo.state.language") == "en"
+        zh_context.close()
         scenes = {s["id"]: s for s in page.evaluate("NumericDemo.tools")}
 
         def show(name, phase, fraction=1, values=None):
@@ -33,6 +70,38 @@ def main():
 
         def balloon():
             return page.locator('[data-role="balloon"]').text_content()
+
+        # Showcase mode advances through tools after the normal completion hold.
+        show("pick", "confirm")
+        page.evaluate("NumericDemo.setShowcase(true)")
+        page.evaluate("NumericDemo.advance(2999)")
+        assert state()["tool"] == "pick" and state()["holding"]
+        page.evaluate("NumericDemo.advance(1)")
+        assert state()["tool"] == "width" and state()["showcase"]
+        page.wait_for_function("document.querySelector('#tool-marker').dataset.markerTool === 'width'")
+        assert "transform" in page.locator("#tool-marker").evaluate(
+            "el => getComputedStyle(el).transitionProperty"
+        )
+        show("cleanup", "confirm")
+        page.evaluate("NumericDemo.setShowcase(true)")
+        page.evaluate("NumericDemo.advance(3000)")
+        assert state()["tool"] == "pick" and state()["showcase"]
+
+        page.evaluate("NumericDemo.setShowcase(true)")
+        page.locator('[data-tool="copy"]').click()
+        page.wait_for_function("NumericDemo.state.tool === 'copy'")
+        assert state()["showcase"] is False
+        page.evaluate("NumericDemo.setShowcase(true)")
+        page.locator("#capture").click(position={"x": 20, "y": 20})
+        assert state()["showcase"] is False
+        page.evaluate("NumericDemo.setShowcase(true)")
+        page.locator("#field-count").click()
+        assert state()["showcase"] is False
+        page.evaluate("NumericDemo.setShowcase(false)")
+        page.locator("#showcase").click()
+        assert state()["showcase"] is True
+        page.locator("#showcase").click()
+        assert state()["showcase"] is False
 
         for name, scene in scenes.items():
             page.locator(f'[data-tool="{name}"]').click()
@@ -228,9 +297,10 @@ def main():
         assert page.locator("#installation").count() == 1
         assert not errors, errors
         browser.close()
-    print("Passed: nine scenes, command order, hover/cursor continuity, native balloon text,")
-    print("typing/pause timing, rounding/validation, all auto-apply paths, debounce cancellation,")
-    print("speed, pause/resume, looping, tool switches, deep links and responsive layouts.")
+    print("Passed: bilingual auto-selection and persistence, all nine translated scenes,")
+    print("showcase auto-advance/wrap and interaction cancellation, animated tool marker,")
+    print("command order, cursor/input timing, validation, replay, speed, looping,")
+    print("deep links, and responsive layouts.")
 
 
 if __name__ == "__main__":

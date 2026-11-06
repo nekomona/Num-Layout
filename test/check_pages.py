@@ -84,7 +84,7 @@ def check_browser(channel):
             page = browser.new_page()
             errors = []
             page.on("pageerror", lambda error: errors.append(str(error)))
-            response = page.goto(base + "#copy")
+            response = page.goto(base + "?lang=en#copy")
             assert response.status == 200
             page.wait_for_function("window.NumericDemo && NumericDemo.state.tool === 'copy'")
             page.get_by_role("button", name="Next step").click()

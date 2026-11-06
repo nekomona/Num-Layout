@@ -31,7 +31,8 @@ Path width, Measurement, and Copy (01, 02, 04, 07). Regenerating those four
 scenes together also rebuilds the grid.
 
 The exporter samples the same event timeline as the interactive player at ten
-frames per second, then assembles the frames with a three-second pause after
+frames per second, with English forced by the deterministic export mode. It then
+assembles the frames with a three-second pause after
 each complete demonstration. The README uses one composited GIF: exactly one
 panel animates while the others hold their completed results, with a one-second
 all-still gap between panels, including the last-to-first transition. Its
@@ -46,6 +47,9 @@ Every scene begins with its native command and ends by moving the pointer back
 to empty space within the final step; the action bar then reads **Done.**
 Cursor balloons use `vbnModeText`, `vbnDisplayText`, and `vbnPositionHint` labels
 from the plugin. Explanatory text belongs in the bottom bar.
+The interactive page selects English or Chinese from the browser language and
+also accepts `?lang=en` or `?lang=zh-CN`; capture stays English so media names,
+balloons, and review output remain deterministic.
 
 Intermediate PNGs stay under ignored
 `artifacts/demo-frames/`. Only the reviewed GIFs are tracked in `docs/media/`.

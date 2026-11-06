@@ -170,7 +170,348 @@
       ],
     },
   ];
-  const exporting = new URLSearchParams(location.search).has("export");
+  const UI = {
+    en: {
+      title: "Numeric Layout Assist · Interactive lab",
+      description:
+        "Explore Numeric Layout Assist: interactive illustrations of precise widths, positions, copies, and contours in Virtuoso Layout.",
+      skip: "Skip to demonstration",
+      home: "Numeric Layout Assist home",
+      resources: "Resources",
+      language: "Language",
+      guide: "User guide ↗",
+      license: "MIT license ↗",
+      builtFor: "BUILT FOR VIRTUOSO LAYOUT",
+      hero: "Precision,<br><span>at your cursor.</span>",
+      heroCopy:
+        "Pick a dimension. Type a value.<br>Preview the result before you commit.",
+      numericEntry: "numeric entry",
+      absolute: "absolute / contour",
+      copyCount: "copy count",
+      explore: "EXPLORE THE TOOLS <span>01—09</span>",
+      chooseTool: "Choose a tool",
+      aside: "Every scene uses synthetic geometry.<br>Explore freely.",
+      illustrative: "ILLUSTRATIVE DEMO",
+      animatedInput: "Animated input",
+      play: "▶ Play",
+      pause: "Ⅱ Pause",
+      replay: "↺ Replay",
+      next: "Next step →",
+      reset: "↺ Reset",
+      loopOn: "↻ Loop on",
+      loopOff: "↻ Loop off",
+      loopTitle: "Wait 3 seconds between loops",
+      showcaseOn: "⇄ Showcase on",
+      showcaseOff: "⇄ Showcase off",
+      showcaseTitle: "Automatically advance through every tool",
+      speed: "Speed",
+      steps: "Demonstration steps",
+      tryValue: "TRY A VALUE",
+      apply: "Apply & replay ↗",
+      autoReplay:
+        "Changes replay automatically: choose an option, press Enter, leave the input, or pause typing for 3 seconds.",
+      whatHappens: "WHAT HAPPENS",
+      candidate: "Candidate",
+      preview: "Selection / preview",
+      geometry: "Geometry",
+      reference: "Read the tool guide ↗",
+      principles: "A SMALL HABIT. A PRECISE EDIT.",
+      principle1: "Pick or type",
+      principle1Copy:
+        "Measure existing geometry, or enter the dimension you already know.",
+      principle2: "See the target",
+      principle2Copy:
+        "Magenta previews show the intended result before confirmation.",
+      principle3: "Stay in the flow",
+      principle3Copy:
+        "Numeric entry works with the native drawing and editing command.",
+      footer:
+        'Interactive illustrations, not a live Virtuoso session. Native snapping and command behavior are described in the <a id="footer-guide-link" href="guide.html">guide</a>.',
+      overview: "Project overview ↗",
+      noscript:
+        'Enable JavaScript for interactive demonstrations, or read the <a href="guide.html">complete user guide</a>.',
+      workspace: "Interactive tool demonstrations",
+      done: "Done.",
+      input: "INPUT",
+      action: "ACTION",
+      syntheticScene: "Synthetic layout demonstration",
+      choiceError: "Choose one of the listed modes.",
+      rangeError: "Use the scene ranges shown below the input.",
+      xyError: "Enter two numbers as X,Y for this scene.",
+      wholeNumber: " as a whole number",
+    },
+    zh: {
+      title: "Numeric Layout Assist · 交互演示",
+      description:
+        "体验 Numeric Layout Assist：在 Virtuoso Layout 中精确输入宽度、位置、副本数量和轮廓偏移的交互演示。",
+      skip: "跳到演示",
+      home: "Numeric Layout Assist 首页",
+      resources: "资源",
+      language: "语言",
+      guide: "用户教程 ↗",
+      license: "MIT 许可证 ↗",
+      builtFor: "为 VIRTUOSO LAYOUT 打造",
+      hero: "精确，<br><span>就在光标边。</span>",
+      heroCopy: "选择尺寸，输入数值。<br>提交前先看结果。",
+      numericEntry: "数值输入",
+      absolute: "绝对定位 / 轮廓",
+      copyCount: "复制数量",
+      explore: "探索工具 <span>01—09</span>",
+      chooseTool: "选择工具",
+      aside: "所有场景均使用合成几何。<br>请自由体验。",
+      illustrative: "示意演示",
+      animatedInput: "动画输入",
+      play: "▶ 播放",
+      pause: "Ⅱ 暂停",
+      replay: "↺ 重播",
+      next: "下一步 →",
+      reset: "↺ 重置",
+      loopOn: "↻ 单页循环",
+      loopOff: "↻ 单页不循环",
+      loopTitle: "每轮结束后等待 3 秒",
+      showcaseOn: "⇄ 循环展示",
+      showcaseOff: "⇄ 不循环展示",
+      showcaseTitle: "自动依次播放全部工具",
+      speed: "速度",
+      steps: "演示步骤",
+      tryValue: "尝试数值",
+      apply: "应用并重播 ↗",
+      autoReplay:
+        "修改后会自动重播：选择选项、按 Enter、离开输入框，或停止输入 3 秒。",
+      whatHappens: "会发生什么",
+      candidate: "候选",
+      preview: "选择 / 预览",
+      geometry: "几何",
+      reference: "阅读工具教程 ↗",
+      principles: "一个小习惯，一次精确编辑。",
+      principle1: "拾取或输入",
+      principle1Copy: "测量现有几何，或直接输入已经知道的尺寸。",
+      principle2: "先看目标",
+      principle2Copy: "洋红色预览会在确认前显示预期结果。",
+      principle3: "保持操作连贯",
+      principle3Copy: "数值输入与原生绘制、编辑命令协同工作。",
+      footer:
+        '这里是交互示意图，并非实时 Virtuoso 会话。原生吸附和命令行为见 <a id="footer-guide-link" href="guide.zh-CN.html">用户教程</a>。',
+      overview: "项目概览 ↗",
+      noscript:
+        '启用 JavaScript 以运行交互演示，或阅读<a href="guide.zh-CN.html">完整用户教程</a>。',
+      workspace: "交互式工具演示",
+      done: "完成。",
+      input: "输入",
+      action: "操作",
+      syntheticScene: "合成版图演示",
+      choiceError: "请选择列表中的一项。",
+      rangeError: "请使用输入框下方给出的场景范围。",
+      xyError: "请按 X,Y 输入两个数值。",
+      wholeNumber: "，且必须为整数",
+    },
+  };
+  const zhTools = {
+    pick: {
+      name: "选择尺寸",
+      category: "读取几何",
+      description: "从边获取数值，或选择第二条平行边来测量两条边之间的间距。",
+      anchor: "j-数值输入",
+      fields: {
+        kind: {
+          label: "测量方式",
+          options: { spacing: "平行边间距", length: "单边长度" },
+        },
+      },
+    },
+    width: {
+      name: "Path / Wire 宽度",
+      category: "用尺寸绘制",
+      description:
+        "在原生 Path 或 Wire 命令中设置宽度，并在确认前查看新的轮廓。",
+      anchor: "j-数值输入",
+      fields: {
+        value: { label: "宽度", hint: "场景范围：0.2–5 µm" },
+      },
+    },
+    rectangle: {
+      name: "矩形",
+      category: "两个尺寸，一次输入",
+      description:
+        "同时输入宽度和高度。放下第一个角点后，矩形会跟随光标所在象限。",
+      anchor: "xy-输入与绝对位置",
+      fields: {
+        value: {
+          label: "宽度、高度",
+          hint: "场景范围：宽度 2–28，高度 2–15 µm",
+        },
+      },
+    },
+    measure: {
+      name: "测量",
+      category: "可精确到达的标尺",
+      description: "沿选定方向为新的两点标尺指定精确长度。",
+      anchor: "j-数值输入",
+      fields: {
+        value: { label: "标尺长度", hint: "场景范围：4–35 µm" },
+      },
+    },
+    stretch: {
+      name: "拉伸",
+      category: "设置最终范围",
+      description: "调整选中边的最终尺寸，同时保持对边固定。",
+      anchor: "j-数值输入",
+      fields: {
+        value: { label: "最终 X 范围", hint: "场景范围：4–28 µm" },
+      },
+    },
+    move: {
+      name: "移动",
+      category: "位移或目标位置",
+      description: "选择相对位移或参考点的绝对位置，并预览目标。",
+      anchor: "xy-输入与绝对位置",
+      fields: {
+        mode: {
+          label: "坐标模式",
+          options: { relative: "J · 相对 X,Y", absolute: "Shift+J · 绝对 X,Y" },
+        },
+        value: {
+          label: "X,Y",
+          hint: "相对：−8–20，−7–10。绝对：4–36，3–20 µm。",
+        },
+      },
+    },
+    copy: {
+      name: "复制 + 数量",
+      category: "一个间距，多个副本",
+      description:
+        "用 N 设置正整数副本数量，再用 J 设置每份位移，并预览全部 Step 目标。",
+      anchor: "copy-数量n",
+      fields: {
+        count: { label: "副本数量", hint: "场景范围：1–4 个副本" },
+        value: { label: "每份位移", hint: "场景范围：5–10 µm，方向为水平" },
+      },
+    },
+    contour: {
+      name: "轮廓偏移",
+      category: "偏移边界",
+      description:
+        "围绕 pivot 调整选中矩形。设置偏移、选择 pivot，再决定向内或向外。",
+      anchor: "为矩形做-contour",
+      fields: {
+        value: { label: "偏移量", hint: "场景范围：0.5–3 µm" },
+        side: { label: "方向", options: { outside: "外侧", inside: "内侧" } },
+      },
+    },
+    cleanup: {
+      name: "Steiner 清理",
+      category: "清除不可见对象",
+      description: "删除当前版图中的不可见 Steiner 对象，同时保留已绘制几何。",
+      anchor: "工具栏与预览",
+      fields: {
+        count: {
+          label: "示例 Steiner 对象数",
+          hint: "标记仅在此演示中显示以便说明",
+        },
+      },
+    },
+  };
+  const params = new URLSearchParams(location.search);
+  const exporting = params.has("export");
+  const readLanguage = () => {
+    try {
+      return localStorage.getItem("numeric-layout-assist-language");
+    } catch {
+      return null;
+    }
+  };
+  const requestedLanguage = params.get("lang")?.toLowerCase();
+  const browserLanguage = (
+    navigator.languages?.[0] ||
+    navigator.language ||
+    "en"
+  ).toLowerCase();
+  let lang = exporting
+    ? "en"
+    : requestedLanguage?.startsWith("zh")
+      ? "zh"
+      : requestedLanguage?.startsWith("en")
+        ? "en"
+        : readLanguage() || (browserLanguage.startsWith("zh") ? "zh" : "en");
+  const isZh = () => lang === "zh";
+  const ui = (key) => UI[lang][key];
+  const tr = (en, zh) => (isZh() ? zh : en);
+  const toolText = (item, key) => (isZh() ? zhTools[item.id][key] : item[key]);
+  const fieldInfo = (field) =>
+    isZh() ? zhTools[tool.id].fields[field.key] : null;
+  const fieldLabel = (field) => fieldInfo(field)?.label ?? field.label;
+  const fieldHint = (field) => fieldInfo(field)?.hint ?? field.hint;
+  const fieldOptions = (field) =>
+    field.options.map(([value, label]) => [
+      value,
+      fieldInfo(field)?.options?.[value] ?? label,
+    ]);
+  function syncLanguageData() {
+    for (const item of tools) {
+      item.phases = item.phasesEn.map((p) => ({
+        ...p,
+        title: isZh() ? p.titleZh : p.title,
+        description: isZh() ? p.descriptionZh : p.description,
+      }));
+      item.steps = item.phases.map((p) => p.title);
+      item.explanations = item.phases.map((p) => p.description);
+    }
+  }
+  function applyStaticLanguage() {
+    document.documentElement.lang = isZh() ? "zh-CN" : "en";
+    document.title = ui("title");
+    $("page-description").setAttribute("content", ui("description"));
+    $("skip-link").textContent = ui("skip");
+    $("brand").setAttribute("aria-label", ui("home"));
+    $("resource-nav").setAttribute("aria-label", ui("resources"));
+    $("language-switch").setAttribute("aria-label", ui("language"));
+    document.querySelectorAll("[data-language]").forEach((button) => {
+      const active = button.dataset.language === (isZh() ? "zh" : "en");
+      button.setAttribute("aria-pressed", String(active));
+    });
+    $("guide-link").textContent = ui("guide");
+    $("guide-link").href = isZh() ? "guide.zh-CN.html" : "guide.html";
+    $("license-link").textContent = ui("license");
+    $("built-for").innerHTML =
+      `<span class="signal-dot"></span> ${ui("builtFor")}`;
+    $("hero-title").innerHTML = ui("hero");
+    $("hero-copy").innerHTML = ui("heroCopy");
+    $("key-entry-label").textContent = ui("numericEntry");
+    $("key-absolute-label").textContent = ui("absolute");
+    $("key-copy-label").textContent = ui("copyCount");
+    $("explore-heading").innerHTML = ui("explore");
+    $("tools").setAttribute("aria-label", ui("chooseTool"));
+    $("aside-note").innerHTML = ui("aside");
+    $("illustration-label").textContent = ui("illustrative");
+    $("input-strip").setAttribute("aria-label", ui("animatedInput"));
+    $("steps").setAttribute("aria-label", ui("steps"));
+    $("try-heading").textContent = ui("tryValue");
+    $("apply-button").textContent = ui("apply");
+    $("auto-replay-hint").textContent = ui("autoReplay");
+    $("what-heading").textContent = ui("whatHappens");
+    $("legend-candidate").textContent = ui("candidate");
+    $("legend-preview").textContent = ui("preview");
+    $("legend-geometry").textContent = ui("geometry");
+    $("reference-label").textContent = ui("reference");
+    $("principles-eyebrow").textContent = ui("principles");
+    $("principle-one-title").textContent = ui("principle1");
+    $("principle-one-copy").textContent = ui("principle1Copy");
+    $("principle-two-title").textContent = ui("principle2");
+    $("principle-two-copy").textContent = ui("principle2Copy");
+    $("principle-three-title").textContent = ui("principle3");
+    $("principle-three-copy").textContent = ui("principle3Copy");
+    $("footer-note").innerHTML = ui("footer");
+    $("overview-link").textContent = ui("overview");
+    $("overview-link").href = isZh()
+      ? "../../README.zh-CN.md"
+      : "../../README.md";
+    const noscript = document.querySelector("noscript");
+    if (noscript) noscript.innerHTML = ui("noscript");
+    $("workspace").setAttribute("aria-label", ui("workspace"));
+    $("loop").title = ui("loopTitle");
+    $("showcase").title = ui("showcaseTitle");
+    $("speed-label").textContent = ui("speed");
+  }
   const LOOP_WAIT = 3000;
   const ACTION_HOLD = 1200;
   let tool = tools[1],
@@ -183,6 +524,7 @@
     position = 0,
     speed = 1,
     loop = true,
+    showcase = true,
     holding = false,
     holdElapsed = 0,
     inputTimer = 0;
@@ -528,10 +870,71 @@
       ),
     ],
   };
+  const phaseZh = {
+    pick: [
+      ["开始 Stretch", "S → 点击右上方小矩形的下边。"],
+      ["启动 J", "J 为已选中的 Stretch 边启动数值输入。"],
+      ["选择边", "将指针移到边上并点击，用其长度更新 Stretch 预览。"],
+      ["选择数值", "选择第二条平行边测量间距，或保留第一条边的长度。"],
+      ["应用尺寸", "按 Enter 将拾取的尺寸应用到正在拉伸的矩形。"],
+    ],
+    width: [
+      ["开始 Path", "P → 点击短路径以选中并延长它。"],
+      ["拉出线段", "向右拖动指针，先预览窄 Path 段。"],
+      ["输入宽度", "J → 输入宽度；整条延长后的 Path（包括原段）会一起变化。"],
+      ["应用宽度", "按 Enter 应用宽度；原生 Path 继续保持活动。"],
+    ],
+    rectangle: [
+      ["开始 Rectangle", "R → 点击新矩形的第一个角点。"],
+      ["拉出角点", "移动到右上方象限，预览矩形范围。"],
+      ["输入 X,Y", "J → 逐字输入宽度,高度。"],
+      ["完成矩形", "按 Enter 确认两个尺寸并完成矩形。"],
+    ],
+    measure: [
+      ["开始 Measurement", "K → 点击起点；在此之前不会出现标尺。"],
+      ["选择方向", "向右拖动鼠标，为新标尺确定水平方向。"],
+      ["输入长度", "J → 输入长度，预览精确的第二端点。"],
+      ["保存标尺", "按 Enter 保存两点标尺并结束 Measurement。"],
+    ],
+    stretch: [
+      ["开始 Stretch", "S → 点击右边；对边保持固定。"],
+      ["设置最终尺寸", "J → 输入最终 X 范围，调整选中边。"],
+      ["应用尺寸", "按 Enter 应用最终范围；整体对象的 Stretch 使用位移。"],
+    ],
+    move: [
+      ["开始 Move", "M → 点击对象；此场景以对象中心作为参考点。"],
+      ["输入 X,Y", "J 使用相对位移；Shift+J 使用参考点的绝对位置。"],
+      ["放置对象", "按 Enter 将对象放到预览的参考点位置。"],
+    ],
+    copy: [
+      ["开始 Copy", "C → 点击第一个对象；源对象保持原位。"],
+      ["拉出预览", "向右拖动，在按 N 前显示初始 Copy 预览。"],
+      ["设置数量", "N → 输入正整数 → Enter；此时尚未放置副本。"],
+      ["设置间距", "J → 输入每份位移，预览每个 Step 目标。"],
+      ["放置副本", "按 Enter 按相同间距的连续倍数放置副本。"],
+    ],
+    contour: [
+      ["选择矩形", "在没有原生绘制命令时选择一个矩形。"],
+      ["输入偏移", "Shift+J → 输入正偏移 → Enter，随后选择 pivot。"],
+      ["选择 pivot", "Shift+J 选择 pivot 矩形；也可用 J 选择四条边界边。"],
+      ["选择方向", "将指针移到 pivot 内侧或外侧，选择轮廓方向。"],
+      ["调整矩形", "按 Enter 围绕所选 pivot 调整矩形。"],
+    ],
+    cleanup: [
+      ["检查版图", "Steiner 通常不可见；这里显示标记以便说明。"],
+      ["执行清理", "在可编辑版图中点击路由节点与扫帚工具栏按钮。"],
+      ["对象已删除", "CIW 会报告删除数量；图形保留，cellview 不会自动保存。"],
+    ],
+  };
   for (const item of tools) {
     item.phases = plans[item.id];
     item.steps = item.phases.map((p) => p.title);
     item.explanations = item.phases.map((p) => p.description);
+    item.phasesEn = plans[item.id];
+    item.phases.forEach((p, index) => {
+      p.titleZh = phaseZh[item.id][index][0];
+      p.descriptionZh = phaseZh[item.id][index][1];
+    });
   }
   function pointAt(index) {
     const p = tool.phases[index];
@@ -652,12 +1055,12 @@
       .filter((event) => animation.time >= event.start)
       .slice(-8);
     const currentAction = animation.finished
-      ? "Done."
+      ? ui("done")
       : animation.input !== null
         ? animation.typed || " "
         : recent.at(-1)?.key || animation.title;
     $("input-strip").innerHTML =
-      `<span class="input-label">${animation.input !== null ? "INPUT" : "ACTION"}</span><div class="key-history">${recent.map((event) => `<span class="keycap ${animation.time < event.end ? "pressed" : ""}">${esc(event.key)}</span>`).join("")}</div><span class="typed-value" data-typed="${esc(animation.typed)}">${esc(currentAction)}<span class="typing-caret">${animation.input !== null && animation.typed !== animation.input ? "▏" : ""}</span></span>`;
+      `<span class="input-label">${ui(animation.input !== null ? "input" : "action")}</span><div class="key-history">${recent.map((event) => `<span class="keycap ${animation.time < event.end ? "pressed" : ""}">${esc(event.key)}</span>`).join("")}</div><span class="typed-value" data-typed="${esc(animation.typed)}">${esc(currentAction)}<span class="typing-caret">${animation.input !== null && animation.typed !== animation.input ? "▏" : ""}</span></span>`;
     $("input-strip").dataset.pressed = animation.pressed;
   }
   function approach(from, to, fraction) {
@@ -774,7 +1177,10 @@
           ? `${size} [${second ? "2 edges" : "1 edge"}]  |  STRETCH LENGTH`
           : "STRETCH LENGTH";
       if (first)
-        result = `Picked ${second ? "spacing" : "length"}: ${size} µm → Stretch preview on the right`;
+        result = tr(
+          `Picked ${second ? "spacing" : "length"}: ${size} µm → Stretch preview on the right`,
+          `已拾取${second ? "间距" : "长度"}：${size} µm → 右侧 Stretch 预览已更新`,
+        );
     } else if (tool.id === "width") {
       if (selected) {
         const end = id === "start" ? 5 : id === "aim" ? point[0] : 31;
@@ -797,7 +1203,10 @@
       } else s += rect(2, 9.7, 3, 0.6);
       if (startedInput && !done) label = numericLabel("PATH WIDTH");
       if (startedInput && hasInput)
-        result = `Width = ${f(v)} µm${done ? " · native Path continues" : " · preview"}`;
+        result = tr(
+          `Width = ${f(v)} µm${done ? " · native Path continues" : " · preview"}`,
+          `宽度 = ${f(v)} µm${done ? " · 原生 Path 继续保持活动" : " · 预览"}`,
+        );
     } else if (tool.id === "rectangle") {
       if (selected) s += cross(8, 4);
       if (after("start")) {
@@ -821,7 +1230,7 @@
       }
       if (startedInput && !done) label = numericLabel("RECT SIZE X,Y");
       if (startedInput && hasInput)
-        result = `${f(v[0])} × ${f(v[1])} µm${done ? " · rectangle completed" : " · preview"}`;
+        result = `${f(v[0])} × ${f(v[1])} µm${tr(done ? " · rectangle completed" : " · preview", done ? " · 矩形已完成" : " · 预览")}`;
     } else if (tool.id === "measure") {
       s +=
         rect(6, 5, 8, 3, { opacity: 0.3 }) +
@@ -834,7 +1243,10 @@
       }
       if (startedInput && !done) label = numericLabel("MEASUREMENT LENGTH");
       if (startedInput && hasInput)
-        result = `${done ? "Ruler saved" : "Preview length"}: ${f(v)} µm`;
+        result = tr(
+          `${done ? "Ruler saved" : "Preview length"}: ${f(v)} µm`,
+          `${done ? "标尺已保存" : "预览长度"}：${f(v)} µm`,
+        );
     } else if (tool.id === "stretch") {
       s += rect(7, 6, 10, 7, { opacity: done ? 0.25 : 1 });
       if (startedInput && hasInput)
@@ -847,7 +1259,10 @@
         );
       if (startedInput && !done) label = numericLabel("STRETCH LENGTH");
       if (startedInput && hasInput)
-        result = `Final X extent: ${f(v)} µm · opposite edge fixed`;
+        result = tr(
+          `Final X extent: ${f(v)} µm · opposite edge fixed`,
+          `最终 X 范围：${f(v)} µm · 对边固定`,
+        );
     } else if (tool.id === "move") {
       if (!done) {
         s += `<g data-role="move-source">${rect(6.5, 6.5, 7, 5)}</g>`;
@@ -860,7 +1275,10 @@
             line(X(10), Y(9), X(x), Y(y), C.magenta, 1.5, "5 5") +
             cross(x, y, C.magenta);
         s += `<g data-role="move-target">${rect(x - 3.5, y - 2.5, 7, 5, previewStyle)}</g>`;
-        result = `Reference → (${f(x)}, ${f(y)}) µm`;
+        result = tr(
+          `Reference → (${f(x)}, ${f(y)}) µm`,
+          `参考点 → (${f(x)}, ${f(y)}) µm`,
+        );
       }
       if (startedInput && !done)
         label = numericLabel(
@@ -890,9 +1308,19 @@
         );
       if (startedInput && hasInput)
         result = done
-          ? `${n} copies placed; source retained`
-          : `${n} preview targets at ${f(v)} µm pitch`;
-      else if (id === "count") result = `Count = ${n}; nothing placed`;
+          ? tr(
+              `${n} copies placed; source retained`,
+              `已放置 ${n} 个副本；源对象保留`,
+            )
+          : tr(
+              `${n} preview targets at ${f(v)} µm pitch`,
+              `${n} 个预览目标，间距 ${f(v)} µm`,
+            );
+      else if (id === "count")
+        result = tr(
+          `Count = ${n}; nothing placed`,
+          `数量 = ${n}；尚未放置副本`,
+        );
     } else if (tool.id === "contour") {
       const inside = done
         ? values.side === "inside"
@@ -920,7 +1348,10 @@
         label = `CONTOUR ${inside ? "INSIDE" : "OUTSIDE"}  ${f(v)}`;
       }
       if (after("pivot"))
-        result = `${values.side} offset: ${f(v)} µm · pivot can also be four edges`;
+        result = tr(
+          `${values.side} offset: ${f(v)} µm · pivot can also be four edges`,
+          `${values.side === "inside" ? "向内" : "向外"}偏移：${f(v)} µm · pivot 也可以取四条边`,
+        );
     } else {
       s +=
         rect(5, 5, 10, 4) +
@@ -939,10 +1370,16 @@
           s +=
             `<circle cx="${X(x)}" cy="${Y(y)}" r="12" fill="${C.bg}" stroke="${C.yellow}" stroke-dasharray="3 3"/>` +
             cross(x, y);
-      s += `<g data-role="cleanup-button"><rect x="${X(36)}" y="${Y(22)}" width="112" height="48" rx="5" fill="#2b3d4b" stroke="${C.faint}"/>${text(X(39.7), Y(20) + 4, "Cleanup", C.text, 14, "middle")}</g>`;
+      s += `<g data-role="cleanup-button"><rect x="${X(36)}" y="${Y(22)}" width="112" height="48" rx="5" fill="#2b3d4b" stroke="${C.faint}"/>${text(X(39.7), Y(20) + 4, tr("Cleanup", "清理"), C.text, 14, "middle")}</g>`;
       result = removed
-        ? `${n} Steiner objects removed · cellview not saved`
-        : `${n} synthetic Steiner objects · markers revealed for illustration`;
+        ? tr(
+            `${n} Steiner objects removed · cellview not saved`,
+            `已删除 ${n} 个 Steiner 对象 · cellview 未保存`,
+          )
+        : tr(
+            `${n} synthetic Steiner objects · markers revealed for illustration`,
+            `${n} 个合成 Steiner 对象 · 标记仅用于示意`,
+          );
     }
     s += cursor(...point, label);
     return {
@@ -964,7 +1401,7 @@
     for (const field of tool.fields) {
       if (field.options) {
         if (!field.options.some(([v]) => v === raw[field.key]))
-          throw new Error("Choose one of the listed modes.");
+          throw new Error(ui("choiceError"));
         continue;
       }
       if (field.min !== undefined) {
@@ -978,7 +1415,7 @@
           (field.step === 1 && !Number.isInteger(original))
         )
           throw new Error(
-            `${field.label}: use ${field.min}–${field.max}${field.step === 1 ? " as a whole number" : ""}.`,
+            `${fieldLabel(field)}: ${field.min}–${field.max}${field.step === 1 ? ui("wholeNumber") : ""}.`,
           );
         parsed[field.key] = value;
       }
@@ -991,7 +1428,7 @@
           (p) => !p.trim() || !/^[-+]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(p.trim()),
         )
       )
-        throw new Error("Enter two numbers as X,Y for this scene.");
+        throw new Error(ui("xyError"));
       const pair = parts.map((part) => round4(Number(part)));
       let limits =
         tool.id === "rectangle"
@@ -1013,7 +1450,7 @@
           (v, i) => !Number.isFinite(v) || v < limits[i][0] || v > limits[i][1],
         )
       )
-        throw new Error("Use the scene ranges shown below the input.");
+        throw new Error(ui("rangeError"));
       parsed.value = pair;
     }
     return parsed;
@@ -1022,7 +1459,18 @@
     $("fields").innerHTML = tool.fields
       .map(
         (field) =>
-          `<label for="field-${field.key}">${esc(field.label)}</label>${field.options ? `<select id="field-${field.key}" name="${field.key}">${field.options.map(([value, label]) => `<option value="${value}" ${String(raw[field.key]) === value ? "selected" : ""}>${esc(label)}</option>`).join("")}</select>` : `<input id="field-${field.key}" name="${field.key}" ${field.min === undefined ? 'type="text"' : `type="number" min="${field.min}" max="${field.max}" step="${field.step}"`} value="${esc(raw[field.key])}" aria-describedby="hint-${field.key}" autocomplete="off" spellcheck="false"><small class="field-hint" id="hint-${field.key}">${esc(field.hint)}</small>`}`,
+          `<label for="field-${field.key}">${esc(fieldLabel(field))}</label>${
+            field.options
+              ? `<select id="field-${field.key}" name="${field.key}">${fieldOptions(
+                  field,
+                )
+                  .map(
+                    ([value, label]) =>
+                      `<option value="${value}" ${String(raw[field.key]) === value ? "selected" : ""}>${esc(label)}</option>`,
+                  )
+                  .join("")}</select>`
+              : `<input id="field-${field.key}" name="${field.key}" ${field.min === undefined ? 'type="text"' : `type="number" min="${field.min}" max="${field.max}" step="${field.step}"`} value="${esc(raw[field.key])}" aria-describedby="hint-${field.key}" autocomplete="off" spellcheck="false"><small class="field-hint" id="hint-${field.key}">${esc(fieldHint(field))}</small>`
+          }`,
       )
       .join("");
   }
@@ -1030,14 +1478,18 @@
     const view = geometry();
     renderInput(view.animation);
     $("scene").innerHTML =
-      `<title>${esc(tool.name)} — ${esc(tool.steps[step])}</title>` + view.svg;
-    $("scene").setAttribute("aria-label", `${tool.name}: ${view.result}`);
+      `<title>${esc(toolText(tool, "name"))} — ${esc(tool.steps[step])}</title>` +
+      view.svg;
+    $("scene").setAttribute(
+      "aria-label",
+      `${toolText(tool, "name")}: ${view.result}`,
+    );
     $("scene-result").textContent = view.result;
     $("scene-description").textContent = view.description;
     $("scene-phase").textContent =
       `${String(step + 1).padStart(2, "0")} / ${view.caption}`;
     $("step-counter").textContent = holding
-      ? "Done."
+      ? ui("done")
       : `${step + 1} / ${tool.steps.length}`;
     if ($("explanation").textContent !== view.description)
       $("explanation").textContent = view.description;
@@ -1047,12 +1499,18 @@
     });
     $("next").disabled = step === tool.steps.length - 1;
     $("play").textContent = playing
-      ? "Ⅱ Pause"
+      ? ui("pause")
       : position >= totalDuration()
-        ? "↺ Replay"
-        : "▶ Play";
-    $("loop").textContent = loop ? "↻ Loop on" : "↻ Loop off";
+        ? ui("replay")
+        : ui("play");
+    $("next").textContent = ui("next");
+    $("reset").textContent = ui("reset");
+    $("loop").textContent = loop ? ui("loopOn") : ui("loopOff");
     $("loop").setAttribute("aria-pressed", String(loop));
+    $("showcase").textContent = showcase ? ui("showcaseOn") : ui("showcaseOff");
+    $("showcase").setAttribute("aria-pressed", String(showcase));
+    $("loop").title = ui("loopTitle");
+    $("showcase").title = ui("showcaseTitle");
   }
   function totalDuration() {
     return tool.phases.reduce((sum, _, i) => sum + phaseSpec(i).duration, 0);
@@ -1070,18 +1528,19 @@
     playing = false;
     cancelAnimationFrame(timer);
   }
-  // Motion scales with speed. The deliberate pause between loops is always 3 real seconds.
+  // Motion scales with speed. Each loop or showcase pause is always 3 real seconds.
   function advance(milliseconds) {
-    const total = totalDuration();
     let remaining = milliseconds;
+    let switched = false;
     while (remaining > 0) {
+      const total = totalDuration();
       if (position < total) {
         const consumed = Math.min(remaining, (total - position) / speed);
         position = Math.min(total, position + consumed * speed);
         remaining -= consumed;
         if (position < total) break;
       }
-      if (!loop) {
+      if (!showcase && !loop) {
         holding = false;
         stop();
         break;
@@ -1091,11 +1550,19 @@
       holdElapsed += consumed;
       remaining -= consumed;
       if (holdElapsed < LOOP_WAIT) break;
-      position = 0;
       holdElapsed = 0;
       holding = false;
+      if (showcase) {
+        const current = tools.indexOf(tool);
+        resetTool(tools[(current + 1) % tools.length].id);
+        switched = true;
+      } else {
+        position = 0;
+        locate();
+      }
     }
-    locate();
+    if (!holding) locate();
+    return switched;
   }
   function tick(now) {
     advance(now - lastTick);
@@ -1113,6 +1580,11 @@
     render();
     timer = requestAnimationFrame(tick);
   }
+  function disableShowcase() {
+    if (!showcase) return;
+    showcase = false;
+    render();
+  }
   function setStep(next, fraction = 1) {
     stop();
     step = Math.max(0, Math.min(tool.steps.length - 1, next));
@@ -1126,8 +1598,7 @@
     holdElapsed = 0;
     render();
   }
-  function load(id, autoplay = !exporting) {
-    stop();
+  function resetTool(id) {
     clearTimeout(inputTimer);
     tool = tools.find((t) => t.id === id) || tools[1];
     step = 0;
@@ -1139,13 +1610,17 @@
     values = parse(defaults());
     renderFields(values);
     $("error").textContent = "";
-    $("tool-category").textContent = tool.category;
-    $("tool-title").textContent = tool.name;
+    renderToolChrome();
+  }
+  function renderToolChrome() {
+    $("tool-category").textContent = toolText(tool, "category");
+    $("tool-title").textContent = toolText(tool, "name");
     $("key-badge").textContent = tool.key;
-    $("tool-description").textContent = tool.description;
+    $("tool-description").textContent = toolText(tool, "description");
     $("scene-name").textContent =
-      `${String(tools.indexOf(tool) + 1).padStart(2, "0")} / ${tool.name.toUpperCase()}`;
-    $("reference").href = `guide.html#${tool.anchor}`;
+      `${String(tools.indexOf(tool) + 1).padStart(2, "0")} / ${toolText(tool, "name").toUpperCase()}`;
+    $("reference").href =
+      `${isZh() ? "guide.zh-CN.html" : "guide.html"}#${isZh() ? zhTools[tool.id].anchor : tool.anchor}`;
     $("steps").innerHTML = tool.steps
       .map(
         (label, i) =>
@@ -1156,32 +1631,88 @@
       b.classList.toggle("active", b.dataset.tool === tool.id);
       b.setAttribute("aria-pressed", String(b.dataset.tool === tool.id));
     });
+    requestAnimationFrame(updateToolMarker);
+  }
+  function load(id, autoplay = !exporting) {
+    stop();
+    resetTool(id);
     render();
     if (autoplay) play();
   }
-  $("tools").innerHTML = tools
-    .map(
-      (t, i) =>
-        `<button type="button" class="tool" data-tool="${t.id}" aria-pressed="false"><span class="index">${String(i + 1).padStart(2, "0")}</span>${t.name}</button>`,
-    )
-    .join("");
+  function setLanguage(next, persist = true) {
+    if (!["en", "zh"].includes(next) || next === lang) return;
+    lang = next;
+    if (persist) {
+      try {
+        localStorage.setItem("numeric-layout-assist-language", lang);
+      } catch {
+        /* Storage may be disabled. */
+      }
+    }
+    syncLanguageData();
+    applyStaticLanguage();
+    renderTools();
+    renderToolChrome();
+    renderFields(values);
+    render();
+  }
+  function renderTools() {
+    $("tools").innerHTML =
+      `<span class="tool-marker" id="tool-marker" aria-hidden="true"></span>` +
+      tools
+        .map(
+          (item, i) =>
+            `<button type="button" class="tool ${item.id === tool?.id ? "active" : ""}" data-tool="${item.id}" aria-pressed="${item.id === tool?.id}"><span class="index">${String(i + 1).padStart(2, "0")}</span>${esc(toolText(item, "name"))}</button>`,
+        )
+        .join("");
+    requestAnimationFrame(updateToolMarker);
+  }
+  function updateToolMarker() {
+    const marker = $("tool-marker");
+    const active = document.querySelector(`.tool[data-tool="${tool?.id}"]`);
+    if (!marker || !active) return;
+    marker.style.width = `${active.offsetWidth}px`;
+    marker.style.height = `${active.offsetHeight}px`;
+    marker.style.transform = `translate(${active.offsetLeft}px, ${active.offsetTop}px)`;
+    marker.dataset.markerTool = tool.id;
+    const nav = $("tools");
+    if (nav.scrollWidth > nav.clientWidth)
+      nav.scrollTo({
+        left: Math.max(0, active.offsetLeft - 8),
+        behavior: "smooth",
+      });
+  }
   $("tools").addEventListener("click", (event) => {
     const button = event.target.closest("[data-tool]");
     if (button) {
+      disableShowcase();
       if (location.hash.slice(1) === button.dataset.tool)
         load(button.dataset.tool);
       else location.hash = button.dataset.tool;
     }
   });
-  window.addEventListener("hashchange", () => load(location.hash.slice(1)));
+  window.addEventListener("hashchange", () => {
+    disableShowcase();
+    load(location.hash.slice(1));
+  });
   $("steps").addEventListener("click", (event) => {
     const button = event.target.closest("[data-step]");
-    if (button) setStep(Number(button.dataset.step));
+    if (button) {
+      disableShowcase();
+      setStep(Number(button.dataset.step));
+    }
   });
-  $("next").addEventListener("click", () => setStep(step + 1));
-  $("reset").addEventListener("click", () => load(tool.id));
+  $("next").addEventListener("click", () => {
+    disableShowcase();
+    setStep(step + 1);
+  });
+  $("reset").addEventListener("click", () => {
+    disableShowcase();
+    load(tool.id);
+  });
   function apply(event) {
     if (event) event.preventDefault();
+    disableShowcase();
     clearTimeout(inputTimer);
     try {
       const parsed = parse(Object.fromEntries(new FormData($("settings"))));
@@ -1214,6 +1745,7 @@
     if (event.target.tagName === "INPUT") apply();
   });
   $("play").addEventListener("click", () => {
+    disableShowcase();
     if (playing) {
       advance(performance.now() - lastTick);
       stop();
@@ -1221,6 +1753,7 @@
     } else play();
   });
   $("speed").addEventListener("change", () => {
+    disableShowcase();
     if (playing) {
       const now = performance.now();
       advance(now - lastTick);
@@ -1230,6 +1763,7 @@
     render();
   });
   $("loop").addEventListener("click", () => {
+    disableShowcase();
     loop = !loop;
     if (!loop && holding) {
       holding = false;
@@ -1238,7 +1772,33 @@
     }
     render();
   });
+  $("showcase").addEventListener("click", () => {
+    showcase = !showcase;
+    if (showcase) {
+      holding = false;
+      holdElapsed = 0;
+      if (!playing || position >= totalDuration()) {
+        position = 0;
+        locate();
+        play();
+        return;
+      }
+    }
+    render();
+  });
+  $("capture").addEventListener("pointerdown", disableShowcase);
+  document
+    .querySelector(".controls")
+    ?.addEventListener("pointerdown", disableShowcase);
+  $("language-switch").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-language]");
+    if (button) setLanguage(button.dataset.language);
+  });
+  window.addEventListener("resize", updateToolMarker);
   if (exporting) document.body.classList.add("export");
+  syncLanguageData();
+  applyStaticLanguage();
+  renderTools();
   load(location.hash.slice(1));
   // Capture uses the same timeline as playback, without a running animation clock.
   window.NumericDemo = {
@@ -1249,6 +1809,7 @@
     })),
     show(id, frame, overrides = {}, fraction = 1) {
       load(id, false);
+      showcase = false;
       values = parse({ ...defaults(), ...overrides });
       renderFields(values);
       setStep(frame, fraction);
@@ -1257,6 +1818,15 @@
     advance(milliseconds) {
       stop();
       advance(milliseconds);
+      render();
+    },
+    setLanguage(next) {
+      setLanguage(next, false);
+    },
+    setShowcase(value) {
+      showcase = Boolean(value);
+      holding = false;
+      holdElapsed = 0;
       render();
     },
     get timeline() {
@@ -1272,6 +1842,8 @@
         playing,
         speed,
         loop,
+        showcase,
+        language: lang,
         holding,
         holdElapsed,
         loopWait: LOOP_WAIT,

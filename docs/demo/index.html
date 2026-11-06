@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
+      id="page-description"
       name="description"
       content="Explore Numeric Layout Assist: interactive illustrations of precise widths, positions, copies, and contours in Virtuoso Layout."
     />
@@ -12,34 +13,54 @@
     <script src="app.js" defer></script>
   </head>
   <body>
-    <a class="skip-link" href="#workspace">Skip to demonstration</a>
+    <a class="skip-link" id="skip-link" href="#workspace"
+      >Skip to demonstration</a
+    >
     <header class="topbar">
-      <a class="brand" href="#width" aria-label="Numeric Layout Assist home"
+      <a
+        class="brand"
+        id="brand"
+        href="#width"
+        aria-label="Numeric Layout Assist home"
         ><span class="brand-mark">N<span>↗</span></span> NUMERIC
         <span class="brand-light">LAYOUT ASSIST</span></a
       >
-      <nav aria-label="Resources">
-        <a href="guide.html">User guide ↗</a
-        ><a href="guide.zh-CN.html" hreflang="zh-CN">中文指南 ↗</a
-        ><a href="../../LICENSE">MIT license ↗</a>
+      <nav id="resource-nav" aria-label="Resources">
+        <span
+          class="language-switch"
+          id="language-switch"
+          role="group"
+          aria-label="Language"
+        >
+          <button type="button" data-language="en" aria-pressed="true">
+            EN
+          </button>
+          <button type="button" data-language="zh" aria-pressed="false">
+            中文
+          </button>
+        </span>
+        <a id="guide-link" href="guide.html">User guide ↗</a
+        ><a id="license-link" href="../../LICENSE">MIT license ↗</a>
       </nav>
     </header>
     <main>
       <section class="intro">
         <div>
-          <p class="eyebrow">
+          <p class="eyebrow" id="built-for">
             <span class="signal-dot"></span> BUILT FOR VIRTUOSO LAYOUT
           </p>
-          <h1>Precision,<br /><span>at your cursor.</span></h1>
+          <h1 id="hero-title">Precision,<br /><span>at your cursor.</span></h1>
         </div>
         <div class="intro-note">
-          <p>
+          <p id="hero-copy">
             Pick a dimension. Type a value.<br />
             Preview the result before you commit.
           </p>
           <div class="key-line">
-            <kbd>J</kbd><span>numeric entry</span><kbd>⇧ J</kbd
-            ><span>absolute / contour</span><kbd>N</kbd><span>copy count</span>
+            <kbd>J</kbd><span id="key-entry-label">numeric entry</span
+            ><kbd>⇧ J</kbd
+            ><span id="key-absolute-label">absolute / contour</span><kbd>N</kbd
+            ><span id="key-copy-label">copy count</span>
           </div>
         </div>
       </section>
@@ -49,9 +70,17 @@
         id="workspace"
       >
         <aside class="tool-panel">
-          <p class="panel-heading">EXPLORE THE TOOLS <span>01—09</span></p>
-          <nav id="tools" aria-label="Choose a tool"></nav>
-          <p class="aside-note">
+          <p class="panel-heading" id="explore-heading">
+            EXPLORE THE TOOLS <span>01—09</span>
+          </p>
+          <nav id="tools" aria-label="Choose a tool">
+            <span
+              class="tool-marker"
+              id="tool-marker"
+              aria-hidden="true"
+            ></span>
+          </nav>
+          <p class="aside-note" id="aside-note">
             Every scene uses synthetic geometry.<br />Explore freely.
           </p>
         </aside>
@@ -70,7 +99,9 @@
                 ><span class="signal-dot"></span> NUMERIC LAB
                 <span class="bar-divider">/</span>
                 <strong id="scene-name"></strong></span
-              ><span class="illustration-label">ILLUSTRATIVE DEMO</span>
+              ><span class="illustration-label" id="illustration-label"
+                >ILLUSTRATIVE DEMO</span
+              >
             </div>
             <svg
               id="scene"
@@ -100,8 +131,16 @@
             >
               ↻ Loop on
             </button>
+            <button
+              id="showcase"
+              type="button"
+              aria-pressed="true"
+              title="Automatically advance through every tool"
+            >
+              ⇄ Showcase on
+            </button>
             <label class="speed-label" for="speed"
-              >Speed
+              ><span id="speed-label">Speed</span>
               <select id="speed">
                 <option value="0.25">0.25×</option>
                 <option value="0.5">0.5×</option>
@@ -116,52 +155,63 @@
           <div class="steps" id="steps" aria-label="Demonstration steps"></div>
         </div>
         <aside class="controls">
-          <p class="panel-heading">TRY A VALUE</p>
+          <p class="panel-heading" id="try-heading">TRY A VALUE</p>
           <form id="settings" novalidate>
             <div id="fields"></div>
             <p id="error" class="error" role="alert"></p>
-            <button type="submit" class="apply">Apply &amp; replay ↗</button>
-            <p class="field-hint">
+            <button type="submit" id="apply-button" class="apply">
+              Apply &amp; replay ↗
+            </button>
+            <p class="field-hint" id="auto-replay-hint">
               Changes replay automatically: choose an option, press Enter, leave
               the input, or pause typing for 3 seconds.
             </p>
           </form>
           <div class="readout">
-            <p class="panel-heading">WHAT HAPPENS</p>
+            <p class="panel-heading" id="what-heading">WHAT HAPPENS</p>
             <p id="explanation" aria-live="polite"></p>
           </div>
           <div class="legend">
-            <span><i class="candidate"></i> Candidate</span
-            ><span><i class="preview"></i> Selection / preview</span
-            ><span><i class="geometry"></i> Geometry</span>
+            <span
+              ><i class="candidate"></i>
+              <span id="legend-candidate">Candidate</span></span
+            ><span
+              ><i class="preview"></i>
+              <span id="legend-preview">Selection / preview</span></span
+            ><span
+              ><i class="geometry"></i>
+              <span id="legend-geometry">Geometry</span></span
+            >
           </div>
           <a id="reference" class="reference" href="guide.html"
-            >Read the tool guide ↗</a
+            ><span id="reference-label">Read the tool guide ↗</span></a
           >
         </aside>
       </section>
       <section class="principles">
-        <p class="eyebrow">A SMALL HABIT. A PRECISE EDIT.</p>
+        <p class="eyebrow" id="principles-eyebrow">
+          A SMALL HABIT. A PRECISE EDIT.
+        </p>
         <div>
           <article>
             <span>01</span>
-            <h3>Pick or type</h3>
-            <p>
+            <h3 id="principle-one-title">Pick or type</h3>
+            <p id="principle-one-copy">
               Measure existing geometry, or enter the dimension you already
               know.
             </p>
           </article>
           <article>
             <span>02</span>
-            <h3>See the target</h3>
-            <p>
+            <h3 id="principle-two-title">See the target</h3>
+            <p id="principle-two-copy">
               Magenta previews show the intended result before confirmation.
             </p>
           </article>
           <article>
             <span>03</span>
-            <h3>Stay in the flow</h3>
-            <p>
+            <h3 id="principle-three-title">Stay in the flow</h3>
+            <p id="principle-three-copy">
               Numeric entry works with the native drawing and editing command.
             </p>
           </article>
@@ -169,19 +219,20 @@
       </section>
     </main>
     <footer>
-      <span>Numeric Layout Assist · MIT</span>
-      <p>
+      <span id="footer-brand">Numeric Layout Assist · MIT</span>
+      <p id="footer-note">
         Interactive illustrations, not a live Virtuoso session. Native snapping
         and command behavior are described in the
-        <a href="guide.html">guide</a>.
+        <a id="footer-guide-link" href="guide.html">guide</a>.
       </p>
       <span class="footer-links"
-        ><a href="../../README.md">Project overview ↗</a>
-        <a href="../../README.zh-CN.md" hreflang="zh-CN">中文概览 ↗</a></span
+        ><a id="overview-link" href="../../README.md"
+          >Project overview ↗</a
+        ></span
       >
     </footer>
     <noscript
-      ><p class="noscript">
+      ><p class="noscript" id="noscript-note">
         Enable JavaScript for interactive demonstrations, or read the
         <a href="guide.html">complete user guide</a>.
       </p></noscript

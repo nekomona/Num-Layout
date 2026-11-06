@@ -169,11 +169,31 @@ button:disabled {
 }
 .topbar nav {
   display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 25px;
   font-size: 13px;
 }
 .topbar nav a {
   text-decoration: none;
+}
+.language-switch {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: #fbfaf6;
+}
+.language-switch button {
+  border: 0;
+  padding: 5px 8px;
+  font-size: 11px;
+  line-height: 1;
+  border-radius: 4px;
+}
+.language-switch button[aria-pressed="true"] {
+  background: #eee8f7;
+  color: var(--accent);
 }
 .intro {
   max-width: 1560px;
@@ -274,11 +294,28 @@ kbd {
   opacity: 0.6;
 }
 .tool-panel nav {
+  position: relative;
+  isolation: isolate;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
+.tool-marker {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 0;
+  border-radius: 6px;
+  background: #eee8f7;
+  transition:
+    transform 320ms cubic-bezier(0.22, 0.8, 0.24, 1),
+    width 320ms cubic-bezier(0.22, 0.8, 0.24, 1),
+    height 320ms cubic-bezier(0.22, 0.8, 0.24, 1);
+  will-change: transform;
+}
 .tool {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -297,7 +334,7 @@ kbd {
   width: 16px;
 }
 .tool.active {
-  background: #eee8f7;
+  background: transparent;
   color: #623ca8;
 }
 .tool.active::after {
@@ -429,7 +466,8 @@ h2 {
   background: #fbfaf6;
   color: var(--ink);
 }
-#loop[aria-pressed="true"] {
+#loop[aria-pressed="true"],
+#showcase[aria-pressed="true"] {
   background: #eee8f7;
   border-color: #b7a3d5;
   color: var(--accent);
@@ -950,5 +988,8 @@ body.export .scene-caption {
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
+  .tool-marker {
+    transition: none;
   }
 }
