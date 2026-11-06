@@ -29,9 +29,9 @@ class Links(HTMLParser):
 
 
 def check_artifact():
-    expected = {"index.html", "app.js", "style.css", "guide.html", "guide.zh-CN.html",
-                "overview.html", "overview.zh-CN.html", "contributing.html",
-                "contributing.zh-CN.html",
+    expected = {"index.html", "index.zh-CN.html", "lab.html", "app.js", "style.css",
+                "site.css", "language.js", "guide.html", "guide.zh-CN.html",
+                "contributing.html", "contributing.zh-CN.html",
                 "publishing.html", "testing.html", "recordings.html", "license.html", ".nojekyll"}
     expected.update("media/" + path.name for path in (ROOT / "docs/media").iterdir()
                     if path.suffix in (".gif", ".svg", ".png", ".webp"))
@@ -54,7 +54,7 @@ def check_artifact():
             assert target.is_relative_to(SITE), (path.name, value, "outside artifact")
             assert target.is_file(), (path.name, value, "missing target")
             if url.fragment and target in pages:
-                valid_ids = pages[target].ids | (scenes if target.name == "index.html" else set())
+                valid_ids = pages[target].ids | (scenes if target.name == "lab.html" else set())
                 assert unquote(url.fragment) in valid_ids, (path.name, value, "missing anchor")
     print(f"Pages artifact passed: {len(actual)} public files; all internal links and anchors resolve.")
 
@@ -84,21 +84,28 @@ def check_browser(channel):
             page = browser.new_page()
             errors = []
             page.on("pageerror", lambda error: errors.append(str(error)))
-            response = page.goto(base + "?lang=en#copy")
+            response = page.goto(base + "?lang=en")
             assert response.status == 200
+            assert "Precision" in page.locator("h1").inner_text()
+            page.locator('.site-nav a[href="lab.html"]').click()
+            assert page.url.startswith(base + "lab.html")
+            page.goto(base + "lab.html?lang=en#copy")
             page.wait_for_function("window.NumericDemo && NumericDemo.state.tool === 'copy'")
             page.get_by_role("button", name="Next step").click()
             assert page.evaluate("NumericDemo.state.step") == 1
             page.get_by_role("link", name="User guide").click()
             assert page.url == base + "guide.html"
             assert page.locator("#installation").count() == 1
-            page.locator('.topbar a[href="guide.zh-CN.html"]').click()
+            page.locator('.guide a[href="guide.zh-CN.html"][data-language-choice="zh"]').click()
             assert page.url == base + "guide.zh-CN.html"
             assert page.locator("h1").inner_text() == "Numeric Layout Assist — 用户教程"
             assert page.locator("#安装").count() == 1
-            page.locator('.topbar a[href="guide.html"]').click()
+            page.locator('.guide a[href="guide.html"][data-language-choice="en"]').click()
             assert page.url == base + "guide.html"
-            for document in ("overview.html", "overview.zh-CN.html", "contributing.html",
+            page.goto(base + "guide.html?lang=zh-CN")
+            page.wait_for_url(base + "guide.zh-CN.html?lang=zh-CN")
+            assert "用户教程" in page.locator("h1").inner_text()
+            for document in ("index.zh-CN.html", "contributing.html",
                              "contributing.zh-CN.html",
                              "testing.html", "publishing.html", "recordings.html", "license.html"):
                 assert page.goto(base + document).status == 200
@@ -107,6 +114,27 @@ def check_browser(channel):
             assert not errors, errors
             browser.close()
         print("Pages browser check passed beneath a repository URL prefix.")
+
+        with sync_playwright() as runtime:
+            browser = runtime.chromium.launch(channel=channel, headless=True)
+            context = browser.new_context(locale="zh-CN")
+            page = context.new_page()
+            page.goto(base)
+            page.wait_for_url(base + "index.zh-CN.html")
+            assert "精确" in page.locator("h1").inner_text()
+            page.goto(base + "guide.html")
+            page.wait_for_url(base + "guide.zh-CN.html")
+            assert page.locator("h1").inner_text() == "Numeric Layout Assist — 用户教程"
+            page.goto(base + "contributing.html")
+            page.wait_for_url(base + "contributing.zh-CN.html")
+            assert page.locator("h1").inner_text() == "为 Numeric Layout Assist 做贡献"
+            page.locator('.topbar a[href="contributing.html"]').click()
+            page.wait_for_url(base + "contributing.html")
+            assert page.locator("h1").inner_text() == "Contributing to Numeric Layout Assist"
+            assert page.evaluate("localStorage.getItem('numeric-layout-assist-language')") == "en"
+            context.close()
+            browser.close()
+        print("Automatic browser-language redirects passed for home, guide, and contribution pages.")
     finally:
         server.shutdown()
         server.server_close()

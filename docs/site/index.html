@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Numeric Layout Assist adds precise numeric entry, geometry picking, live previews, and repeatable layout edits to native Virtuoso Layout commands."
+    />
+    <meta name="language-current" content="en" />
+    <meta name="language-alternate" content="index.zh-CN.html" />
+    <title>Numeric Layout Assist · Precision at your cursor</title>
+    <link rel="stylesheet" href="site.css" />
+    <script src="language.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="index.html" aria-label="Numeric Layout Assist home"
+        ><span class="brand-mark">N<span>↗</span></span> NUMERIC
+        <span>LAYOUT ASSIST</span></a
+      >
+      <nav class="site-nav" aria-label="Primary navigation">
+        <span class="language-switch" aria-label="Language"
+          ><a href="index.html" aria-current="page" data-language-choice="en"
+            >EN</a
+          ><a href="index.zh-CN.html" hreflang="zh-CN" data-language-choice="zh"
+            >中文</a
+          ></span
+        ><a href="../demo/index.html">Interactive lab ↗</a
+        ><a href="../demo/guide.html">User guide ↗</a
+        ><a href="../../CONTRIBUTING.md">Contribute ↗</a
+        ><a href="../../LICENSE">MIT license ↗</a>
+      </nav>
+    </header>
+    <main>
+      <section class="hero">
+        <div>
+          <p class="kicker">
+            <span class="signal-dot"></span>BUILT FOR VIRTUOSO LAYOUT
+          </p>
+          <h1>Precision,<br /><span>at your cursor.</span></h1>
+          <p class="lede">
+            Pick a dimension from real geometry, type the value you already
+            know, and see the result before committing it to a native Layout
+            command.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="../demo/index.html"
+              >Try the interactive lab →</a
+            >
+            <a class="button" href="../demo/guide.html">Read the guide</a>
+          </div>
+          <div class="key-row" aria-label="Primary shortcuts">
+            <kbd>J</kbd><span>numeric entry</span><kbd>⇧ J</kbd
+            ><span>absolute / contour</span><kbd>N</kbd><span>copy count</span>
+          </div>
+        </div>
+        <div
+          class="hero-art"
+          aria-label="Illustrative layout with an exact stretch dimension"
+        >
+          <svg
+            viewBox="0 0 620 440"
+            role="img"
+            aria-labelledby="hero-art-title"
+          >
+            <title id="hero-art-title">
+              A layout rectangle and its precise numeric preview
+            </title>
+            <defs>
+              <pattern
+                id="hero-grid"
+                width="28"
+                height="28"
+                patternUnits="userSpaceOnUse"
+              >
+                <path
+                  d="M28 0H0V28"
+                  fill="none"
+                  stroke="#2b3d49"
+                  stroke-width="1"
+                />
+              </pattern>
+            </defs>
+            <rect width="620" height="440" fill="#17232e" />
+            <rect
+              x="35"
+              y="28"
+              width="560"
+              height="350"
+              fill="url(#hero-grid)"
+            />
+            <path d="M65 330H570M95 380V55" stroke="#415766" />
+            <rect
+              x="196"
+              y="156"
+              width="160"
+              height="112"
+              fill="#2b575c"
+              stroke="#82d2c9"
+              stroke-width="2"
+            />
+            <rect
+              x="196"
+              y="130"
+              width="248"
+              height="138"
+              fill="#e989f1"
+              fill-opacity=".07"
+              stroke="#e989f1"
+              stroke-width="2"
+              stroke-dasharray="7 5"
+            />
+            <path
+              d="M196 294H444m-241-5-7 5 7 5m234-10 7 5-7 5"
+              fill="none"
+              stroke="#e989f1"
+              stroke-width="1.5"
+            />
+            <text
+              x="320"
+              y="320"
+              text-anchor="middle"
+              fill="#e989f1"
+              font-family="Consolas, monospace"
+              font-size="15"
+            >
+              18 µm
+            </text>
+            <rect
+              x="308"
+              y="41"
+              width="228"
+              height="34"
+              rx="4"
+              fill="#243643"
+              stroke="#e989f1"
+            />
+            <text
+              x="324"
+              y="63"
+              fill="#e989f1"
+              font-family="Consolas, monospace"
+              font-size="13"
+            >
+              18 | STRETCH LENGTH
+            </text>
+            <path
+              d="M444 130l0 28 8-8 6 13 6-3-6-13 12-2Z"
+              fill="#f5f1e6"
+              stroke="#17232e"
+              stroke-width="2"
+            />
+            <text
+              x="65"
+              y="69"
+              fill="#a8bdc9"
+              font-family="Consolas, monospace"
+              font-size="10"
+              letter-spacing="2"
+            >
+              NUMERIC PREVIEW
+            </text>
+          </svg>
+          <span class="hero-art-caption"
+            >SYNTHETIC GEOMETRY · ILLUSTRATIVE DEMO</span
+          >
+        </div>
+      </section>
+
+      <section class="section" id="motion">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">A SMALL HABIT. A PRECISE EDIT.</p>
+            <h2>Stay in the native command.<br />Lose the grid math.</h2>
+          </div>
+          <p>
+            Numeric Assist rides along with Rectangle, Path, Wire, Measurement,
+            Stretch, Move, and Copy. Pick a value, type it digit by digit,
+            confirm, and keep drawing.
+          </p>
+        </div>
+        <div class="motion-card">
+          <img
+            src="../media/overview.gif"
+            alt="Four animated examples: pick a dimension, set path width, create a ruler, and place repeated copies."
+          />
+          <p>
+            Pick → Width → Measurement → Copy. The interactive version also
+            includes Stretch, Move, Contour, and Steiner cleanup.
+          </p>
+        </div>
+      </section>
+
+      <section class="tools-band" id="tools">
+        <div class="section">
+          <div class="section-head">
+            <div>
+              <p class="section-kicker">NINE SMALL TOOLS</p>
+              <h2>One shortcut.<br />Fewer context switches.</h2>
+            </div>
+            <p>
+              Open a tool in the lab to change its value, adjust playback, or
+              step through the native command sequence.
+            </p>
+          </div>
+          <div class="tool-grid">
+            <article class="tool-card">
+              <span class="num">01</span>
+              <h3>Dimension picker</h3>
+              <p>
+                Read an edge length, wire width, or the spacing between parallel
+                edges.
+              </p>
+              <a href="../demo/index.html#pick">Watch the sequence ↗</a>
+            </article>
+            <article class="tool-card">
+              <span class="num">02</span>
+              <h3>Path / Wire width</h3>
+              <p>
+                Set the complete path width while a native drawing command stays
+                active.
+              </p>
+              <a href="../demo/index.html#width">Watch the sequence ↗</a>
+            </article>
+            <article class="tool-card">
+              <span class="num">03</span>
+              <h3>Rectangle</h3>
+              <p>
+                Enter width and height together, with a live preview in the
+                current quadrant.
+              </p>
+              <a href="../demo/index.html#rectangle">Watch the sequence ↗</a>
+            </article>
+            <article class="tool-card">
+              <span class="num">04</span>
+              <h3>Measurement</h3>
+              <p>
+                Give a new two-point ruler an exact length in the direction you
+                choose.
+              </p>
+              <a href="../demo/index.html#measure">Watch the sequence ↗</a>
+            </article>
+            <article class="tool-card">
+              <span class="num">05</span>
+              <h3>Stretch</h3>
+              <p>
+                Set a selected edge to its final extent while the opposite side
+                stays fixed.
+              </p>
+              <a href="../demo/index.html#stretch">Watch the sequence ↗</a>
+            </article>
+            <article class="tool-card">
+              <span class="num">06</span>
+              <h3>Move</h3>
+              <p>
+                Use a relative displacement or place a reference point at
+                absolute coordinates.
+              </p>
+              <a href="../demo/index.html#move">Watch the sequence ↗</a>
+            </article>
+            <article class="tool-card">
+              <span class="num">07</span>
+              <h3>Copy + count</h3>
+              <p>
+                Combine an integer count with one pitch and preview every Step
+                target.
+              </p>
+              <a href="../demo/index.html#copy">Watch the sequence ↗</a>
+            </article>
+            <article class="tool-card">
+              <span class="num">08</span>
+              <h3>Contour</h3>
+              <p>
+                Resize a rectangle inside or outside a chosen pivot boundary.
+              </p>
+              <a href="../demo/index.html#contour">Watch the sequence ↗</a>
+            </article>
+            <article class="tool-card">
+              <span class="num">09</span>
+              <h3>Steiner cleanup</h3>
+              <p>
+                Remove invisible Steiner objects while keeping the geometry you
+                drew.
+              </p>
+              <a href="../demo/index.html#cleanup">Watch the sequence ↗</a>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section quick-grid" id="install">
+        <div class="quick-copy">
+          <p class="section-kicker">LOAD IT IN CIW</p>
+          <h2>One file.<br />Native shortcuts.</h2>
+          <p>
+            The deployable runtime lives in <code>src/</code>. Point Virtuoso at
+            the file and the toolbar and key bindings install themselves.
+          </p>
+          <ol class="steps">
+            <li>
+              <b>01</b
+              ><span
+                >Keep the <code>src/</code> directory intact, including its
+                display resources and icons.</span
+              >
+            </li>
+            <li>
+              <b>02</b
+              ><span
+                >Load <code>numeric_assist.il</code> from CIW or add the same
+                line to your local <code>.cdsinit</code>.</span
+              >
+            </li>
+            <li>
+              <b>03</b
+              ><span
+                >Use the ruler toolbar button to toggle the assist. Run
+                <code>vbnUninstall()</code> to restore previous bindings.</span
+              >
+            </li>
+          </ol>
+          <a class="button" href="../demo/guide.html#installation"
+            >Installation details →</a
+          >
+        </div>
+        <div class="code-card">
+          <header><span>Virtuoso CIW</span><span>SKILL</span></header>
+          <pre><code>load(&quot;/path/to/numeric-assist/src/numeric_assist.il&quot;)
+
+<span style="color:#8fa4b2">// J      numeric entry</span>
+<span style="color:#8fa4b2">// Shift+J absolute position / contour</span>
+<span style="color:#8fa4b2">// N      copy count</span></code></pre>
+        </div>
+      </section>
+
+      <section class="section principles">
+        <article class="principle">
+          <span class="num">01</span>
+          <h3>Pick or type</h3>
+          <p>Measure real geometry or enter the dimension you already know.</p>
+        </article>
+        <article class="principle">
+          <span class="num">02</span>
+          <h3>See the target</h3>
+          <p>
+            Magenta previews reveal the intended result before confirmation.
+          </p>
+        </article>
+        <article class="principle">
+          <span class="num">03</span>
+          <h3>Keep the flow</h3>
+          <p>
+            Numeric entry works alongside the native drawing and editing
+            command.
+          </p>
+        </article>
+      </section>
+
+      <section class="closing">
+        <p>
+          Try every tool with synthetic geometry, then take the same shortcuts
+          into your own Layout session.
+        </p>
+        <a class="button primary" href="../demo/index.html"
+          >Open the interactive lab →</a
+        >
+      </section>
+    </main>
+    <footer class="site-footer">
+      <span>Numeric Layout Assist · MIT</span>
+      <p>
+        Interactive illustrations, not a live Virtuoso session. Built with help
+        from
+        <a href="https://github.com/Arcadia-1/virtuoso-bridge-lite"
+          >Virtuoso Bridge Lite</a
+        >.
+      </p>
+    </footer>
+  </body>
+</html>

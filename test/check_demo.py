@@ -292,7 +292,7 @@ def main():
         page.screenshot(path=screenshots / "mobile.png", full_page=True)
         page.goto(url + "#rectangle")
         page.wait_for_function("NumericDemo.state.tool === 'rectangle'")
-        page.goto((ROOT / "docs/demo/guide.html").as_uri())
+        page.goto((ROOT / "docs/demo/guide.html").as_uri() + "?lang=en")
         assert page.locator("h1").inner_text() == "Numeric Layout Assist — user guide"
         assert page.locator("#installation").count() == 1
         assert not errors, errors

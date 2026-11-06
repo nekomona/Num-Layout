@@ -180,6 +180,7 @@
       resources: "Resources",
       language: "Language",
       guide: "User guide ↗",
+      homeLink: "Project home ↗",
       license: "MIT license ↗",
       builtFor: "BUILT FOR VIRTUOSO LAYOUT",
       hero: "Precision,<br><span>at your cursor.</span>",
@@ -249,6 +250,7 @@
       resources: "资源",
       language: "语言",
       guide: "用户教程 ↗",
+      homeLink: "项目首页 ↗",
       license: "MIT 许可证 ↗",
       builtFor: "为 VIRTUOSO LAYOUT 打造",
       hero: "精确，<br><span>就在光标边。</span>",
@@ -433,6 +435,13 @@
       : requestedLanguage?.startsWith("en")
         ? "en"
         : readLanguage() || (browserLanguage.startsWith("zh") ? "zh" : "en");
+  if (!exporting && requestedLanguage) {
+    try {
+      localStorage.setItem("numeric-layout-assist-language", lang);
+    } catch {
+      /* Storage may be disabled. */
+    }
+  }
   const isZh = () => lang === "zh";
   const ui = (key) => UI[lang][key];
   const tr = (en, zh) => (isZh() ? zh : en);
@@ -471,6 +480,10 @@
     });
     $("guide-link").textContent = ui("guide");
     $("guide-link").href = isZh() ? "guide.zh-CN.html" : "guide.html";
+    $("home-link").textContent = ui("homeLink");
+    $("home-link").href = isZh()
+      ? "../site/index.zh-CN.html"
+      : "../site/index.html";
     $("license-link").textContent = ui("license");
     $("built-for").innerHTML =
       `<span class="signal-dot"></span> ${ui("builtFor")}`;

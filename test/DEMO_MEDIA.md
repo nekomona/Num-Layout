@@ -50,6 +50,9 @@ from the plugin. Explanatory text belongs in the bottom bar.
 The interactive page selects English or Chinese from the browser language and
 also accepts `?lang=en` or `?lang=zh-CN`; capture stays English so media names,
 balloons, and review output remain deterministic.
+The public site adds a bilingual introduction home in `docs/site/` and moves the
+interactive lab to `lab.html`. `docs/site/language.js` applies the same language
+preference to the home page, guide, and contribution pages.
 
 Intermediate PNGs stay under ignored
 `artifacts/demo-frames/`. Only the reviewed GIFs are tracked in `docs/media/`.

@@ -13,8 +13,6 @@ from build_guide import MARKDOWN_EXTENSIONS, ROOT, document_page
 
 OUTPUT = ROOT / "artifacts" / "pages"
 DOCUMENTS = {
-    "README.md": ("overview.html", "Project overview", "en"),
-    "README.zh-CN.md": ("overview.zh-CN.html", "项目概览", "zh-CN"),
     "docs/numeric_assist_guide.md": ("guide.html", "User guide", "en"),
     "docs/numeric_assist_guide.zh-CN.md": ("guide.zh-CN.html", "用户教程", "zh-CN"),
     "CONTRIBUTING.md": ("contributing.html", "Contributing", "en"),
@@ -45,7 +43,13 @@ def main():
     media = [path for path in media if path.suffix in (".gif", ".svg", ".png", ".webp")]
     mapping = {source: target for source, (target, _, _) in DOCUMENTS.items()}
     mapping.update({
-        "docs/demo/index.html": "index.html",
+        "README.md": "index.html",
+        "README.zh-CN.md": "index.zh-CN.html",
+        "docs/site/index.html": "index.html",
+        "docs/site/index.zh-CN.html": "index.zh-CN.html",
+        "docs/site/site.css": "site.css",
+        "docs/site/language.js": "language.js",
+        "docs/demo/index.html": "lab.html",
         "docs/demo/guide.html": "guide.html",
         "docs/demo/guide.zh-CN.html": "guide.zh-CN.html",
         "docs/demo/style.css": "style.css",
@@ -63,16 +67,19 @@ def main():
     if OUTPUT.exists():
         shutil.rmtree(OUTPUT)
     (OUTPUT / "media").mkdir(parents=True)
-    for filename in ("app.js", "style.css"):
-        shutil.copyfile(ROOT / "docs/demo" / filename, OUTPUT / filename)
-    source = "docs/demo/index.html"
-    (OUTPUT / "index.html").write_text(rewrite_links((ROOT / source).read_text(encoding="utf-8"), source, mapping), encoding="utf-8")
+    for source, destination in (("docs/demo/app.js", "app.js"), ("docs/demo/style.css", "style.css"),
+                                ("docs/site/site.css", "site.css"), ("docs/site/language.js", "language.js")):
+        shutil.copyfile(ROOT / source, OUTPUT / destination)
+    for source, destination in (("docs/site/index.html", "index.html"),
+                                ("docs/site/index.zh-CN.html", "index.zh-CN.html"),
+                                ("docs/demo/index.html", "lab.html")):
+        (OUTPUT / destination).write_text(
+            rewrite_links((ROOT / source).read_text(encoding="utf-8"), source, mapping), encoding="utf-8"
+        )
     for source, (destination, title, lang) in DOCUMENTS.items():
         body = markdown.markdown((ROOT / source).read_text(encoding="utf-8"), extensions=MARKDOWN_EXTENSIONS)
         body = rewrite_links(body, source, mapping)
         alternates = {
-            "overview.html": ("overview.zh-CN.html", "简体中文"),
-            "overview.zh-CN.html": ("overview.html", "English"),
             "guide.html": ("guide.zh-CN.html", "简体中文"),
             "guide.zh-CN.html": ("guide.html", "English"),
             "contributing.html": ("contributing.zh-CN.html", "简体中文"),
@@ -89,11 +96,24 @@ def main():
                 alternate_label=alternate_label,
                 lab_label="Interactive lab" if lang == "en" else "交互演示",
                 license_label="MIT license" if lang == "en" else "MIT 许可证",
+                home_href="index.html",
+                lab_href="lab.html",
+                language_script="language.js",
             ),
             encoding="utf-8",
         )
     license_body = "<h1>MIT License</h1><pre>" + escape((ROOT / "LICENSE").read_text(encoding="utf-8")) + "</pre>"
-    (OUTPUT / "license.html").write_text(document_page(license_body, "License", "license.html"), encoding="utf-8")
+    (OUTPUT / "license.html").write_text(
+        document_page(
+            license_body,
+            "License",
+            "license.html",
+            home_href="index.html",
+            lab_href="lab.html",
+            language_script="language.js",
+        ),
+        encoding="utf-8",
+    )
     for path in media:
         if path.is_symlink():
             raise RuntimeError(f"Documentation assets must be regular files: {path.name}")

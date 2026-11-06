@@ -1,6 +1,6 @@
 # 为 Numeric Layout Assist 做贡献
 
-[English](CONTRIBUTING.md) · [简体中文](CONTRIBUTING.zh-CN.md)
+<a href="CONTRIBUTING.md" data-language-choice="en">English</a> · <a href="CONTRIBUTING.zh-CN.md" data-language-choice="zh">简体中文</a>
 
 感谢你帮助改进 Numeric Layout Assist。欢迎提交问题报告、范围明确的修复、测试、文档和
 新示例。

@@ -1,6 +1,6 @@
 # Numeric Layout Assist — 用户教程
 
-[English](numeric_assist_guide.md) · [简体中文](numeric_assist_guide.zh-CN.md)
+<a href="numeric_assist_guide.md" data-language-choice="en">English</a> · <a href="numeric_assist_guide.zh-CN.md" data-language-choice="zh">简体中文</a>
 
 [项目概览](../README.zh-CN.md) · [交互演示](demo/index.html) · [测试](../test/README.md) · [参与贡献](../CONTRIBUTING.zh-CN.md)
 
