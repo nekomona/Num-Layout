@@ -1,14 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 360" role="img" aria-labelledby="title description">
   <title id="title">Num-Layout — Precision, at your cursor.</title>
-  <desc id="description">The Num-Layout name appears beside a layout rectangle expanding to a magenta numeric preview.</desc>
+  <desc id="description">The Num-Layout name and slogan appear beside a layout rectangle expanding to a magenta numeric preview. The operation summary sits below the graphic.</desc>
   <defs><pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" fill="none" stroke="#334753" stroke-width=".7"/></pattern></defs>
   <rect width="1280" height="360" rx="14" fill="#17232e"/>
   <rect x="735" y="28" width="515" height="304" fill="url(#grid)"/>
   <circle cx="49" cy="46" r="4" fill="#9fd5a9"/>
   <text x="65" y="51" fill="#a7bac7" font-family="Arial,sans-serif" font-size="14" letter-spacing="3">VIRTUOSO LAYOUT</text>
   <text x="44" y="147" fill="#f4f1e8" font-family="Arial,sans-serif" font-weight="650" font-size="84" letter-spacing="-3">Num-Layout</text>
-  <text x="47" y="201" fill="#d9b6f0" font-family="Arial,sans-serif" font-weight="600" font-size="31" letter-spacing="-1">Precision, at your cursor.</text>
-  <text x="47" y="242" fill="#afc1cd" font-family="Arial,sans-serif" font-size="18">Pick a dimension. Type a value. See the result.</text>
+  <text x="47" y="211" fill="#d9b6f0" font-family="Arial,sans-serif" font-weight="600" font-size="44" letter-spacing="-1.5">Precision, at your cursor.</text>
   <g fill="#263944" stroke="#49606d"><rect x="47" y="282" width="41" height="33" rx="5"/><rect x="100" y="282" width="102" height="33" rx="5"/><rect x="214" y="282" width="41" height="33" rx="5"/></g>
   <g fill="#e4d8e9" font-family="Consolas,monospace" font-size="14" text-anchor="middle"><text x="67" y="304">J</text><text x="151" y="304">Shift+J</text><text x="235" y="304">N</text></g>
   <text x="279" y="304" fill="#859daa" font-family="Arial,sans-serif" font-size="13">FOR VIRTUOSO LAYOUT</text>
@@ -19,4 +18,5 @@
   <path d="M1108 84v27l8-8 6 13 6-3-6-13 12-2Z" fill="#f5f1e6" stroke="#17232e" stroke-width="2"/>
   <rect x="972" y="36" width="231" height="31" rx="4" fill="#243643" stroke="#e989f1"/>
   <text x="988" y="57" fill="#e989f1" font-family="Consolas,monospace" font-size="13">18 | STRETCH LENGTH</text>
+  <text x="959" y="342" fill="#859daa" font-family="Arial,sans-serif" font-size="14" text-anchor="middle">Pick a dimension. Type a value. See the result.</text>
 </svg>
