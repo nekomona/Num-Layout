@@ -3,7 +3,7 @@
 </p>
 
 <h3 align="center">
-  <a href="https://YOUR_GITHUB_USERNAME.github.io/Num-Layout/">▶ <strong>Try it out first!</strong> &nbsp;·&nbsp; <strong>直接看效果！</strong></a>
+  <a href="https://nekomona.github.io/Num-Layout/index.zh-CN.html">▶ <strong>Try it out first!</strong> &nbsp;·&nbsp; <strong>直接看效果！</strong></a>
 </h3>
 
 <p align="center">

@@ -6,11 +6,15 @@ contribution and project documentation. Both
 pipelines build and validate the public artifact without repository-specific
 URLs, names, or secrets.
 
+The public GitHub Pages site is available at
+[nekomona.github.io/Num-Layout](https://nekomona.github.io/Num-Layout/). The root
+chooses English or Chinese from the browser setting; the explicit Chinese home is
+[index.zh-CN.html](https://nekomona.github.io/Num-Layout/index.zh-CN.html).
+
 ## GitHub Pages
 
-The `Deploy Pages` workflow in `.github/workflows/pages.yml` is ready for a
-future GitHub repository. No owner, repository name, hostname, or custom domain
-is configured. GitHub supplies the deployment URL when the workflow runs.
+The `Deploy Pages` workflow in `.github/workflows/pages.yml` publishes the site to
+GitHub Pages whenever `docs/**` or `tools/**` changes on `main`.
 
 ### After pushing to GitHub
 

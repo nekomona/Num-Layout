@@ -29,11 +29,12 @@ class Links(HTMLParser):
 
 
 def check_artifact():
-    for name in ("README.md", "README.zh-CN.md"):
+    for name, site in (("README.md", "https://nekomona.github.io/Num-Layout/"),
+                       ("README.zh-CN.md", "https://nekomona.github.io/Num-Layout/index.zh-CN.html")):
         readme = (ROOT / name).read_text(encoding="utf-8")
         assert "Try it out first!" in readme, name
         assert "直接看效果！" in readme, name
-        assert "https://YOUR_GITHUB_USERNAME.github.io/Num-Layout/" in readme, name
+        assert site in readme, name
     expected = {"index.html", "index.zh-CN.html", "lab.html", "app.js", "style.css",
                 "site.css", "language.js", "guide.html", "guide.zh-CN.html",
                 "contributing.html", "contributing.zh-CN.html",
