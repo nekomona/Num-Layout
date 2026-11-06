@@ -33,7 +33,7 @@ def check_artifact():
         readme = (ROOT / name).read_text(encoding="utf-8")
         assert "Try it out first!" in readme, name
         assert "直接看效果！" in readme, name
-        assert "https://YOUR_GITHUB_USERNAME.github.io/NumLayoutPlug/" in readme, name
+        assert "https://YOUR_GITHUB_USERNAME.github.io/Num-Layout/" in readme, name
     expected = {"index.html", "index.zh-CN.html", "lab.html", "app.js", "style.css",
                 "site.css", "language.js", "guide.html", "guide.zh-CN.html",
                 "contributing.html", "contributing.zh-CN.html",
@@ -100,8 +100,9 @@ def check_browser(channel):
             page.on("pageerror", lambda error: errors.append(str(error)))
             response = page.goto(base + "?lang=en")
             assert response.status == 200
-            assert "Precision" in page.locator("h1").inner_text()
-            assert "NumLayoutPlug" in page.locator(".brand").inner_text()
+            assert page.locator("h1").inner_text() == "Num-Layout"
+            assert "Precision" in page.locator(".hero-tagline").inner_text()
+            assert "Num-Layout" in page.locator(".brand").inner_text()
             page.locator('.site-nav a[href="lab.html"]').click()
             assert page.url.startswith(base + "lab.html")
             page.goto(base + "lab.html?lang=en#copy")
@@ -137,7 +138,8 @@ def check_browser(channel):
             page = context.new_page()
             page.goto(base)
             page.wait_for_url(base + "index.zh-CN.html")
-            assert "精确" in page.locator("h1").inner_text()
+            assert page.locator("h1").inner_text() == "定数绘版"
+            assert "精确" in page.locator(".hero-tagline").inner_text()
             assert "定数绘版" in page.locator(".brand").inner_text()
             page.goto(base + "guide.html")
             page.wait_for_url(base + "guide.zh-CN.html")
@@ -147,7 +149,7 @@ def check_browser(channel):
             assert page.locator("h1").inner_text() == "为定数绘版做贡献"
             page.locator('.topbar a[href="contributing.html"]').click()
             page.wait_for_url(base + "contributing.html")
-            assert page.locator("h1").inner_text() == "Contributing to NumLayoutPlug"
+            assert page.locator("h1").inner_text() == "Contributing to Num-Layout"
             assert page.evaluate("localStorage.getItem('numeric-layout-assist-language')") == "en"
             context.close()
             browser.close()

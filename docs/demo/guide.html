@@ -1,12 +1,12 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="language-current" content="en"><meta name="language-alternate" content="guide.zh-CN.html">
-<title>NumLayoutPlug · User guide</title><link rel="stylesheet" href="style.css">
+<title>Num-Layout · User guide</title><link rel="stylesheet" href="style.css">
 <style>.guide{max-width:1020px;margin:45px auto;padding:0 28px 60px;line-height:1.8}.guide h1{font-size:40px;line-height:1.2;margin-bottom:24px}.guide h2{margin-top:48px;margin-bottom:18px}.guide h3{margin-top:35px}.guide p,.guide li{font-size:15px}.guide pre{overflow:auto;background:#17232e;color:#dce8f0;padding:22px;border-radius:8px;font-size:13px}.guide code{font-family:Consolas,monospace}.guide table{display:block;overflow:auto;border-collapse:collapse;width:100%;font-size:13px}.guide th,.guide td{text-align:left;border-bottom:1px solid #d9d9d0;padding:12px;min-width:120px}.guide th{background:#ebe7f1}.guide a{color:#6b45b9}.guide img{max-width:100%;height:auto}.guide h2,.guide h3{scroll-margin-top:25px}.language-switch a{padding:6px 9px;border-radius:4px;font-size:11px;line-height:1}.language-switch a[aria-current="page"]{background:#eee8f7}</style>
 <script src="../site/language.js"></script>
-</head><body><header class="topbar"><a class="brand" href="../site/index.html"><span class="brand-mark">N<span>↗</span></span> NLayout <span class="brand-light">NumLayoutPlug</span></a><nav><span class="language-switch" aria-label="Language"><a href="guide.html" data-language-choice="en" aria-current="page">EN</a><a href="guide.zh-CN.html" data-language-choice="zh" aria-current="false">中文</a></span><a href="index.html">Interactive lab ↗</a><a href="../../LICENSE">MIT license ↗</a></nav></header><main class="guide"><h1 id="numlayoutplug-user-guide">NumLayoutPlug — user guide</h1>
+</head><body><header class="topbar"><a class="brand" href="../site/index.html"><span class="brand-mark">N<span>↗</span></span> Num-Layout</a><nav><span class="language-switch" aria-label="Language"><a href="guide.html" data-language-choice="en" aria-current="page">EN</a><a href="guide.zh-CN.html" data-language-choice="zh" aria-current="false">中文</a></span><a href="index.html">Interactive lab ↗</a><a href="../../LICENSE">MIT license ↗</a></nav></header><main class="guide"><h1 id="num-layout-user-guide">Num-Layout — user guide</h1>
 <p><a href="index.html">Project overview</a> · <a href="../demo/index.html">Interactive demonstrations</a> · <a href="../../test/README.md">Tests</a></p>
-<p>NumLayoutPlug (NLayout) adds numeric entry and geometry picking to native Virtuoso
+<p>Num-Layout adds numeric entry and geometry picking to native Virtuoso
 Layout commands. It targets Virtuoso IC23.1; native form fields and callbacks
 may differ on other releases.</p>
 <p>This guide follows your browser language when first opened. Use <strong>EN / 中文</strong> to
@@ -46,7 +46,7 @@ resources, and <code>icons/</code> beside it. The Wire refresh
 helper requires Python 3, libX11, and the XTest extension on the GUI host. It
 inherits DISPLAY and XAUTHORITY from Virtuoso.</p>
 <h2 id="toolbar-and-previews">Toolbar and previews</h2>
-<p>The ruler icon enables or disables NLayout. Its pressed state means
+<p>The ruler icon enables or disables Num-Layout. Its pressed state means
 that the assist is enabled. The routing-node and broom icon deletes invisible
 Steiners from the edited layout, including during edit-in-place. It reports
 the removed count and leaves saving to the user. The toolbar is registered
@@ -183,7 +183,7 @@ text normally. A second comma or a second dot in the same component is ignored.<
 </tbody>
 </table>
 <p>For <strong>Shift+J Move/Copy</strong>, the target is the native command's reference point.
-When no reference point is recorded, NLayout uses the selected objects'
+When no reference point is recorded, Num-Layout uses the selected objects'
 combined bounding-box center. Coordinates use the displayed window's frame,
 including during edit-in-place. A <strong>single number</strong> changes only X or Y,
 selected by mouse direction from the reference point; the hint identifies the
@@ -230,13 +230,13 @@ for example <code>12 | COPY DISTANCE [3 copies]</code>. Confirming J places all 
 <strong>1</strong>. On J confirmation, that reset happens after placement. Escape first
 clears N's digits; another Escape closes numeric entry while keeping native
 Copy active.</p>
-<p>Outside Copy, N retains its previous native binding. Turning NLayout
+<p>Outside Copy, N retains its previous native binding. Turning Num-Layout
 off also restores N's native behavior. Uninstalling restores the prior N
 enterfunction binding; the normal N binding is not replaced.</p>
 <h3 id="j-number-entry">J number entry</h3>
 <p>After the hotkey, type <code>0</code>–<code>9</code>, <code>.</code>, <code>,</code>, <code>-</code>, or Backspace as appropriate for the mode. The current input and mode
 appear next to the cursor. The result contour appears while a valid number is
-pending. NLayout captures Virtuoso's physical dot binding during input
+pending. Num-Layout captures Virtuoso's physical dot binding during input
 and restores its original magnifier binding when the assist closes.
 Click a shape edge instead to use its length. A second parallel
 edge changes the number to the distance between the edges. A perpendicular
@@ -245,7 +245,7 @@ are available too.</p>
 <p>For a wire path segment, clicking its centerline or terminal uses the wire's
 physical width. Clicking a side uses that side's length; clicking a second
 parallel side uses the spacing between the sides. The yellow hover line and
-magenta selection arrow show the exact feature being measured. NLayout
+magenta selection arrow show the exact feature being measured. Num-Layout
 uses the raw mouse position for wire picking so native Wire snapping does not
 turn a side click into a centerline click.</p>
 <p>Edge picking follows instance hierarchy into leaf shapes, including PCell
@@ -262,7 +262,7 @@ including its terminals, picks its width.</p>
 magenta. Outside Contour, press <strong>Enter</strong>, <strong>Space</strong>, the same hotkey again, or
 click empty canvas to confirm. Escape while
 edges are selected returns to number entry. Escape with digits clears them;
-Escape with an empty entry closes NLayout and leaves the native command
+Escape with an empty entry closes Num-Layout and leaves the native command
 active. A click used to pick an edge or confirm a number is consumed by Numeric
 Assist and does not add a point to the native command.</p>
 <p>For absolute Stretch length, select one <strong>edge or endpoint</strong> with native
@@ -285,7 +285,7 @@ When editing descended group contents or an instance in place, the saved ruler
 uses the active edited cell's coordinates, keeping it at the requested position.</p>
 <p>For <strong>Copy</strong>, select objects and start native Copy. Press J for relative input
 or Shift+J for absolute position. A scalar relative distance follows the
-Copy form's snap mode. If Copy has no entered reference point, NLayout
+Copy form's snap mode. If Copy has no entered reference point, Num-Layout
 uses the center of the selected objects' combined bounding box as the direction
 origin. Confirmation uses the native Copy form's X/Y fields in Pitch mode and
 its Apply action, including the current Single, Step, or Array settings.</p>
@@ -311,7 +311,7 @@ clears the number before exiting.</p>
 segment snap mode when choosing displacement direction: orthogonal, diagonal
 (45-degree increments), or any angle. Horizontal and vertical modes are also
 respected when offered by the form. Change the snap mode in the native form;
-NLayout reads it when drawing the preview and applying the number.</p>
+Num-Layout reads it when drawing the preview and applying the number.</p>
 <p>The assist snaps target coordinates to the technology manufacturing grid. It
 sets rectangle extents, selected path points, and straight path/ruler endpoints
 from absolute target coordinates after native Stretch completes, avoiding

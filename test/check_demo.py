@@ -30,7 +30,7 @@ def main():
         zh_page.wait_for_function("window.NumericDemo")
         assert zh_page.evaluate("NumericDemo.state.language") == "zh"
         assert zh_page.locator("#tool-title").inner_text() == "Path / Wire 宽度"
-        assert "NLayout" in zh_page.locator("#brand").inner_text()
+        assert "Num-Layout" in zh_page.locator("#brand").inner_text()
         assert "定数绘版" in zh_page.locator("#brand").inner_text()
         assert zh_page.locator("#showcase").inner_text() == "⇄ 循环展示：开"
         assert zh_page.locator('label[for="field-value"]').inner_text() == "宽度"
@@ -52,7 +52,7 @@ def main():
         zh_page.locator('[data-language="en"]').click()
         assert zh_page.evaluate("NumericDemo.state.language") == "en"
         assert zh_page.locator("#tool-title").inner_text() == "Path / Wire width"
-        assert "NumLayoutPlug" in zh_page.locator("#brand").inner_text()
+        assert "Num-Layout" in zh_page.locator("#brand").inner_text()
         assert zh_page.evaluate("localStorage.getItem('numeric-layout-assist-language')") == "en"
         zh_page.reload()
         zh_page.wait_for_function("window.NumericDemo")
@@ -296,7 +296,7 @@ def main():
         page.goto(url + "#rectangle")
         page.wait_for_function("NumericDemo.state.tool === 'rectangle'")
         page.goto((ROOT / "docs/demo/guide.html").as_uri() + "?lang=en")
-        assert page.locator("h1").inner_text() == "NumLayoutPlug — user guide"
+        assert page.locator("h1").inner_text() == "Num-Layout — user guide"
         assert page.locator("#installation").count() == 1
         assert not errors, errors
         browser.close()

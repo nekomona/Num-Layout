@@ -1,6 +1,6 @@
-# Contributing to NumLayoutPlug
+# Contributing to Num-Layout
 
-Thanks for helping make NumLayoutPlug (NLayout) better. Bug reports, focused fixes,
+Thanks for helping make Num-Layout better. Bug reports, focused fixes,
 tests, documentation, and new examples are all welcome.
 
 ## Start a discussion first

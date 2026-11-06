@@ -993,3 +993,11 @@ body.export .scene-caption {
     transition: none;
   }
 }
+html[lang="zh-CN"] h1 {
+  line-height: 1.16;
+  letter-spacing: -0.035em;
+}
+html[lang="zh-CN"] h2 {
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+}

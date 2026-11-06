@@ -1,4 +1,4 @@
-; NumLayoutPlug (NLayout) for Virtuoso IC23.1.
+; Num-Layout for Virtuoso IC23.1.
 ; J sets Path/Wire width, Stretch extent, or Move/Copy displacement.
 ; Shift-J sets Move/Copy absolute coordinates, or Stretch displacement.
 ; N sets the native Copy count without placing copies.
@@ -1073,13 +1073,13 @@ procedure(vbnWireRefreshData(child data)
 
 procedure(vbnWireRefreshError(child data)
   vbnWireRefreshStatus = data
-  warn("NLayout Wire refresh: %s" data)
+  warn("Num-Layout Wire refresh: %s" data)
 )
 
 procedure(vbnWireRefreshDone(child status)
   vbnWireRefreshBusy = nil
   when(status != 0
-    warn("NLayout: Wire motion helper exited with status %d.\n" status))
+    warn("Num-Layout: Wire motion helper exited with status %d.\n" status))
 )
 
 procedure(vbnRequestWireMotion(win)
@@ -1527,7 +1527,7 @@ procedure(vbnApplyRectSize(value)
     if(start then
       target = vbnRectCorner(value)
       if(target then addPoint(target)
-      else warn("NLayout: point toward a rectangle with positive width and height.\n") nil)
+      else warn("Num-Layout: point toward a rectangle with positive width and height.\n") nil)
     else
       size = vbnRectDimensions(value)
       when(numberp(car(size)) vbnSetFormField(vbnForm~>width vbnSnap(car(size))))
@@ -1593,7 +1593,7 @@ procedure(vbnApplySize(value)
   let((fig plan zero delta)
     fig = car(geGetSelSet(vbnWindow)) plan = vbnSizePlan(value)
     if(!plan then
-      warn("NLayout: select one edge/corner with native Stretch for absolute X/Y size.\n")
+      warn("Num-Layout: select one edge/corner with native Stretch for absolute X/Y size.\n")
       nil
     else
       zero = geEditToWindowPoint(vbnWindow 0:0)
@@ -1710,7 +1710,7 @@ procedure(vbnApplyDistance(value)
   let((direction dx dy)
     direction = vbnMotionDelta(value)
     if(!direction then
-      warn("NLayout: point from the command start toward the copy, move, or stretch direction.\n")
+      warn("Num-Layout: point from the command start toward the copy, move, or stretch direction.\n")
       nil
     else
       dx = car(direction) dy = cadr(direction)
@@ -1747,7 +1747,7 @@ procedure(vbnApplyLinearLength(fig selectedPoints current value)
     )
     target = vbnLinearTarget(fixed moving current value)
     if(!target then
-      warn("NLayout: selected line has zero length.\n")
+      warn("Num-Layout: selected line has zero length.\n")
       nil
     else
       targetX = vbnX(target)
@@ -1778,7 +1778,7 @@ procedure(vbnApplyLength(value)
     else if(length(selection) != 1 || !fig || !start || !current ||
        !member(t selectedPoints) ||
        !member(nil selectedPoints) then
-      warn("NLayout: select one edge or endpoint with native Stretch before confirming length.\n")
+      warn("Num-Layout: select one edge or endpoint with native Stretch before confirming length.\n")
       nil
     else if((fig~>objType == "ruler" || fig~>objType == "path") &&
             length(fig~>points) == 2 && length(selectedPoints) == 2 then
@@ -1837,12 +1837,12 @@ procedure(vbnApplyMeasurement(value)
     start = vbnEnteredStartPoint()
     current = vbnContourCursorPoint()
     if(!start || !current then
-      warn("NLayout: place the first measurement point before confirming.\n")
+      warn("Num-Layout: place the first measurement point before confirming.\n")
       nil
     else
       target = vbnMeasurementTarget(start current value)
       if(!target || equal(target start) then
-        warn("NLayout: point from the start toward the measurement direction.\n")
+        warn("Num-Layout: point from the start toward the measurement direction.\n")
         nil
       else
         ; Enterfunction/cursor points use window coordinates; stored rulers
@@ -1865,7 +1865,7 @@ procedure(vbnConfirmContour()
       ((vbnPhase == 1)
         value = vbnCurrentValue()
         if(!numberp(value) || value <= 0.0 then
-          warn("NLayout: enter a positive contour offset.\n")
+          warn("Num-Layout: enter a positive contour offset.\n")
           nil
         else
           vbnContourOffset = value
@@ -1883,9 +1883,9 @@ procedure(vbnConfirmContour()
           vbnContourPivot = vbnContourBoxFromEdges(vbnContourEdges))
         if(!vbnContourPivot then
           if(length(vbnContourEdges) == 4 then
-            warn("NLayout: four edges must define two distinct horizontal and two distinct vertical boundaries.\n")
+            warn("Num-Layout: four edges must define two distinct horizontal and two distinct vertical boundaries.\n")
           else
-            warn("NLayout: select one pivot rectangle or four bounding edges.\n"))
+            warn("Num-Layout: select one pivot rectangle or four bounding edges.\n"))
           nil
         else
           vbnPhase = 3
@@ -1897,7 +1897,7 @@ procedure(vbnConfirmContour()
         side = vbnContourDirection(vbnContourCursorPoint())
         target = vbnContourTarget(side)
         if(!target || !dbIsId(vbnContourSource) then
-          warn("NLayout: choose a valid inside or outside point.\n")
+          warn("Num-Layout: choose a valid inside or outside point.\n")
           nil
         else
           vbnContourSource~>bBox = target
@@ -1927,7 +1927,7 @@ procedure(vbnConfirm()
     if(vbnKind == 'copyCount then
       value = vbnCurrentValue()
       if(!value || value < 1 then
-        warn("NLayout: enter a positive integer copy count.\n")
+        warn("Num-Layout: enter a positive integer copy count.\n")
         nil
       else
         ok = hiGetCurrentWindow() == vbnWindow &&
@@ -1939,7 +1939,7 @@ procedure(vbnConfirm()
     else
       value = vbnCurrentValue()
       if(!vbnValidValue(value) then
-        warn("NLayout: enter a valid number or X,Y pair; shape sizes must be positive.\n")
+        warn("Num-Layout: enter a valid number or X,Y pair; shape sizes must be positive.\n")
         nil
       else
         ok = cond(
@@ -1978,7 +1978,7 @@ procedure(vbnCountHotkey()
         if(form && form~>_formName == "Copy" && form~>number && form~>copyType then
           vbnStart('copyCount)
         else
-          warn("NLayout: native Copy count form is unavailable.\n")
+          warn("Num-Layout: native Copy count form is unavailable.\n")
           nil))
     else
       ; Keep stock N (cycle snap modes) in other native commands and when off.
@@ -2028,7 +2028,7 @@ procedure(vbnHotkey(shift)
       (t nil)
     )
     if(!kind then
-      warn("NLayout: start Rectangle, Path, Wire, Measurement, Stretch, Move, Copy, or use Shift+J on one rectangle for contour.\n")
+      warn("Num-Layout: start Rectangle, Path, Wire, Measurement, Stretch, Move, Copy, or use Shift+J on one rectangle for contour.\n")
       nil
     else
       if(vbnActive && win == vbnWindow && kind == vbnKind then
@@ -2048,7 +2048,7 @@ procedure(vbnHotkey(shift)
            (command == "Stretch" && form~>_formName != "Stretch") ||
            (command == "Move" && form~>_formName != "Move") ||
            (command == "Copy" && form~>_formName != "Copy") then
-          warn("NLayout: native command form is unavailable.\n")
+          warn("Num-Layout: native command form is unavailable.\n")
           nil
         else
           vbnStart(kind)
@@ -2068,7 +2068,7 @@ procedure(vbnToggle()
   vbnEnabled = !vbnEnabled
   when(!vbnEnabled && vbnActive vbnStop())
   when(vbnAction hiSetActionChecked(vbnAction vbnEnabled nil))
-  printf("NLayout %s\n" if(vbnEnabled then "on" else "off"))
+  printf("Num-Layout %s\n" if(vbnEnabled then "on" else "off"))
   vbnEnabled
 )
 
@@ -2077,12 +2077,12 @@ procedure(vbnRemoveSteiners()
     win = hiGetCurrentWindow()
     cv = when(geIsGraphicalWindow(win t) geGetEditCellView(win))
     if(!cv || cv~>viewName != "layout" || cv~>mode == "r" then
-      warn("NLayout: open an editable layout to remove Steiner objects.\n")
+      warn("Num-Layout: open an editable layout to remove Steiner objects.\n")
       nil
     else
       count = length(cv~>steiners)
       foreach(st cv~>steiners dbDeleteObject(st))
-      printf("NLayout: removed %d Steiner object%s.\n"
+      printf("Num-Layout: removed %d Steiner object%s.\n"
              count if(count == 1 then "" else "s"))
       count
     )
@@ -2126,7 +2126,7 @@ procedure(vbnInstall()
     vbnAction = hiCreateAction(?name 'vbnToggleAction
       ?icon strcat(vbnIconDirectory "numeric_assist.png")
       ?useNameForIconText nil
-      ?toolTip "Toggle NLayout (J; N for Copy count; Shift+J for contour)"
+      ?toolTip "Toggle Num-Layout (J; N for Copy count; Shift+J for contour)"
       ?callback "vbnToggle()" ?checkable t ?checked t)
     vbnSteinerAction = hiCreateAction(?name 'vbnRemoveSteinersAction
       ?icon strcat(vbnIconDirectory "remove_steiners.png")
@@ -2135,7 +2135,7 @@ procedure(vbnInstall()
       ?statusTip "Delete all Steiner objects in the edited layout"
       ?callback "vbnRemoveSteiners()")
     vbnToolbar = hiCreateToolbar(?name 'vbnToolbar
-      ?title "NLayout" ?toolButtonStyle 'iconOnly
+      ?title "Num-Layout" ?toolButtonStyle 'iconOnly
       ?items list(vbnAction vbnSteinerAction))
     hiSetToolbarObjName(vbnToolbar "vbnNumericAssistToolbar")
     vbnInstalled = t

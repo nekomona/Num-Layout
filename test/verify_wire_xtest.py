@@ -13,7 +13,7 @@ def main():
     rows = []
     idle = c.execute_skill('list(vbnWireRefreshBusy vbnActive)')
     if not idle.ok or idle.warnings or idle.output != '(nil nil)':
-        raise RuntimeError(f'Run only while NLayout and its helper are idle: {idle}')
+        raise RuntimeError(f'Run only while Num-Layout and its helper are idle: {idle}')
     for attempt in range(3):
         start = c.execute_skill('progn(vbnWireRefreshBusy=t vbnWireRefreshStatus="pending" '
             'ipcBeginProcess(sprintf(nil "python3 %s --pid %d --title check --check-xtest" '

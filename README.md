@@ -1,9 +1,9 @@
 <p align="center">
-  <img src="docs/media/banner.svg" alt="NumLayoutPlug — Precision, at your cursor." width="100%">
+  <img src="docs/media/banner.en.svg" alt="Num-Layout — Precision, at your cursor." width="100%">
 </p>
 
 <h3 align="center">
-  <a href="https://YOUR_GITHUB_USERNAME.github.io/NumLayoutPlug/">▶ <strong>Try it out first!</strong> &nbsp;·&nbsp; <strong>直接看效果！</strong></a>
+  <a href="https://YOUR_GITHUB_USERNAME.github.io/Num-Layout/">▶ <strong>Try it out first!</strong> &nbsp;·&nbsp; <strong>直接看效果！</strong></a>
 </h3>
 
 <p align="center">
@@ -24,7 +24,7 @@
   <a href="CONTRIBUTING.md">Contributing</a>
 </p>
 
-**NumLayoutPlug (NLayout)** adds precise numeric input to **Virtuoso Layout** commands. Pick a length
+**Num-Layout** adds precise numeric input to **Virtuoso Layout** commands. Pick a length
 or spacing from geometry, type a dimension, and preview the result at your
 cursor. **J** handles numeric entry, **Shift+J** adds absolute positioning and
 Contour, and **N** sets the Copy count.
@@ -56,7 +56,7 @@ and [Pages deployment](docs/PUBLISHING.md) are documented separately.
 | **Contour** | Resize a rectangle inside or outside a chosen pivot | [GIF](docs/media/contour.gif) · [Try it](docs/demo/index.html#contour) |
 | **Steiner cleanup** | Remove invisible Steiner objects from the edited layout | [GIF](docs/media/cleanup.gif) · [Try it](docs/demo/index.html#cleanup) |
 
-The ruler toolbar button toggles NLayout. Full command behavior,
+The ruler toolbar button toggles Num-Layout. Full command behavior,
 installation, grid handling, and key restoration are in the
 **[user guide](docs/numeric_assist_guide.md)**.
 
