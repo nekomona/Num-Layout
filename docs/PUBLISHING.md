@@ -19,11 +19,12 @@ is configured. GitHub supplies the deployment URL when the workflow runs.
 3. Open **Actions → Deploy Pages → Run workflow** and select `main`.
 4. Follow the URL reported by the `github-pages` deployment environment.
 
-Later pushes to `main` that change the site, public documentation, or build
-inputs deploy automatically. Pull requests build and validate the artifact
-without deploying. Manual runs on branches other than `main` also validate only.
-If the default branch is renamed, update the branch filters and deployment
-conditions in the workflow.
+Later pushes to `main` that change `docs/**` or `tools/**` deploy automatically.
+Pull requests with changes in those directories build and validate the artifact
+without deploying. The workflow can still be started manually from the Actions
+page. Manual runs on branches other than `main` also validate only. If the
+default branch is renamed, update the branch filters and deployment conditions
+in the workflow.
 
 The workflow uses the standard `GITHUB_TOKEN` and GitHub's Pages actions. It
 needs no personal access token, repository-specific secret, or dedicated
@@ -32,10 +33,10 @@ them, and allow deployments to the `github-pages` environment from `main`.
 
 ## GitLab Pages
 
-The `.gitlab-ci.yml` pipeline builds and validates the site on branch and tag
-pipelines. A successful pipeline on `main` passes the validated artifact to the
-`pages` job, which publishes its contents from `public/`. Merge request pipelines
-are not explicitly configured.
+The `.gitlab-ci.yml` pipeline builds and validates the site for merge requests or
+`main` pushes that change `docs/**` or `tools/**`. A successful `main` pipeline
+passes the validated artifact to the `pages` job, which publishes its contents
+from `public/`.
 
 After pushing this configuration and the `main` branch to GitLab, make sure a
 runner that can use the `python:3.12-slim` image is available and GitLab Pages

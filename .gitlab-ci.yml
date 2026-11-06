@@ -7,6 +7,15 @@ stages:
 validate_pages:
   stage: build
   image: python:3.12-slim
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      changes:
+        - docs/**
+        - tools/**
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
+      changes:
+        - docs/**
+        - tools/**
   script:
     - python -m venv .venv
     - .venv/bin/pip install -r test/pages-requirements.txt
@@ -28,8 +37,11 @@ pages:
   artifacts:
     paths:
       - public/
-  only:
-    - main
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_BRANCH == "main"'
+      changes:
+        - docs/**
+        - tools/**
 
 package_release:
   stage: package
