@@ -17,7 +17,13 @@ switch explicitly; the choice is remembered across the home page, guide, and lab
 
 ## Installation
 
-The deployable runtime files are in `nlayout/`. Keep their relative paths intact:
+Download the latest release from
+[GitHub Releases](https://github.com/nekomona/Num-Layout/releases/latest). The
+`nlayout-<tag>.tar.gz` archive and its `.sha1` checksum are published together.
+Extract the archive, then load `nlayout/numeric_assist.il` as described below.
+
+To deploy from a checkout, the runtime files are in `nlayout/`. Keep their
+relative paths intact:
 
 ```text
 nlayout/

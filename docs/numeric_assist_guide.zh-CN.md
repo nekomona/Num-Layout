@@ -15,7 +15,11 @@
 
 ## 安装
 
-部署所需的文件都在 `nlayout/` 中，移动或上传时请保留原来的目录结构：
+最新版本可从 [GitHub Releases](https://github.com/nekomona/Num-Layout/releases/latest) 下载。
+发布页会同时提供 `nlayout-<tag>.tar.gz` 压缩包和对应的 `.sha1` 校验文件；解压后按下文
+加载 `nlayout/numeric_assist.il` 即可。
+
+从代码仓库部署时，运行文件都在 `nlayout/` 中，移动或上传时请保留原来的目录结构：
 
 ```text
 nlayout/

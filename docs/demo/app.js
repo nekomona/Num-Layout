@@ -179,13 +179,13 @@
       home: "Num-Layout home",
       resources: "Resources",
       language: "Language",
-      guide: "User guide ↗",
+      guide: "Install & guide ↗",
       homeLink: "Project home ↗",
       license: "MIT license ↗",
       builtFor: "BUILT FOR VIRTUOSO LAYOUT",
       hero: "Precision,<br><span>at your cursor.</span>",
       heroCopy:
-        "Pick a dimension. Type a value.<br>Preview the result before you commit.",
+        "Pick a dimension. Type a value. <br>Preview the result before you commit.",
       numericEntry: "numeric entry",
       absolute: "absolute / contour",
       copyCount: "copy count",
@@ -250,7 +250,7 @@
       home: "定数绘版首页",
       resources: "资源",
       language: "语言",
-      guide: "使用指南 ↗",
+      guide: "安装与使用指南 ↗",
       homeLink: "项目首页 ↗",
       license: "MIT 许可证 ↗",
       builtFor: "专为 VIRTUOSO LAYOUT 设计",
@@ -472,10 +472,16 @@
     document.title = ui("title");
     $("page-description").setAttribute("content", ui("description"));
     $("skip-link").textContent = ui("skip");
+    const brandMark = '<span class="brand-mark" aria-hidden="true">J</span>';
+    const homeHref =
+      document
+        .getElementById(isZh() ? "home-zh" : "home-en")
+        ?.getAttribute("href") || "index.html";
     $("brand").setAttribute("aria-label", ui("home"));
+    $("brand").href = homeHref;
     $("brand").innerHTML = isZh()
-      ? `<span class="brand-mark">N<span>↗</span></span> 定数绘版 <span class="brand-light">Num-Layout</span>`
-      : `<span class="brand-mark">N<span>↗</span></span> Num-Layout`;
+      ? `${brandMark} 定数绘版 <span class="brand-light">Num-Layout</span>`
+      : `${brandMark} Num-Layout`;
     $("resource-nav").setAttribute("aria-label", ui("resources"));
     $("language-switch").setAttribute("aria-label", ui("language"));
     document.querySelectorAll("[data-language]").forEach((button) => {
@@ -485,9 +491,7 @@
     $("guide-link").textContent = ui("guide");
     $("guide-link").href = isZh() ? "guide.zh-CN.html" : "guide.html";
     $("home-link").textContent = ui("homeLink");
-    $("home-link").href = isZh()
-      ? "../site/index.zh-CN.html"
-      : "../site/index.html";
+    $("home-link").href = homeHref;
     $("license-link").textContent = ui("license");
     $("built-for").innerHTML =
       `<span class="signal-dot"></span> ${ui("builtFor")}`;
@@ -519,9 +523,10 @@
     $("principle-three-copy").textContent = ui("principle3Copy");
     $("footer-note").innerHTML = ui("footer");
     $("overview-link").textContent = ui("overview");
-    $("overview-link").href = isZh()
-      ? "../../README.zh-CN.md"
-      : "../../README.md";
+    $("overview-link").href =
+      document
+        .getElementById(isZh() ? "overview-zh" : "overview-en")
+        ?.getAttribute("href") || homeHref;
     $("footer-brand").textContent = ui("footerBrand");
     const noscript = document.querySelector("noscript");
     if (noscript) noscript.innerHTML = ui("noscript");

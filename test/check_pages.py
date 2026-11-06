@@ -29,12 +29,12 @@ class Links(HTMLParser):
 
 
 def check_artifact():
-    for name, site in (("README.md", "https://nekomona.github.io/Num-Layout/"),
-                       ("README.zh-CN.md", "https://nekomona.github.io/Num-Layout/index.zh-CN.html")):
+    lab_url = "https://nekomona.github.io/Num-Layout/lab.html"
+    for name in ("README.md", "README.zh-CN.md"):
         readme = (ROOT / name).read_text(encoding="utf-8")
         assert "Try it out first!" in readme, name
         assert "直接看效果！" in readme, name
-        assert site in readme, name
+        assert lab_url in readme, name
     expected = {"index.html", "index.zh-CN.html", "lab.html", "app.js", "style.css",
                 "site.css", "language.js", "guide.html", "guide.zh-CN.html",
                 "contributing.html", "contributing.zh-CN.html",
@@ -104,13 +104,25 @@ def check_browser(channel):
             assert page.locator("h1").inner_text() == "Num-Layout"
             assert "Precision" in page.locator(".hero-tagline").inner_text()
             assert "Num-Layout" in page.locator(".brand").inner_text()
+            assert page.locator('.site-nav a.github-link[href="https://github.com/nekomona/Num-Layout"]').count() == 1
+            assert page.locator('.site-nav a[href="guide.html"]').inner_text().startswith("Install & guide")
             page.locator('.site-nav a[href="lab.html"]').click()
             assert page.url.startswith(base + "lab.html")
             page.goto(base + "lab.html?lang=en#copy")
             page.wait_for_function("window.NumericDemo && NumericDemo.state.tool === 'copy'")
             page.get_by_role("button", name="Next step").click()
             assert page.evaluate("NumericDemo.state.step") == 1
-            page.get_by_role("link", name="User guide").click()
+            assert page.locator("#home-link").get_attribute("href") == "index.html"
+            assert page.locator("#brand").get_attribute("href") == "index.html"
+            assert page.locator("#overview-link").get_attribute("href") == "index.html"
+            assert page.locator('.topbar a.github-link[href="https://github.com/nekomona/Num-Layout"]').count() == 1
+            page.get_by_role("button", name="中文").click()
+            assert page.locator("#home-link").get_attribute("href") == "index.zh-CN.html"
+            assert page.locator("#brand").get_attribute("href") == "index.zh-CN.html"
+            assert page.locator("#overview-link").get_attribute("href") == "index.zh-CN.html"
+            page.reload()
+            page.wait_for_function("window.NumericDemo && NumericDemo.state.tool === 'copy'")
+            page.get_by_role("link", name="Install & guide").click()
             assert page.url == base + "guide.html"
             assert page.locator("#installation").count() == 1
             assert page.locator('.topbar .language-switch a[href="guide.zh-CN.html"]').count() == 1

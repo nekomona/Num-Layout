@@ -3,7 +3,7 @@
 </p>
 
 <h3 align="center">
-  <a href="https://nekomona.github.io/Num-Layout/index.zh-CN.html">▶ <strong>Try it out first!</strong> &nbsp;·&nbsp; <strong>直接看效果！</strong></a>
+  <a href="https://nekomona.github.io/Num-Layout/lab.html">▶ <strong>Try it out first!</strong> &nbsp;·&nbsp; <strong>直接看效果！</strong></a>
 </h3>
 
 <p align="center">
@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <b><a href="docs/numeric_assist_guide.zh-CN.md">使用指南</a></b> &nbsp;·&nbsp;
+  <b><a href="docs/numeric_assist_guide.zh-CN.md">安装与使用指南</a></b> &nbsp;·&nbsp;
   <b><a href="docs/demo/index.html">交互演示</a></b> &nbsp;·&nbsp;
   <a href="docs/numeric_assist_guide.zh-CN.md#安装">安装</a> &nbsp;·&nbsp;
   <a href="test/README.md">测试</a> &nbsp;·&nbsp;

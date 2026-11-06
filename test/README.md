@@ -16,8 +16,8 @@ These tests exercise Wire refresh target checks, pointer restoration, canvas
 boundaries, and input interruption using a fake X11 connection. They send no
 live input and do not require Virtuoso or an X server.
 
-For the documentation website, animation capture, and browser checks, see
-[DEMO_MEDIA.md](DEMO_MEDIA.md). These checks use synthetic geometry and run
+For the documentation website, animation capture, and browser checks, see the
+[demo media guide](DEMO_MEDIA.md). These checks use synthetic geometry and run
 separately from the native plugin tests.
 Release packaging is covered by `test_package_release.py`; see
 [Pages deployment](../docs/PUBLISHING.md#release-archives) for the tag workflow.

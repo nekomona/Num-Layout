@@ -34,7 +34,7 @@ def main():
         assert "定数绘版" in zh_page.locator("#brand").inner_text()
         assert zh_page.locator("#showcase").inner_text() == "⇄ 循环展示：开"
         assert zh_page.locator('label[for="field-value"]').inner_text() == "宽度"
-        assert zh_page.locator("#guide-link").inner_text() == "使用指南 ↗"
+        assert zh_page.locator("#guide-link").inner_text() == "安装与使用指南 ↗"
         assert zh_page.locator("#guide-link").get_attribute("href") == "guide.zh-CN.html"
         zh_names = {
             "pick": "选择尺寸", "width": "Path / Wire 宽度", "rectangle": "矩形",

@@ -3,7 +3,7 @@
 </p>
 
 <h3 align="center">
-  <a href="https://nekomona.github.io/Num-Layout/">▶ <strong>Try it out first!</strong> &nbsp;·&nbsp; <strong>直接看效果！</strong></a>
+  <a href="https://nekomona.github.io/Num-Layout/lab.html">▶ <strong>Try it out first!</strong> &nbsp;·&nbsp; <strong>直接看效果！</strong></a>
 </h3>
 
 <p align="center">
@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <b><a href="docs/numeric_assist_guide.md">User guide</a></b> &nbsp;·&nbsp;
+  <b><a href="docs/numeric_assist_guide.md">Install &amp; guide</a></b> &nbsp;·&nbsp;
   <b><a href="docs/demo/index.html">Interactive lab</a></b> &nbsp;·&nbsp;
   <a href="docs/numeric_assist_guide.md#installation">Installation</a> &nbsp;·&nbsp;
   <a href="test/README.md">Testing</a> &nbsp;·&nbsp;

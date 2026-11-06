@@ -70,7 +70,7 @@ the reviewed site and animations.
 
 ## Recording an actual Virtuoso session
 
-Use the dedicated test library and environment described in [README.md](README.md).
+Use the dedicated test library and environment described in the [testing guide](README.md).
 Prepare fresh synthetic geometry with the testbench scripts. Set a neutral
 test-cell name and frame the canvas so usernames, hostnames, paths, clocks,
 production designs, and CIW transcripts are excluded from every frame.
@@ -95,4 +95,4 @@ tested Virtuoso release and distinguish them from the illustrative animations.
 Do not use private historical screenshots as publication assets.
 
 Browser checks validate the illustrations and controls. Native behavior still
-requires the live and manual checks in [README.md](README.md).
+requires the live and manual checks in the [testing guide](README.md).
