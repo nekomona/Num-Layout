@@ -249,10 +249,10 @@
       home: "Numeric Layout Assist 首页",
       resources: "资源",
       language: "语言",
-      guide: "用户教程 ↗",
+      guide: "使用指南 ↗",
       homeLink: "项目首页 ↗",
       license: "MIT 许可证 ↗",
-      builtFor: "为 VIRTUOSO LAYOUT 打造",
+      builtFor: "专为 VIRTUOSO LAYOUT 设计",
       hero: "精确，<br><span>就在光标边。</span>",
       heroCopy: "选择尺寸，输入数值。<br>提交前先看结果。",
       numericEntry: "数值输入",
@@ -269,10 +269,10 @@
       next: "下一步 →",
       reset: "↺ 重置",
       loopOn: "↻ 单页循环",
-      loopOff: "↻ 单页不循环",
+      loopOff: "↻ 本页单次",
       loopTitle: "每轮结束后等待 3 秒",
-      showcaseOn: "⇄ 循环展示",
-      showcaseOff: "⇄ 不循环展示",
+      showcaseOn: "⇄ 循环展示：开",
+      showcaseOff: "⇄ 循环展示：关",
       showcaseTitle: "自动依次播放全部工具",
       speed: "速度",
       steps: "演示步骤",
@@ -284,26 +284,26 @@
       candidate: "候选",
       preview: "选择 / 预览",
       geometry: "几何",
-      reference: "阅读工具教程 ↗",
+      reference: "阅读使用指南 ↗",
       principles: "一个小习惯，一次精确编辑。",
-      principle1: "拾取或输入",
-      principle1Copy: "测量现有几何，或直接输入已经知道的尺寸。",
-      principle2: "先看目标",
-      principle2Copy: "洋红色预览会在确认前显示预期结果。",
-      principle3: "保持操作连贯",
-      principle3Copy: "数值输入与原生绘制、编辑命令协同工作。",
+      principle1: "量取或键入",
+      principle1Copy: "尺寸可以从版图上拾取，也可以直接输入已知值。",
+      principle2: "先看结果",
+      principle2Copy: "洋红色预览会在确认前显示即将产生的变化。",
+      principle3: "继续当前操作",
+      principle3Copy: "不必退出正在使用的绘制或编辑命令。",
       footer:
-        '这里是交互示意图，并非实时 Virtuoso 会话。原生吸附和命令行为见 <a id="footer-guide-link" href="guide.zh-CN.html">用户教程</a>。',
+        '页面中的场景为合成示意，不是实时 Virtuoso 会话。Virtuoso 的捕捉和命令行为见 <a id="footer-guide-link" href="guide.zh-CN.html">使用指南</a>。',
       overview: "项目概览 ↗",
       noscript:
-        '启用 JavaScript 以运行交互演示，或阅读<a href="guide.zh-CN.html">完整用户教程</a>。',
+        '启用 JavaScript 以运行交互演示，或阅读<a href="guide.zh-CN.html">完整使用指南</a>。',
       workspace: "交互式工具演示",
       done: "完成。",
       input: "输入",
       action: "操作",
       syntheticScene: "合成版图演示",
       choiceError: "请选择列表中的一项。",
-      rangeError: "请使用输入框下方给出的场景范围。",
+      rangeError: "请输入下方标注范围内的数值。",
       xyError: "请按 X,Y 输入两个数值。",
       wholeNumber: "，且必须为整数",
     },
@@ -311,8 +311,8 @@
   const zhTools = {
     pick: {
       name: "选择尺寸",
-      category: "读取几何",
-      description: "从边获取数值，或选择第二条平行边来测量两条边之间的间距。",
+      category: "从版图读取尺寸",
+      description: "拾取边的长度；再选一条平行边，可改为测量两边间距。",
       anchor: "j-数值输入",
       fields: {
         kind: {
@@ -324,8 +324,7 @@
     width: {
       name: "Path / Wire 宽度",
       category: "用尺寸绘制",
-      description:
-        "在原生 Path 或 Wire 命令中设置宽度，并在确认前查看新的轮廓。",
+      description: "在 Path 或 Wire 命令中直接设置宽度，确认前先看轮廓预览。",
       anchor: "j-数值输入",
       fields: {
         value: { label: "宽度", hint: "场景范围：0.2–5 µm" },
@@ -335,7 +334,7 @@
       name: "矩形",
       category: "两个尺寸，一次输入",
       description:
-        "同时输入宽度和高度。放下第一个角点后，矩形会跟随光标所在象限。",
+        "一次输入宽高。放下第一个角点后，矩形会随光标在当前象限展开。",
       anchor: "xy-输入与绝对位置",
       fields: {
         value: {
@@ -346,7 +345,7 @@
     },
     measure: {
       name: "测量",
-      category: "可精确到达的标尺",
+      category: "让标尺落到精确长度",
       description: "沿选定方向为新的两点标尺指定精确长度。",
       anchor: "j-数值输入",
       fields: {
@@ -356,7 +355,7 @@
     stretch: {
       name: "拉伸",
       category: "设置最终范围",
-      description: "调整选中边的最终尺寸，同时保持对边固定。",
+      description: "把选中的边拉到指定尺寸，对边保持不动。",
       anchor: "j-数值输入",
       fields: {
         value: { label: "最终 X 范围", hint: "场景范围：4–28 µm" },
@@ -365,7 +364,8 @@
     move: {
       name: "移动",
       category: "位移或目标位置",
-      description: "选择相对位移或参考点的绝对位置，并预览目标。",
+      description:
+        "按相对距离移动，或把参考点放到绝对坐标；放置前可先看目标位置。",
       anchor: "xy-输入与绝对位置",
       fields: {
         mode: {
@@ -382,7 +382,7 @@
       name: "复制 + 数量",
       category: "一个间距，多个副本",
       description:
-        "用 N 设置正整数副本数量，再用 J 设置每份位移，并预览全部 Step 目标。",
+        "用 N 设定副本数量，再用 J 设定间距；所有 Step 目标都会先预览。",
       anchor: "copy-数量n",
       fields: {
         count: { label: "副本数量", hint: "场景范围：1–4 个副本" },
@@ -392,8 +392,7 @@
     contour: {
       name: "轮廓偏移",
       category: "偏移边界",
-      description:
-        "围绕 pivot 调整选中矩形。设置偏移、选择 pivot，再决定向内或向外。",
+      description: "以 pivot 为基准调整矩形：先定偏移，再选 pivot 和内外方向。",
       anchor: "为矩形做-contour",
       fields: {
         value: { label: "偏移量", hint: "场景范围：0.5–3 µm" },
@@ -886,7 +885,7 @@
   const phaseZh = {
     pick: [
       ["开始 Stretch", "S → 点击右上方小矩形的下边。"],
-      ["启动 J", "J 为已选中的 Stretch 边启动数值输入。"],
+      ["启动 J", "J 打开数值输入，用于修改已选中的 Stretch 边。"],
       ["选择边", "将指针移到边上并点击，用其长度更新 Stretch 预览。"],
       ["选择数值", "选择第二条平行边测量间距，或保留第一条边的长度。"],
       ["应用尺寸", "按 Enter 将拾取的尺寸应用到正在拉伸的矩形。"],
@@ -895,12 +894,12 @@
       ["开始 Path", "P → 点击短路径以选中并延长它。"],
       ["拉出线段", "向右拖动指针，先预览窄 Path 段。"],
       ["输入宽度", "J → 输入宽度；整条延长后的 Path（包括原段）会一起变化。"],
-      ["应用宽度", "按 Enter 应用宽度；原生 Path 继续保持活动。"],
+      ["应用宽度", "按 Enter 应用宽度；Path 命令继续保持活动。"],
     ],
     rectangle: [
       ["开始 Rectangle", "R → 点击新矩形的第一个角点。"],
       ["拉出角点", "移动到右上方象限，预览矩形范围。"],
-      ["输入 X,Y", "J → 逐字输入宽度,高度。"],
+      ["输入 X,Y", "J → 依次输入宽度和高度。"],
       ["完成矩形", "按 Enter 确认两个尺寸并完成矩形。"],
     ],
     measure: [
@@ -924,10 +923,10 @@
       ["拉出预览", "向右拖动，在按 N 前显示初始 Copy 预览。"],
       ["设置数量", "N → 输入正整数 → Enter；此时尚未放置副本。"],
       ["设置间距", "J → 输入每份位移，预览每个 Step 目标。"],
-      ["放置副本", "按 Enter 按相同间距的连续倍数放置副本。"],
+      ["放置副本", "按 Enter 后，副本会按该间距的连续倍数放置。"],
     ],
     contour: [
-      ["选择矩形", "在没有原生绘制命令时选择一个矩形。"],
+      ["选择矩形", "没有正在运行的绘图命令时，选择一个矩形。"],
       ["输入偏移", "Shift+J → 输入正偏移 → Enter，随后选择 pivot。"],
       ["选择 pivot", "Shift+J 选择 pivot 矩形；也可用 J 选择四条边界边。"],
       ["选择方向", "将指针移到 pivot 内侧或外侧，选择轮廓方向。"],
@@ -935,7 +934,7 @@
     ],
     cleanup: [
       ["检查版图", "Steiner 通常不可见；这里显示标记以便说明。"],
-      ["执行清理", "在可编辑版图中点击路由节点与扫帚工具栏按钮。"],
+      ["清理 Steiner", "在可编辑版图中点击路由节点与扫帚工具栏按钮。"],
       ["对象已删除", "CIW 会报告删除数量；图形保留，cellview 不会自动保存。"],
     ],
   };
@@ -1218,7 +1217,7 @@
       if (startedInput && hasInput)
         result = tr(
           `Width = ${f(v)} µm${done ? " · native Path continues" : " · preview"}`,
-          `宽度 = ${f(v)} µm${done ? " · 原生 Path 继续保持活动" : " · 预览"}`,
+          `宽度 = ${f(v)} µm${done ? " · Path 命令继续保持活动" : " · 预览"}`,
         );
     } else if (tool.id === "rectangle") {
       if (selected) s += cross(8, 4);

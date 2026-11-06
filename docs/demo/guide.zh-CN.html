@@ -1,21 +1,22 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="language-current" content="zh"><meta name="language-alternate" content="guide.html">
-<title>Numeric Layout Assist · 用户教程</title><link rel="stylesheet" href="style.css">
-<style>.guide{max-width:1020px;margin:45px auto;padding:0 28px 60px;line-height:1.8}.guide h1{font-size:40px;line-height:1.2;margin-bottom:24px}.guide h2{margin-top:48px;margin-bottom:18px}.guide h3{margin-top:35px}.guide p,.guide li{font-size:15px}.guide pre{overflow:auto;background:#17232e;color:#dce8f0;padding:22px;border-radius:8px;font-size:13px}.guide code{font-family:Consolas,monospace}.guide table{display:block;overflow:auto;border-collapse:collapse;width:100%;font-size:13px}.guide th,.guide td{text-align:left;border-bottom:1px solid #d9d9d0;padding:12px;min-width:120px}.guide th{background:#ebe7f1}.guide a{color:#6b45b9}.guide img{max-width:100%;height:auto}.guide h2,.guide h3{scroll-margin-top:25px}</style>
+<title>Numeric Layout Assist · 使用指南</title><link rel="stylesheet" href="style.css">
+<style>.guide{max-width:1020px;margin:45px auto;padding:0 28px 60px;line-height:1.8}.guide h1{font-size:40px;line-height:1.2;margin-bottom:24px}.guide h2{margin-top:48px;margin-bottom:18px}.guide h3{margin-top:35px}.guide p,.guide li{font-size:15px}.guide pre{overflow:auto;background:#17232e;color:#dce8f0;padding:22px;border-radius:8px;font-size:13px}.guide code{font-family:Consolas,monospace}.guide table{display:block;overflow:auto;border-collapse:collapse;width:100%;font-size:13px}.guide th,.guide td{text-align:left;border-bottom:1px solid #d9d9d0;padding:12px;min-width:120px}.guide th{background:#ebe7f1}.guide a{color:#6b45b9}.guide img{max-width:100%;height:auto}.guide h2,.guide h3{scroll-margin-top:25px}.language-switch a{padding:6px 9px;border-radius:4px;font-size:11px;line-height:1}.language-switch a[aria-current="page"]{background:#eee8f7}</style>
 <script src="../site/language.js"></script>
-</head><body><header class="topbar"><a class="brand" href="../site/index.html"><span class="brand-mark">N<span>↗</span></span> NUMERIC LAYOUT ASSIST</a><nav><a href="guide.html" data-language-choice="en">English</a><a href="index.html">交互演示 ↗</a><a href="../../LICENSE">MIT 许可证 ↗</a></nav></header><main class="guide"><h1 id="numeric-layout-assist-用户教程">Numeric Layout Assist — 用户教程</h1>
+</head><body><header class="topbar"><a class="brand" href="../site/index.html"><span class="brand-mark">N<span>↗</span></span> NUMERIC LAYOUT ASSIST</a><nav><span class="language-switch" aria-label="Language"><a href="guide.html" data-language-choice="en" aria-current="false">EN</a><a href="guide.zh-CN.html" data-language-choice="zh" aria-current="page">中文</a></span><a href="index.html">交互演示 ↗</a><a href="../../LICENSE">MIT 许可证 ↗</a></nav></header><main class="guide"><h1 id="numeric-layout-assist-使用指南">Numeric Layout Assist 使用指南</h1>
 <p><a href="../numeric_assist_guide.md" data-language-choice="en">English</a> · <a href="../numeric_assist_guide.zh-CN.md" data-language-choice="zh">简体中文</a></p>
 <p><a href="index.html">项目概览</a> · <a href="../demo/index.html">交互演示</a> · <a href="../../test/README.md">测试</a> · <a href="../../CONTRIBUTING.zh-CN.md">参与贡献</a></p>
-<p>Numeric Layout Assist 为原生 Virtuoso Layout 命令加入数值输入和几何拾取。
-当前以 Virtuoso IC23.1 为目标版本；其他版本的原生表单字段和回调行为可能不同。</p>
+<p>Numeric Layout Assist 把数值输入和几何拾取接入 Virtuoso Layout 的常用命令。
+当前按 Virtuoso IC23.1 适配；其他版本的字段名称和回调行为可能不同。</p>
+<p>本页首次打开时会按浏览器语言选择中英文。也可以用右上角的 <strong>EN / 中文</strong> 手动切换，
+选择后会同时应用到首页、使用指南和交互演示。</p>
 <p><strong>目录：</strong> <a href="#安装">安装</a> · <a href="#工具栏与预览">工具栏与预览</a> ·
 <a href="#使用">命令速查</a> · <a href="#xy-输入与绝对位置">X/Y 输入</a> ·
-<a href="#copy-数量n">Copy 数量</a> · <a href="#j-数值输入">几何拾取与确认</a> ·
-<a href="#为矩形做-contour">Contour</a> · <a href="#交互演示">交互演示</a> ·
-<a href="#仓库结构">仓库结构</a></p>
+<a href="#copy-数量n">Copy 数量</a> · <a href="#j-数值输入">数值输入与拾取</a> ·
+<a href="#为矩形做-contour">Contour</a> · <a href="#交互演示">交互演示</a> · <a href="#仓库结构">仓库结构</a></p>
 <h2 id="安装">安装</h2>
-<p>可部署的运行文件都在 <code>src/</code> 中。请保持它们的相对路径不变：</p>
+<p>部署所需的文件都在 <code>src/</code> 中，移动或上传时请保留原来的目录结构：</p>
 <pre><code class="language-text">src/
   numeric_assist.il
   numeric_assist.drf
@@ -24,102 +25,101 @@
     numeric_assist.png
     remove_steiners.png
 </code></pre>
-<p>如果直接从代码仓库加载，在 Virtuoso CIW 中使用绝对路径：</p>
+<p>从代码仓库直接加载时，在 Virtuoso CIW 中使用绝对路径：</p>
 <pre><code class="language-skill">load(&quot;/path/to/numeric-assist/src/numeric_assist.il&quot;)
 </code></pre>
-<p>加载脚本时会安装快捷键绑定和工具栏。要在 Virtuoso 启动时自动加载，可将上面的
-命令行加入自己的 <code>.cdsinit</code>。在 CIW 中运行 <code>vbnUninstall()</code> 可恢复之前的绑定并
-移除工具栏。</p>
-<p>远程部署时，请先在虚拟环境中安装 <code>virtuoso-bridge</code>，并配置 SSH 与 GUI 角色。
-在本仓库中运行：</p>
+<p>加载后会自动安装键位和工具栏。若希望启动 Virtuoso 时自动加载，可把同一行加入
+自己的 <code>.cdsinit</code>。在 CIW 中执行 <code>vbnUninstall()</code>，即可恢复之前的键位并移除工具栏。</p>
+<p>远程部署前，先在虚拟环境中安装 <code>virtuoso-bridge</code>，并配置 SSH 和 GUI 角色。随后在仓库根目录执行：</p>
 <pre><code class="language-sh">python deploy.py
 # 可选：指定远程主机上的绝对安装目录。
 python deploy.py --remote-dir /path/to/numeric-assist
 </code></pre>
-<p>部署脚本会把 <code>src/</code> 的内容上传到安装目录、校验文件哈希、备份已安装的 <code>.il</code>，
-再通过 bridge 加载插件。例如，<code>--remote-dir /opt/numeric-assist</code> 会安装
-<code>/opt/numeric-assist/numeric_assist.il</code>，辅助脚本、显示资源文件和 <code>icons/</code>
-会放在同一目录。Wire 刷新辅助程序需要 GUI 主机上的 Python 3、libX11 和
-XTest 扩展，并从 Virtuoso 继承 <code>DISPLAY</code> 与 <code>XAUTHORITY</code>。</p>
+<p>部署脚本会通过 bridge 完成以下工作：上传 <code>src/</code>、校验文件哈希、备份已有的 <code>.il</code>，
+再加载插件。例如指定 <code>--remote-dir /opt/numeric-assist</code> 时，主文件会安装到
+<code>/opt/numeric-assist/numeric_assist.il</code>，辅助脚本、显示资源和 <code>icons/</code> 放在同一目录。</p>
+<p>Wire 刷新辅助程序依赖 GUI 主机上的 Python 3、libX11 和 XTest 扩展，并从 Virtuoso
+继承 <code>DISPLAY</code> 与 <code>XAUTHORITY</code>。</p>
 <h2 id="工具栏与预览">工具栏与预览</h2>
-<p>标尺图标用于开关 Numeric Assist；按钮处于按下状态时表示辅助功能已启用。
-路由节点与扫帚图标会删除当前版图中的不可见 Steiner，包括 edit-in-place 场景。
-清理后会报告删除数量，保存操作仍由用户决定。工具栏注册在 Layout 会话的
-<strong>Window &gt; Toolbars</strong> 管理器中。</p>
-<p>候选轮廓显示为黄色；已选轮廓和测量箭头显示为洋红色。拾取会遵循当前可见图层和
-层次显示级别。插件从 <code>numeric_assist.drf</code> 加载自己的高亮 packet。</p>
-<p>确认 Wire 宽度后，<code>wire_refresh.py</code> 会先沿 X 方向移动指针 32 像素、沿 Y 方向移动
-16 像素，再在 40 ms 后返回。返回前会检查目标窗口、焦点、按住的鼠标按键以及指针
-是否被用户移动；若期间有用户输入，则取消返回。可通过以下 CIW 表达式查看诊断状态：</p>
+<p>工具栏上的标尺按钮用于开关 Numeric Assist。按钮按下时，辅助功能处于启用状态。
+路由节点加扫帚图标用于清除当前版图中的不可见 Steiner，原地编辑（edit-in-place）时也可使用。
+清理完成后会报告删除数量；是否保存 cellview 仍由用户决定。工具栏注册在 Layout
+会话的 <strong>Window &gt; Toolbars</strong> 中。</p>
+<p>候选轮廓显示为黄色；已选轮廓和测量箭头显示为洋红色。拾取范围遵循当前可见图层和
+层次显示设置。插件使用 <code>numeric_assist.drf</code> 中自带的高亮数据。</p>
+<p>确认 Wire 宽度后，<code>wire_refresh.py</code> 会先把指针沿 X 方向移动 32 像素、沿 Y 方向移动
+16 像素，40 ms 后再移回原位。归位前会检查目标窗口、焦点、鼠标按键状态以及指针是否
+被用户移动；只要检测到用户输入，就放弃归位。诊断状态可在 CIW 中查看：</p>
 <pre><code class="language-skill">list(vbnWireRefreshBusy vbnWireRefreshStatus)
 </code></pre>
-<p>指针成功返回并不等于原生 rubberband 一定重绘。请按测试说明在 Virtuoso 中做交互验证。</p>
+<p>指针成功归位，并不代表 Virtuoso 的动态拖动预览（rubberband）一定已经重绘。请在 Virtuoso
+中按测试说明实际确认。</p>
 <h2 id="使用">使用</h2>
-<p>先启动原生 <strong>Rectangle</strong>、<strong>Path</strong>、<strong>Wire</strong>、<strong>Measurement (K)</strong>、<strong>Stretch</strong>、
-<strong>Move</strong> 或 <strong>Copy</strong> 命令；也可以只选择一个矩形，然后进入 Contour。</p>
+<p>先启动 <strong>Rectangle</strong>、<strong>Path</strong>、<strong>Wire</strong>、<strong>Measurement (K)</strong>、<strong>Stretch</strong>、
+<strong>Move</strong> 或 <strong>Copy</strong>；也可以只选中一个矩形，再通过 Shift+J 进入 Contour。</p>
 <table>
 <thead>
 <tr>
 <th>当前命令</th>
 <th>快捷键</th>
-<th>确认数值的含义</th>
+<th>确认数值后的效果</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>Path</td>
 <td>J</td>
-<td>当前 Path 的宽度</td>
+<td>设置当前 Path 的宽度</td>
 </tr>
 <tr>
 <td>Wire</td>
 <td>J</td>
-<td>当前 Wire 段的宽度</td>
+<td>设置当前 Wire 段的宽度</td>
 </tr>
 <tr>
 <td>Rectangle</td>
 <td>J</td>
-<td>矩形宽高；输入 <code>X,Y</code></td>
+<td>设置矩形宽高；输入格式为 <code>X,Y</code></td>
 </tr>
 <tr>
 <td>Measurement (K)</td>
 <td>J</td>
-<td>新建两点标尺的长度</td>
+<td>设置新建两点标尺的长度</td>
 </tr>
 <tr>
 <td>Stretch</td>
 <td>J</td>
-<td>单条选中边/端点的最终长度；整体或多个对象时为位移</td>
+<td>选中一条边或端点时设置最终长度；选中整体或多个对象时设置位移</td>
 </tr>
 <tr>
 <td>Stretch</td>
 <td>Shift+J</td>
-<td>Stretch 的位移大小</td>
+<td>设置 Stretch 的位移量</td>
 </tr>
 <tr>
 <td>Move</td>
 <td>J</td>
-<td>Move 位移大小</td>
+<td>设置 Move 的位移量</td>
 </tr>
 <tr>
 <td>Move</td>
 <td>Shift+J</td>
-<td>参考点的绝对位置</td>
+<td>设置参考点的绝对位置</td>
 </tr>
 <tr>
 <td>Copy</td>
 <td>J</td>
-<td>每个副本的位移，并保留副本数量</td>
+<td>设置每个副本的位移，并保留副本数量</td>
 </tr>
 <tr>
 <td>Copy</td>
 <td>Shift+J</td>
-<td>第一个副本参考点的绝对位置</td>
+<td>设置第一个副本参考点的绝对位置</td>
 </tr>
 <tr>
 <td>Copy</td>
 <td>N</td>
-<td>正整数副本数量，不放置副本</td>
+<td>设置正整数副本数量，不放置副本</td>
 </tr>
 <tr>
 <td>仅选中一个矩形、无活动命令</td>
@@ -129,9 +129,8 @@ XTest 扩展，并从 Virtuoso 继承 <code>DISPLAY</code> 与 <code>XAUTHORITY<
 </tbody>
 </table>
 <h3 id="xy-输入与绝对位置">X/Y 输入与绝对位置</h3>
-<p>在 Move、Copy、Stretch、Measurement 和 Rectangle 中，输入逗号会切换到 <code>X,Y</code>。
-每个分量都支持小数和前置负号，Backspace 正常编辑文本；同一分量中的第二个逗号
-或第二个小数点是无效输入，会被忽略。</p>
+<p>在 Move、Copy、Stretch、Measurement 和 Rectangle 中输入逗号，数值会切换为 <code>X,Y</code> 格式。
+两个分量都支持小数和负号，Backspace 正常编辑文本。同一分量里再输入一个逗号或小数点会被忽略。</p>
 <table>
 <thead>
 <tr>
@@ -162,7 +161,7 @@ XTest 扩展，并从 Virtuoso 继承 <code>DISPLAY</code> 与 <code>XAUTHORITY<
 </tr>
 <tr>
 <td>J Measurement</td>
-<td>终点为起点 + (10,20)</td>
+<td>终点为起点加 (10,20)</td>
 <td>水平位移 10</td>
 <td>垂直位移 20</td>
 </tr>
@@ -174,121 +173,112 @@ XTest 扩展，并从 Virtuoso 继承 <code>DISPLAY</code> 与 <code>XAUTHORITY<
 </tr>
 </tbody>
 </table>
-<p>对于 <strong>Shift+J Move/Copy</strong>，目标是原生命令的参考点。若没有记录参考点，Numeric
-Assist 会使用所选对象合并包围盒的中心。坐标采用当前显示窗口的坐标系，包括
-edit-in-place。输入<strong>单个数值</strong>时，只修改 X 或 Y，轴由指针相对参考点的方向决定，
-光标提示会显示当前轴。绝对坐标允许负数。</p>
-<p>显式 X/Y 分量不受角度吸附约束，但目标坐标仍会落在制造网格上。标量相对距离保留
-原生命令的正交、45 度或任意角度行为。Move/Copy 中在 J 与 Shift+J 间切换会保留
-尚未提交的输入、已拾取的边和副本数量。重复 Copy 时，第一个目标使用命令指定位置，
-后续目标重复相同位移；所有 Step 目标都会预览。</p>
-<p>绘制 <strong>Rectangle</strong> 时，在第一个角点前按 J 会设置原生 Specify Size 字段，供后续放置
-使用；放下第一个角点后，J 会在指针所在象限中预览并完成矩形。省略的尺寸会保留
-现有原生字段值或当前暂定矩形尺寸。第一个角点之后，单个数值会根据鼠标方向选择轴；
-第一个角点之前，单个数值表示宽度。</p>
-<p>调整<strong>矩形尺寸</strong>时，先用原生 partial Stretch 选择边或角点，再用 J 输入最终宽/高，
-对边保持不动。整体或多个对象的 Stretch 仍使用相对位移；Shift+J Stretch 也保持
-相对模式。</p>
-<p>逗号前的数值会保留为 X，包括预填值或拾取值。如果要从空 X 开始，请先用 Escape
-清除预填值；在逗号后拾取会填入 Y，同时保留已有 X。空的 <code>,</code> 不能确认；尺寸必须为
-正数。N 仍只接受整数；Path/Wire 宽度和 Contour 偏移保持为标量。最近一次成功的
-X/Y 输入会在笛卡尔模式下记住，标量模式保留各自的标量记忆。</p>
+<p>使用 <strong>Shift+J Move/Copy</strong> 时，目标位置以当前命令的参考点为基准。若命令尚未记录参考点，
+Numeric Assist 会使用所选对象合并包围盒的中心。坐标以当前显示窗口为准，原地编辑时也一样。
+只输入一个数值时，只会修改 X 或 Y；具体修改哪个轴，由指针相对参考点的方向决定，光标提示会标出当前轴。
+绝对坐标可以为负。</p>
+<p>显式输入 X/Y 时不受角度捕捉限制，但目标坐标仍会吸附到制造网格。相对距离仍遵循当前命令的
+正交、45° 对角或任意角度模式。在 Move/Copy 的 J 与 Shift+J 之间切换，不会丢失尚未确认的输入、
+已拾取的边或副本数量。重复 Copy 时，第一个目标使用命令指定的位置，后续目标重复相同位移；
+每个 Step 目标都会提前预览。</p>
+<p>绘制 <strong>Rectangle</strong> 时，在放下第一个角点前按 J，会填写 Specify Size 字段，供后续放置使用；
+放下第一个角点后按 J，则会在指针所在象限预览并完成矩形。省略的分量会沿用已有字段值或当前暂定尺寸。
+第一个角点之后，单值输入会根据鼠标方向选择一个轴；第一个角点之前，单值输入表示宽度。</p>
+<p>调整<strong>矩形尺寸</strong>时，先用 partial Stretch 选中一条边或角点，再按 J 输入最终宽高，对边保持不动。
+整体或多个对象的 Stretch 仍按相对位移处理，Shift+J Stretch 也一样。</p>
+<p>逗号前的数值会保留为 X，包括预填值或拾取值。若要从空的 X 开始，先用 Escape 清除预填值；
+在逗号后拾取只会填入 Y，不会覆盖已有的 X。单独输入 <code>,</code> 无法确认，尺寸值必须为正数。
+N 仍然只接受整数；Path/Wire 宽度和 Contour 偏移只接受单值。最近一次成功的 X/Y 输入会记在
+坐标模式中，单值模式则各自保留自己的记忆值。</p>
 <h3 id="copy-数量n">Copy 数量（N）</h3>
-<p>在原生 Copy 中按 <strong>N</strong>，用 <code>0</code>–<code>9</code> 输入正整数，再用 <strong>Enter</strong>、<strong>Space</strong>、再次
-按 <strong>N</strong> 或点击画布确认。光标标签显示 <code>COPY COUNT</code>。小数会被忽略，零不能确认。
-N 不拾取几何，也不改变已记住的 J 距离。N 打开时按 <strong>J</strong> 或 <strong>Shift+J</strong> 会先应用
-待确认数量，再打开相对或绝对输入，但不会立即放置副本。非法或空数量会保持 N
-打开，方便继续修改。</p>
-<p>确认后，原生 <strong>Copies → Type: Step → Number</strong> 会被设置，数值输入关闭，Copy 仍等待
-放置。此时不会调用 Copy 的 Apply，也不会添加点；随后按原生 Copy 流程放置副本。</p>
-<p>进入 N 会把原生副本数量重置为 <strong>1</strong>。确认后的 N 数量在打开 J 时仍会保留，所以可以先
-用 N 确定副本数，再用 J 设置位移。J 会按输入距离的连续倍数预览每个选中对象的每个
-Step 副本目标，提示中包含数量，例如 <code>12 | COPY DISTANCE [3 copies]</code>。确认 J 后会
-一次放置所有副本。</p>
-<p>取消任一辅助输入、再次进入 N 或退出 J 都会把数量重置为 <strong>1</strong>；若由 J 确认，
-重置发生在放置完成之后。Escape 会先清除 N 的数字；再按一次 Escape 会关闭数值输入，
-同时保留原生 Copy。Copy 之外，N 保持原有原生绑定；关闭 Numeric Assist 也会恢复
-N 的原生行为。卸载时会恢复之前的 N enterfunction 绑定，正常 N 绑定不会被替换。</p>
+<p>在 Copy 命令中按 <strong>N</strong>，用 <code>0</code>–<code>9</code> 输入正整数，然后用 <strong>Enter</strong>、<strong>Space</strong>、再次按 <strong>N</strong>
+或点击画布确认。光标标签显示 <code>COPY COUNT</code>。小数会被忽略，0 不能确认。N 不拾取几何，
+也不会改变已经记住的 J 距离。N 打开时按 <strong>J</strong> 或 <strong>Shift+J</strong>，会先应用待确认的数量，
+再打开相对或绝对输入，但不会放置副本。数量为空或非法时，N 会保持打开，方便继续修改。</p>
+<p>确认后，<strong>Copies → Type: Step → Number</strong> 会更新，数值输入关闭，Copy 仍在等待放置。
+此步骤不会执行 Copy 的 Apply，也不会添加点。副本随后按 Copy 的原有流程放置。</p>
+<p>进入 N 时，Copy 的副本数量会重置为 <strong>1</strong>。确认过的数量在打开 J 后仍会保留，因此可以先设数量、
+再设位移。J 会按输入距离的连续倍数预览每个对象的 Step 目标，提示中带有数量，例如
+<code>12 | COPY DISTANCE [3 copies]</code>。确认 J 后，所有副本一次放置完成。</p>
+<p>取消任一辅助输入、再次进入 N 或离开 J，都会把数量重置为 <strong>1</strong>；若通过 J 确认，重置发生在放置之后。
+Escape 会先清除 N 中的数字，再按一次则关闭数值输入，Copy 仍保持活动。Copy 之外，N 保持原有绑定；
+关闭 Numeric Assist 同样会恢复默认行为。卸载时会恢复之前的 N 输入函数（enter function）绑定，
+正常 N 绑定不会被替换。</p>
 <h3 id="j-数值输入">J 数值输入</h3>
-<p>按下快捷键后，根据当前模式输入 <code>0</code>–<code>9</code>、<code>.</code>、<code>,</code>、<code>-</code> 或 Backspace。当前输入与模式
-显示在光标旁；有合法数值待确认时会出现结果轮廓。数值输入期间，Numeric Assist 会
-临时占用 Virtuoso 的物理点绑定，关闭辅助后再恢复原来的放大镜绑定。</p>
-<p>也可以点击图形边直接使用其长度。选择第二条平行边后，数值变为两条边的间距；
-选择垂直的第二条边或任意第三条边，会重新开始一次单边测量。标尺的边也可以拾取。</p>
-<p>对于 wire 路径段，点击中心线或端点会使用 wire 的实际宽度；点击侧边会使用该侧边长；
-再点击一条平行侧边则使用两侧间距。黄色悬停线和洋红色选择箭头会标出正在测量的具体
-特征。拾取 wire 时使用原始鼠标位置，避免原生 Wire 吸附把侧边点击变成中心线点击。</p>
-<p>边拾取会沿实例层次进入叶子图形，包括 PCell 几何和阵列元素。测得长度会先按实例
-变换转换，再以当前编辑 cellview 的坐标表示。Contour 也可以使用实例内部的矩形作为
-pivot；被调整的源矩形仍位于当前编辑 cellview 中。</p>
-<p>下次打开 J 时会预填最近一次确认的数值。直接确认可复用它，输入数字会替换预填值。
-Escape 会先清除预填值，再关闭辅助。Wire 和 Path 的拾取使用原生吸附前的鼠标位置；
-点击 wire 纵向中心线上的任意位置（包括端点）都会拾取其宽度。</p>
-<p>指针下的边显示为黄色；已选边与长度箭头显示为洋红色。Contour 之外，可用 <strong>Enter</strong>、
-<strong>Space</strong>、再次按同一快捷键或点击空白画布确认。已选边时按 Escape 会返回数值输入；
-有数字时按 Escape 会清除数字；空输入时按 Escape 会关闭 Numeric Assist，并保留原生
-命令。用于拾取边或确认数值的点击会被 Numeric Assist 消耗，不会给原生命令添加点。</p>
-<p>绝对 Stretch 长度要求在按 J 前用原生 Stretch 选择一条<strong>边或端点</strong>。若选择整体或
-多个对象，J 使用位移大小，并提供与 Move 相同的数值输入、预览和吸附方向。标尺或直线
-Path 使用端点间距离；其他图形按 Stretch 方向使用 X 或 Y 包围范围。Shift+J 使用从
-原生命令参考点指向光标的方向。</p>
-<p>Wire 中，J 会更新原生 Create Wire 表单的 <code>wireWidth</code> 字段。确认前，当前段轮廓使用
-该宽度；确认后原生 Wire 命令仍保持活动，后续点会使用新宽度。</p>
-<p>对于 <strong>Measurement (K)</strong>，先放置第一个点，朝目标方向移动指针，再按 J。输入或拾取
-长度并确认后，会创建对应长度的已保存标尺，确认前用线段预览结果，活动 Measurement
-命令随后结束。端点会吸附到制造网格，所以斜向长度可能有少量网格误差。在下降后的
-group 内容或实例中 edit-in-place 时，标尺采用当前编辑 cell 的坐标，以保持指定位置。</p>
-<p>对于 <strong>Copy</strong>，先选择对象并启动原生 Copy。按 J 输入相对位移，按 Shift+J 输入绝对
-位置。标量相对距离遵循 Copy 表单的吸附模式。若 Copy 尚未记录参考点，Numeric Assist
-使用所选对象合并包围盒中心作为方向原点。确认时会使用原生 Copy 表单 Pitch 模式下的
-X/Y 字段和 Apply 动作，并保留当前 Single、Step 或 Array 设置。</p>
+<p>按下快捷键后，根据当前模式输入 <code>0</code>–<code>9</code>、<code>.</code>、<code>,</code>、<code>-</code> 或 Backspace。当前数值和模式会显示在指针旁；
+只要有合法数值等待确认，就会显示结果轮廓。输入期间，Numeric Assist 接管 Virtuoso 的点输入绑定，
+退出后再恢复原来的放大镜绑定。</p>
+<p>也可以直接点击图形边，用该边的长度作为数值。再选一条平行边，数值会改为两条边的间距；
+若第二条边与之垂直，或继续选择第三条边，则重新开始单边测量。标尺的边也可以拾取。</p>
+<p>对于 Wire 路径段，点击中心线或端点会取 Wire 的实际宽度；点击侧边会取侧边长度；再点击一条平行侧边，
+则取两侧间距。黄色悬停线和洋红色选择箭头会标出正在测量的位置。拾取 Wire 时使用鼠标的原始位置，
+这样 Virtuoso 的 Wire 捕捉不会把侧边点击误判为中心线点击。</p>
+<p>边拾取会沿实例层次进入叶子图形，包括 PCell 几何和阵列元素。长度先经过实例变换，再换算到当前编辑
+cellview 的坐标。Contour 也可以使用实例内部的矩形作为 pivot；被调整的源矩形仍位于当前编辑的 cellview 中。</p>
+<p>下次打开 J 时会预填最近一次确认的数值。直接确认即可复用，输入数字则会替换预填值。Escape 会先清除预填值，
+再关闭辅助。Wire 和 Path 拾取使用 Virtuoso 捕捉前的鼠标位置；点击 Wire 纵向中心线的任意位置（包括端点）
+都会拾取其宽度。</p>
+<p>指针所在边显示为黄色，选中的边和长度箭头显示为洋红色。Contour 之外，可用 <strong>Enter</strong>、<strong>Space</strong>、
+再次按同一快捷键或点击空白画布确认。已选边时按 Escape 会回到数值输入；有数字时按 Escape 会清除数字；
+输入为空时按 Escape 会关闭 Numeric Assist，当前命令继续运行。用于拾取边或确认数值的点击由 Numeric Assist
+处理，不会再让当前命令添加点。</p>
+<p>设置绝对 Stretch 长度时，要在按 J 之前用 Stretch 选中一条<strong>边或端点</strong>。若选中的是整体或多个对象，
+J 会把数值作为位移量，输入、预览和捕捉方向都与 Move 相同。标尺或直线 Path 使用端点间距离；其他图形则按
+Stretch 方向取 X 或 Y 方向的包围范围。Shift+J 使用从当前命令参考点指向光标的方向。</p>
+<p>Wire 中，J 会更新 Create Wire 表单的 <code>wireWidth</code> 字段。确认前，当前段的轮廓按该宽度预览；确认后
+Wire 命令仍保持活动，后续点沿用新宽度。</p>
+<p>对于 <strong>Measurement (K)</strong>，先放置第一个点，把指针移向目标方向，再按 J。输入或拾取长度并确认后，
+会保存一条对应长度的标尺，确认前用线段预览结果，活动中的 Measurement 命令随后结束。端点会吸附到制造网格，
+因此斜向长度可能有少量网格误差。在对 group 内容或实例做原地编辑时，标尺使用当前编辑 cell 的坐标，
+以保持指定位置。</p>
+<p>对于 <strong>Copy</strong>，先选对象并启动 Copy。按 J 输入相对位移，按 Shift+J 输入绝对位置。单值相对距离遵循
+Copy 表单的捕捉模式。若 Copy 尚未记录参考点，Numeric Assist 会把所选对象合并包围盒的中心作为方向原点。
+确认时使用 Copy 表单 Pitch 模式下的 X/Y 字段和 Apply 动作，并保留当前的 Single、Step 或 Array 设置。</p>
 <h2 id="为矩形做-contour">为矩形做 Contour</h2>
-<p>在没有活动命令时选择一个矩形，然后按 Shift+J。输入正偏移，或拾取一条边、平行边间距。
-按 Enter 或 Space 进入下一阶段。第二阶段从 <strong>edge</strong> 模式开始：点击四条边，定义两个
-不同的 X 边界和两个不同的 Y 边界。按 <strong>Shift+J</strong> 切换到 <strong>rectangle</strong> 模式；指针处
-同时存在矩形及其边时，矩形优先。按 <strong>J</strong> 返回仅拾取边的模式。切换模式会保留当前
-边或 pivot 选择；拾取新矩形会替换已有边集合。源矩形原边界也可作为 pivot。矩形拾取
-允许与显示边界有少量距离；确认后会根据选中的边重建四边 pivot，边段不必延伸到角点。</p>
-<p>只有已选中有效 pivot 后，Enter 或 Space 才会进入第三阶段。将指针移至 pivot 内侧或
-外侧可预览结果，再点击或确认即可调整并移动最初选中的矩形。偏移作用于四条边。若向内
-缩进会使任一维度消失，则只能选择向外。每次 Escape 回退一个阶段；从数值阶段开始时，
-第一次 Escape 先清除数字，再退出。</p>
-<p>Move 和 Copy 的 J/Shift+J，以及 Stretch 的两种位移模式，都会在决定位移方向时遵循
-原生命令当前的分段吸附模式：正交、对角（45 度增量）或任意角度。表单提供水平或垂直
-模式时也会遵循。请在原生表单中切换吸附模式；Numeric Assist 在绘制预览和应用数值时
-读取该设置。</p>
-<p>辅助功能会把目标坐标吸附到工艺制造网格。原生 Stretch 完成后，它会根据绝对目标坐标
-设置矩形范围、选中 Path 点和直线 Path/标尺端点，避免原生相对位移产生半格舍入误差。
-没有可编辑点的图形使用原生 Stretch 的结果。指定的斜向长度可能被吸附到最近的网格坐标。</p>
+<p>确保没有活动命令，选中一个矩形后按 Shift+J。输入正的偏移量，或拾取一条边、两条平行边的间距。按 Enter
+或 Space 进入下一阶段。第二阶段默认选择单边（edge）：按顺时针或逆时针点击四条边，定义两个不同的 X 边界
+和两个不同的 Y 边界。按 <strong>Shift+J</strong> 切换到矩形（rectangle）模式；若指针下同时有矩形和边，矩形优先。
+按 <strong>J</strong> 回到只选边的模式。切换模式会保留当前边或 pivot；重新选一个矩形则会替换已选边集合。源矩形的原边界
+也可以作为 pivot。拾取矩形时允许与显示边界有少量距离，确认后会根据选中的边重建四边 pivot，边段不必一直延伸到角点。</p>
+<p>只有选中有效的 pivot 后，Enter 或 Space 才会进入第三阶段。把指针移到 pivot 内侧或外侧预览结果，
+再点击或确认，即可调整并移动最初选中的矩形。偏移量同时作用于四条边。若向内缩进会使任一维度消失，
+则只能选择向外。每次 Escape 回退一个阶段；处在数值阶段时，第一次 Escape 只清除数字，再按才退出。</p>
+<p>Move、Copy 的 J/Shift+J，以及 Stretch 的两种位移模式，都会跟随当前命令的分段捕捉方式：正交、
+45° 对角或任意角度。表单提供水平或垂直模式时也会遵循。捕捉模式请在 Virtuoso 表单中修改；Numeric Assist
+绘制预览和应用数值时会读取这项设置。</p>
+<p>辅助功能会把目标坐标吸附到工艺制造网格。Stretch 完成后，它会根据绝对目标坐标设置矩形范围、
+选中的 Path 点和直线 Path/标尺端点，避免相对位移产生半格误差。没有可编辑点的图形则直接采用
+Stretch 的结果。指定的斜向长度可能会落到最近的网格坐标。</p>
 <h2 id="交互演示">交互演示</h2>
-<p>在浏览器中打开<a href="../demo/index.html">演示网站</a>。它是自包含的静态站点，由 <code>index.html</code>、
-<code>style.css</code> 和 <code>app.js</code> 组成。可以直接打开 HTML 文件，也可以在仓库根目录启动本地服务：</p>
+<p>在浏览器中打开<a href="../demo/index.html">演示网站</a>。这是一个自包含的静态站点，由 <code>index.html</code>、<code>style.css</code>
+和 <code>app.js</code> 组成。可以直接打开 HTML 文件，也可以在仓库根目录启动本地服务：</p>
 <pre><code class="language-sh">python -m http.server 8000 --bind 127.0.0.1
 </code></pre>
-<p>然后访问 <code>http://127.0.0.1:8000/docs/demo/</code>。选择工具、修改数值，并使用
-<strong>Play / Pause</strong>、<strong>Next step</strong> 或步骤按钮。工具选择可以加入书签，例如
-<code>index.html#copy</code> 或 <code>index.html#contour</code>。</p>
-<p>选择工具后，动画会从头播放，并默认开启 <strong>Loop</strong>。用 <strong>Speed</strong>（0.25×–3×）调整速度，
-当前进度不会丢失；关闭 <strong>Loop</strong> 可只播放一次。每轮完成后等待三秒，任何播放速度下该
-等待都保持三秒。指针从空白区域出发，并在最后一步的末尾回到原位，随后操作栏显示
-<strong>Done.</strong>。</p>
-<p>下拉选项变化、按 Enter、离开输入框或停止输入三秒后，<strong>Try a value</strong> 会自动回放。
-合法小数会先规范化再播放；非法输入会显示错误并保留上一次有效值。
-<strong>Apply &amp; replay</strong> 也会使用当前值从头播放。</p>
-<p>动画会让指针先移动到目标，再显示 hover 高亮。每次输入事件都会按下对应键帽；数字以
-1× 速度每 260 ms 显示一个字符。点击和其他命令键之后至少保留 1.2 秒用于观察结果。
-光标气泡使用插件实际标签文本，解释性文字显示在面板底栏。演示中的小数四舍五入到四位，
-Copy 数量仍为整数。这些规则只用于插画，不改变原生插件精度。</p>
-<p>如需托管站点，可使用与仓库地址无关的
-<a href="../PUBLISHING.md">GitHub 与 GitLab Pages 部署流程</a>。</p>
-<p>所有场景都使用合成几何，只解释输入、预览和确认过程；它们不会执行 SKILL，也不复刻
-Cadence UI。坐标采用理想网格。原生吸附、层次、表单回调和指针刷新行为仍须在 Virtuoso
-中验证。</p>
+<p>然后访问 <code>http://127.0.0.1:8000/docs/demo/</code>。选择工具、修改数值，并通过 <strong>Play / Pause</strong>、
+<strong>Next step</strong> 或步骤按钮控制播放。当前工具可以写入 URL，例如 <code>index.html#copy</code> 或 <code>index.html#contour</code>。</p>
+<p>首次打开时会根据浏览器语言自动选择中文或英文。右上角的 <strong>EN / 中文</strong> 会同时切换整个界面、
+教程与概览链接；手动选择会被记住。也可以在 URL 后加 <code>?lang=en</code> 或 <code>?lang=zh-CN</code> 强制指定语言。</p>
+<p>选择工具后，动画会从头播放，并默认开启 <strong>单页循环</strong>。用 <strong>Speed</strong>（0.25×–3×）调速不会丢失当前进度；
+关闭单页循环后，动画只播放一次。每轮结束后会等待 3 秒，这个等待时间不受播放速度影响。指针从空白区域出发，
+在最后一步末尾回到原位，操作栏随后显示 <strong>完成。</strong></p>
+<p><strong>循环展示</strong>是另一套模式，在用户还没点击任何内容时默认开启。一个工具的动画结束后等待 3 秒，
+再从第一步播放下一项；最后一项结束后回到第一项继续播放。切换时，工具列表左侧的活动标记会滑到下一项。
+点击任意工具、演示画布内部，或操作任一播放和数值控件，都会关闭循环展示，方便停在当前工具中检查；
+之后可以随时点 <strong>循环展示</strong> 重新开启。循环展示关闭后，<strong>单页循环</strong>仍控制当前动画是否重复。</p>
+<p>下拉选项变更、按 Enter、离开输入框，或停止输入 3 秒后，<strong>尝试数值</strong>会自动重播。合法小数会先规范化再播放；
+非法输入会显示错误，并保留上一次有效值。<strong>应用并重播</strong>也会用当前值从头播放。</p>
+<p>动画会让指针先移到目标，再显示悬停高亮。每次输入都会按下对应的键帽；数字在 1× 速度下每 260 ms 出现一位。
+点击和其他命令键之后至少保留 1.2 秒，方便看清结果。光标气泡沿用插件的实际标签文本，说明文字放在面板底栏。
+演示中的小数会四舍五入到四位，Copy 数量仍为整数。这些规则仅用于演示，不改变插件本身的精度。</p>
+<p>命令名和光标气泡标签保持英文，以便与真实 Virtuoso 界面对应；其余界面文字和说明均已提供中文。</p>
+<p>如需部署到网站，请参阅<a href="../PUBLISHING.md">GitHub 与 GitLab Pages 部署说明</a>。</p>
+<p>所有场景都使用合成几何，用于说明输入、预览和确认过程；它们不会执行 SKILL，也不会模拟完整的 Cadence UI。
+坐标采用理想网格。Virtuoso 的捕捉、层次、表单回调和指针刷新仍需实机验证。</p>
 <table>
 <thead>
 <tr>
 <th>演示</th>
-<th>试一下</th>
+<th>可以试什么</th>
 <th>动画</th>
 </tr>
 </thead>
@@ -305,7 +295,7 @@ Cadence UI。坐标采用理想网格。原生吸附、层次、表单回调和�
 </tr>
 <tr>
 <td><a href="../demo/index.html#rectangle">Rectangle</a></td>
-<td>以 <code>X,Y</code> 输入宽和高</td>
+<td>用 <code>X,Y</code> 输入宽和高</td>
 <td><a href="../media/rectangle.gif">观看</a></td>
 </tr>
 <tr>
@@ -315,12 +305,12 @@ Cadence UI。坐标采用理想网格。原生吸附、层次、表单回调和�
 </tr>
 <tr>
 <td><a href="../demo/index.html#stretch">Stretch</a></td>
-<td>设置局部选择的最终 X 尺寸</td>
+<td>设置局部选择后的最终 X 尺寸</td>
 <td><a href="../media/stretch.gif">观看</a></td>
 </tr>
 <tr>
 <td><a href="../demo/index.html#move">Move</a></td>
-<td>对比相对位移和绝对位置</td>
+<td>对比相对位移与绝对位置</td>
 <td><a href="../media/move.gif">观看</a></td>
 </tr>
 <tr>
@@ -335,17 +325,15 @@ Cadence UI。坐标采用理想网格。原生吸附、层次、表单回调和�
 </tr>
 <tr>
 <td><a href="../demo/index.html#cleanup">Steiner 清理</a></td>
-<td>删除合成 Steiner 标记并保留图形</td>
+<td>删除合成 Steiner 标记，保留图形</td>
 <td><a href="../media/cleanup.gif">观看</a></td>
 </tr>
 </tbody>
 </table>
-<p>重新生成动画或录制真实、隔离的 Virtuoso 会话时，请参阅
-<a href="../../test/DEMO_MEDIA.md">演示录制说明</a>。</p>
+<p>重新生成动画，或录制真实、隔离的 Virtuoso 会话时，请参阅<a href="../../test/DEMO_MEDIA.md">演示录制说明</a>。</p>
 <h2 id="仓库结构">仓库结构</h2>
-<p><code>src/</code> 包含 SKILL 程序和所有部署资源；根目录的 <code>deploy.py</code> 负责安装。
-<code>tools/generate_icons.py</code> 可重新生成 <code>src/icons/</code> 中的图标，需要 Pillow。
-<code>docs/</code> 保存公开使用文档；<code>docs/demo/</code> 是交互演示，<code>docs/media/</code> 是审核后的文档资源。
-<code>test/</code> 保存测试脚本和手工检查步骤。本地 agent 指令放在 <code>.local/agent/</code>；截图、验证报告
-和其他测试输出放在 <code>artifacts/</code>。两个本地目录都被 Git 忽略。</p>
-<p>开发流程、测试要求和提交前检查见 <a href="../../CONTRIBUTING.zh-CN.md">贡献指南</a>。</p></main></body></html>
+<p><code>src/</code> 包含 SKILL 程序和全部部署资源；根目录的 <code>deploy.py</code> 负责安装。
+<code>tools/generate_icons.py</code> 用于重新生成 <code>src/icons/</code> 中的图标，需要 Pillow。<code>docs/</code> 保存公开文档，
+<code>docs/demo/</code> 是交互演示，<code>docs/media/</code> 是审核后的图片和动画。<code>test/</code> 包含测试脚本与手工检查步骤。
+本地 agent 指令放在 <code>.local/agent/</code>，截图、验证报告和其他测试输出放在 <code>artifacts/</code>；这两个目录都被 Git 忽略。</p>
+<p>开发流程、测试要求和提交前检查见<a href="../../CONTRIBUTING.zh-CN.md">贡献指南</a>。</p></main></body></html>

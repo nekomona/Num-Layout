@@ -14,7 +14,7 @@ from build_guide import MARKDOWN_EXTENSIONS, ROOT, document_page
 OUTPUT = ROOT / "artifacts" / "pages"
 DOCUMENTS = {
     "docs/numeric_assist_guide.md": ("guide.html", "User guide", "en"),
-    "docs/numeric_assist_guide.zh-CN.md": ("guide.zh-CN.html", "用户教程", "zh-CN"),
+    "docs/numeric_assist_guide.zh-CN.md": ("guide.zh-CN.html", "使用指南", "zh-CN"),
     "CONTRIBUTING.md": ("contributing.html", "Contributing", "en"),
     "CONTRIBUTING.zh-CN.md": ("contributing.zh-CN.html", "参与贡献", "zh-CN"),
     "docs/PUBLISHING.md": ("publishing.html", "Pages deployment", "en"),
@@ -80,12 +80,12 @@ def main():
         body = markdown.markdown((ROOT / source).read_text(encoding="utf-8"), extensions=MARKDOWN_EXTENSIONS)
         body = rewrite_links(body, source, mapping)
         alternates = {
-            "guide.html": ("guide.zh-CN.html", "简体中文"),
-            "guide.zh-CN.html": ("guide.html", "English"),
-            "contributing.html": ("contributing.zh-CN.html", "简体中文"),
-            "contributing.zh-CN.html": ("contributing.html", "English"),
+            "guide.html": "guide.zh-CN.html",
+            "guide.zh-CN.html": "guide.html",
+            "contributing.html": "contributing.zh-CN.html",
+            "contributing.zh-CN.html": "contributing.html",
         }
-        alternate_href, alternate_label = alternates.get(destination, ("", ""))
+        alternate_href = alternates.get(destination, "")
         (OUTPUT / destination).write_text(
             document_page(
                 body,
@@ -93,7 +93,7 @@ def main():
                 "license.html",
                 lang=lang,
                 alternate_href=alternate_href,
-                alternate_label=alternate_label,
+                current_href=destination,
                 lab_label="Interactive lab" if lang == "en" else "交互演示",
                 license_label="MIT license" if lang == "en" else "MIT 许可证",
                 home_href="index.html",

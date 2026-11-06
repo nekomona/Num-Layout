@@ -38,6 +38,15 @@ def check_artifact():
     actual = {path.relative_to(SITE).as_posix() for path in SITE.rglob("*") if path.is_file()}
     assert actual == expected, (actual - expected, expected - actual)
     assert all(not path.is_symlink() for path in SITE.rglob("*"))
+    for name in ("index.html", "index.zh-CN.html", "guide.html", "guide.zh-CN.html",
+                 "contributing.html", "contributing.zh-CN.html"):
+        page = (SITE / name).read_text(encoding="utf-8")
+        assert 'name="language-current"' in page, name
+        assert 'name="language-alternate"' in page, name
+        assert 'src="language.js"' in page, name
+    for name in ("guide.html", "guide.zh-CN.html", "contributing.html", "contributing.zh-CN.html"):
+        page = (SITE / name).read_text(encoding="utf-8")
+        assert 'data-language-choice="en"' in page and 'data-language-choice="zh"' in page, name
     pages = {}
     for path in SITE.glob("*.html"):
         parsed = Links()
@@ -96,15 +105,16 @@ def check_browser(channel):
             page.get_by_role("link", name="User guide").click()
             assert page.url == base + "guide.html"
             assert page.locator("#installation").count() == 1
+            assert page.locator('.topbar .language-switch a[href="guide.zh-CN.html"]').count() == 1
             page.locator('.guide a[href="guide.zh-CN.html"][data-language-choice="zh"]').click()
             assert page.url == base + "guide.zh-CN.html"
-            assert page.locator("h1").inner_text() == "Numeric Layout Assist — 用户教程"
+            assert page.locator("h1").inner_text() == "Numeric Layout Assist 使用指南"
             assert page.locator("#安装").count() == 1
             page.locator('.guide a[href="guide.html"][data-language-choice="en"]').click()
             assert page.url == base + "guide.html"
             page.goto(base + "guide.html?lang=zh-CN")
             page.wait_for_url(base + "guide.zh-CN.html?lang=zh-CN")
-            assert "用户教程" in page.locator("h1").inner_text()
+            assert "使用指南" in page.locator("h1").inner_text()
             for document in ("index.zh-CN.html", "contributing.html",
                              "contributing.zh-CN.html",
                              "testing.html", "publishing.html", "recordings.html", "license.html"):
@@ -124,7 +134,7 @@ def check_browser(channel):
             assert "精确" in page.locator("h1").inner_text()
             page.goto(base + "guide.html")
             page.wait_for_url(base + "guide.zh-CN.html")
-            assert page.locator("h1").inner_text() == "Numeric Layout Assist — 用户教程"
+            assert page.locator("h1").inner_text() == "Numeric Layout Assist 使用指南"
             page.goto(base + "contributing.html")
             page.wait_for_url(base + "contributing.zh-CN.html")
             assert page.locator("h1").inner_text() == "为 Numeric Layout Assist 做贡献"

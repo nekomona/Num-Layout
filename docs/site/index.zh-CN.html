@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="Numeric Layout Assist 为原生 Virtuoso Layout 命令加入精确数值输入、几何拾取、实时预览和可重复的版图编辑。"
+      content="Numeric Layout Assist 为 Virtuoso Layout 命令加入精确数值输入、几何拾取、实时预览和可重复的版图编辑。"
     />
     <meta name="language-current" content="zh" />
     <meta name="language-alternate" content="index.html" />
@@ -32,7 +32,7 @@
             >中文</a
           ></span
         ><a href="../demo/index.html">交互演示 ↗</a
-        ><a href="../demo/guide.zh-CN.html">用户教程 ↗</a
+        ><a href="../demo/guide.zh-CN.html">使用指南 ↗</a
         ><a href="../../CONTRIBUTING.zh-CN.md">参与贡献 ↗</a
         ><a href="../../LICENSE">MIT 许可证 ↗</a>
       </nav>
@@ -41,18 +41,17 @@
       <section class="hero">
         <div>
           <p class="kicker">
-            <span class="signal-dot"></span>为 VIRTUOSO LAYOUT 打造
+            <span class="signal-dot"></span>专为 VIRTUOSO LAYOUT 设计
           </p>
           <h1>精确，<br /><span>就在光标边。</span></h1>
           <p class="lede">
-            从真实几何中拾取尺寸，输入已经知道的数值，并在提交给原生 Layout
-            命令前直接看到结果。
+            尺寸可以从版图上量取，也可以直接输入。结果先显示在光标旁，确认后才写入当前命令。
           </p>
           <div class="hero-actions">
             <a class="button primary" href="../demo/index.html"
               >打开交互演示 →</a
             >
-            <a class="button" href="../demo/guide.zh-CN.html">阅读用户教程</a>
+            <a class="button" href="../demo/guide.zh-CN.html">阅读使用指南</a>
           </div>
           <div class="key-row" aria-label="主要快捷键">
             <kbd>J</kbd><span>数值输入</span><kbd>⇧ J</kbd
@@ -169,11 +168,12 @@
         <div class="section-head">
           <div>
             <p class="section-kicker">一个小习惯，一次精确编辑</p>
-            <h2>留在原生命令里。<br />把网格计算交给工具。</h2>
+            <h2>留在当前命令里。<br />把网格换算交给工具。</h2>
           </div>
           <p>
-            Numeric Assist 与 Rectangle、Path、Wire、Measurement、Stretch、Move
-            和 Copy 协同工作。拾取数值、逐字输入、确认，然后继续绘制。
+            Numeric Assist 跟随
+            Rectangle、Path、Wire、Measurement、Stretch、Move 和 Copy
+            的原有流程。量取或键入数值，确认后继续绘制。
           </p>
         </div>
         <div class="motion-card">
@@ -193,65 +193,65 @@
           <div class="section-head">
             <div>
               <p class="section-kicker">九项小工具</p>
-              <h2>一个快捷键。<br />更少的上下文切换。</h2>
+              <h2>九个小工具。<br />一个快捷键就能调用。</h2>
             </div>
             <p>
-              在演示中打开任意工具，可以修改数值、调整播放速度，或逐步查看原生命令的操作顺序。
+              在演示中打开任一工具，可以修改数值、调整速度，或逐步查看它对应的命令流程。
             </p>
           </div>
           <div class="tool-grid">
             <article class="tool-card">
               <span class="num">01</span>
               <h3>尺寸拾取</h3>
-              <p>读取边长度、wire 宽度，或平行边之间的间距。</p>
+              <p>读取边长、Wire 宽度或平行边间距。</p>
               <a href="../demo/index.html#pick">查看操作序列 ↗</a>
             </article>
             <article class="tool-card">
               <span class="num">02</span>
               <h3>Path / Wire 宽度</h3>
-              <p>在原生绘制命令保持活动时，设置完整路径宽度。</p>
+              <p>绘制 Path 或 Wire 时，直接设定整条路径的宽度。</p>
               <a href="../demo/index.html#width">查看操作序列 ↗</a>
             </article>
             <article class="tool-card">
               <span class="num">03</span>
               <h3>矩形</h3>
-              <p>一次输入宽和高，并在当前象限实时预览。</p>
+              <p>一次输入宽高，实时预览矩形在当前象限的展开。</p>
               <a href="../demo/index.html#rectangle">查看操作序列 ↗</a>
             </article>
             <article class="tool-card">
               <span class="num">04</span>
               <h3>测量</h3>
-              <p>沿指定方向为新的两点标尺设置精确长度。</p>
+              <p>为新的两点标尺指定长度，方向由鼠标决定。</p>
               <a href="../demo/index.html#measure">查看操作序列 ↗</a>
             </article>
             <article class="tool-card">
               <span class="num">05</span>
               <h3>拉伸</h3>
-              <p>把选中边调整到最终范围，同时保持对边固定。</p>
+              <p>把选中的边调整到指定尺寸，对边保持不动。</p>
               <a href="../demo/index.html#stretch">查看操作序列 ↗</a>
             </article>
             <article class="tool-card">
               <span class="num">06</span>
               <h3>移动</h3>
-              <p>使用相对位移，或把参考点放到绝对坐标。</p>
+              <p>按相对距离移动对象，或把参考点放到绝对坐标。</p>
               <a href="../demo/index.html#move">查看操作序列 ↗</a>
             </article>
             <article class="tool-card">
               <span class="num">07</span>
               <h3>复制 + 数量</h3>
-              <p>组合整数副本数量和统一间距，并预览每个 Step 目标。</p>
+              <p>设置副本数和统一间距，所有 Step 目标先预览再放置。</p>
               <a href="../demo/index.html#copy">查看操作序列 ↗</a>
             </article>
             <article class="tool-card">
               <span class="num">08</span>
               <h3>轮廓偏移</h3>
-              <p>围绕选定的 pivot 边界，将矩形向内或向外调整。</p>
+              <p>以指定 pivot 为基准，把矩形向内或向外扩展。</p>
               <a href="../demo/index.html#contour">查看操作序列 ↗</a>
             </article>
             <article class="tool-card">
               <span class="num">09</span>
               <h3>Steiner 清理</h3>
-              <p>删除不可见 Steiner 对象，同时保留已经绘制的几何。</p>
+              <p>删除版图中的不可见 Steiner 对象，保留已绘制的图形。</p>
               <a href="../demo/index.html#cleanup">查看操作序列 ↗</a>
             </article>
           </div>
@@ -261,30 +261,30 @@
       <section class="section quick-grid" id="install">
         <div class="quick-copy">
           <p class="section-kicker">在 CIW 中加载</p>
-          <h2>一个文件。<br />原生快捷键。</h2>
+          <h2>一个文件。<br />熟悉的快捷键。</h2>
           <p>
-            可部署的运行文件位于 <code>src/</code>。Virtuoso
-            指向主文件后，工具栏和快捷键会自动安装。
+            运行文件都在 <code>src/</code>。在 Virtuoso
+            中加载主文件，工具栏和快捷键会自动装好。
           </p>
           <ol class="steps">
             <li>
               <b>01</b
               ><span
-                >保持整个 <code>src/</code> 目录完整，包括显示资源和图标。</span
+                >保留完整的 <code>src/</code> 目录，包括显示资源和图标。</span
               >
             </li>
             <li>
               <b>02</b
               ><span
-                >在 CIW 中加载 <code>numeric_assist.il</code>，或把这行加入本地
+                >在 CIW 中加载 <code>numeric_assist.il</code>，或把这行写进本地
                 <code>.cdsinit</code>。</span
               >
             </li>
             <li>
               <b>03</b
               ><span
-                >用工具栏标尺按钮开关辅助功能；运行
-                <code>vbnUninstall()</code> 可恢复之前的绑定。</span
+                >用标尺按钮开关辅助功能；执行
+                <code>vbnUninstall()</code> 会恢复之前的键位。</span
               >
             </li>
           </ol>
@@ -305,32 +305,30 @@
       <section class="section principles">
         <article class="principle">
           <span class="num">01</span>
-          <h3>拾取或输入</h3>
-          <p>测量真实几何，或直接输入已经知道的尺寸。</p>
+          <h3>量取或键入</h3>
+          <p>尺寸可以从版图上拾取，也可以直接输入已知值。</p>
         </article>
         <article class="principle">
           <span class="num">02</span>
-          <h3>先看目标</h3>
-          <p>洋红色预览会在确认前显示预期结果。</p>
+          <h3>先看结果</h3>
+          <p>洋红色预览会在确认前显示即将产生的变化。</p>
         </article>
         <article class="principle">
           <span class="num">03</span>
-          <h3>保持连贯</h3>
-          <p>数值输入与原生绘制、编辑命令协同工作。</p>
+          <h3>继续当前操作</h3>
+          <p>数值输入融入原有绘制、编辑流程，不必来回切换命令。</p>
         </article>
       </section>
 
       <section class="closing">
-        <p>
-          先用合成几何体验全部工具，再把同一套快捷键带进自己的 Layout 会话。
-        </p>
+        <p>先用合成几何试一遍全部工具，再把快捷键带进自己的 Layout 会话。</p>
         <a class="button primary" href="../demo/index.html">打开交互演示 →</a>
       </section>
     </main>
     <footer class="site-footer">
       <span>Numeric Layout Assist · MIT</span>
       <p>
-        这里是交互示意图，并非实时 Virtuoso 会话。开发过程得到
+        页面中的场景为合成示意，不是实时 Virtuoso 会话。开发过程中使用了
         <a href="https://github.com/Arcadia-1/virtuoso-bridge-lite"
           >Virtuoso Bridge Lite</a
         >

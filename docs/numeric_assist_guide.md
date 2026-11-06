@@ -8,6 +8,9 @@ Numeric Layout Assist adds numeric entry and geometry picking to native Virtuoso
 Layout commands. It targets Virtuoso IC23.1; native form fields and callbacks
 may differ on other releases.
 
+This guide follows your browser language when first opened. Use **EN / 中文** to
+switch explicitly; the choice is remembered across the home page, guide, and lab.
+
 **Contents:** [Install](#installation) · [Toolbar and previews](#toolbar-and-previews) ·
 [Command reference](#use) · [X/Y input](#xy-input-and-absolute-position) ·
 [Copy count](#copy-count-n) · [Picking and confirmation](#j-number-entry) ·

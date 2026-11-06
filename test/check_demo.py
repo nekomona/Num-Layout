@@ -30,9 +30,9 @@ def main():
         zh_page.wait_for_function("window.NumericDemo")
         assert zh_page.evaluate("NumericDemo.state.language") == "zh"
         assert zh_page.locator("#tool-title").inner_text() == "Path / Wire 宽度"
-        assert zh_page.locator("#showcase").inner_text() == "⇄ 循环展示"
+        assert zh_page.locator("#showcase").inner_text() == "⇄ 循环展示：开"
         assert zh_page.locator('label[for="field-value"]').inner_text() == "宽度"
-        assert zh_page.locator("#guide-link").inner_text() == "用户教程 ↗"
+        assert zh_page.locator("#guide-link").inner_text() == "使用指南 ↗"
         assert zh_page.locator("#guide-link").get_attribute("href") == "guide.zh-CN.html"
         zh_names = {
             "pick": "选择尺寸", "width": "Path / Wire 宽度", "rectangle": "矩形",
