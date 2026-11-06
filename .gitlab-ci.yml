@@ -60,7 +60,7 @@ release:
   release:
     tag_name: $CI_COMMIT_TAG
     name: "Num-Layout $CI_COMMIT_TAG"
-    description: "Deterministic Num-Layout runtime archive and SHA1 checksum for $CI_COMMIT_TAG."
+    description: "$CI_COMMIT_TAG_MESSAGE"
     assets:
       links:
         - name: "$ARCHIVE_FILE"
