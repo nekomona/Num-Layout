@@ -319,10 +319,8 @@ illustrations and do not change the native plugin's numeric precision.
 For a hosted site, use the repository-independent
 [GitHub and GitLab Pages deployment workflows](PUBLISHING.md).
 
-The scenes are interactive illustrations made with synthetic geometry. They
-explain input, preview, and confirmation; they do not execute SKILL or reproduce
-the Cadence UI. Coordinates use an idealized grid. Native snapping, hierarchy,
-form callbacks, and pointer-refresh behavior must be checked in Virtuoso.
+Open the Playground to try each tool with its own values and playback
+controls.
 
 | Demonstration | Try this | Animation |
 | --- | --- | --- |

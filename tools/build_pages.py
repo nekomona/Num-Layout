@@ -49,6 +49,7 @@ def main():
         "docs/site/index.zh-CN.html": "index.zh-CN.html",
         "docs/site/site.css": "site.css",
         "docs/site/language.js": "language.js",
+        "docs/site/hero.js": "hero.js",
         "docs/demo/index.html": "lab.html",
         "docs/demo/guide.html": "guide.html",
         "docs/demo/guide.zh-CN.html": "guide.zh-CN.html",
@@ -68,7 +69,8 @@ def main():
         shutil.rmtree(OUTPUT)
     (OUTPUT / "media").mkdir(parents=True)
     for source, destination in (("docs/demo/app.js", "app.js"), ("docs/demo/style.css", "style.css"),
-                                ("docs/site/site.css", "site.css"), ("docs/site/language.js", "language.js")):
+                                ("docs/site/site.css", "site.css"), ("docs/site/language.js", "language.js"),
+                                ("docs/site/hero.js", "hero.js")):
         shutil.copyfile(ROOT / source, OUTPUT / destination)
     for source, destination in (("docs/site/index.html", "index.html"),
                                 ("docs/site/index.zh-CN.html", "index.zh-CN.html"),

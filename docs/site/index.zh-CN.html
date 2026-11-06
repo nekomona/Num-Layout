@@ -12,6 +12,7 @@
     <title>定数绘版 · 精确，就在光标边</title>
     <link rel="stylesheet" href="site.css" />
     <script src="language.js"></script>
+    <script src="hero.js" defer></script>
   </head>
   <body>
     <header class="site-header">
@@ -66,106 +67,34 @@
           </div>
         </div>
         <div class="hero-art" aria-label="带精确拉伸尺寸的示意版图">
-          <svg
-            viewBox="0 0 620 440"
-            role="img"
-            aria-labelledby="hero-art-title"
-          >
-            <title id="hero-art-title">版图矩形及其精确数值预览</title>
+          <svg viewBox="0 0 620 440" role="img" aria-labelledby="hero-art-title">
+            <title id="hero-art-title">通过 X、Y 数值输入拉伸矩形的动画预览</title>
             <defs>
-              <pattern
-                id="hero-grid"
-                width="28"
-                height="28"
-                patternUnits="userSpaceOnUse"
-              >
-                <path
-                  d="M28 0H0V28"
-                  fill="none"
-                  stroke="#2b3d49"
-                  stroke-width="1"
-                />
+              <pattern id="hero-grid" width="28" height="28" patternUnits="userSpaceOnUse">
+                <path d="M28 0H0V28" fill="none" stroke="#2b3d49" stroke-width="1" />
               </pattern>
+              <marker id="hero-arrow" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                <path d="M0 0L8 4L0 8Z" fill="#e989f1" />
+              </marker>
             </defs>
             <rect width="620" height="440" fill="#17232e" />
-            <rect
-              x="35"
-              y="28"
-              width="560"
-              height="350"
-              fill="url(#hero-grid)"
-            />
+            <rect x="35" y="28" width="560" height="350" fill="url(#hero-grid)" />
             <path d="M65 330H570M95 380V55" stroke="#415766" />
-            <rect
-              x="196"
-              y="156"
-              width="160"
-              height="112"
-              fill="#2b575c"
-              stroke="#82d2c9"
-              stroke-width="2"
-            />
-            <rect
-              x="196"
-              y="130"
-              width="248"
-              height="138"
-              fill="#e989f1"
-              fill-opacity=".07"
-              stroke="#e989f1"
-              stroke-width="2"
-              stroke-dasharray="7 5"
-            />
-            <path
-              d="M196 294H444m-241-5-7 5 7 5m234-10 7 5-7 5"
-              fill="none"
-              stroke="#e989f1"
-              stroke-width="1.5"
-            />
-            <text
-              x="320"
-              y="320"
-              text-anchor="middle"
-              fill="#e989f1"
-              font-family="Consolas, monospace"
-              font-size="15"
-            >
-              18 µm
-            </text>
-            <rect
-              x="308"
-              y="41"
-              width="228"
-              height="34"
-              rx="4"
-              fill="#243643"
-              stroke="#e989f1"
-            />
-            <text
-              x="324"
-              y="63"
-              fill="#e989f1"
-              font-family="Consolas, monospace"
-              font-size="13"
-            >
-              18 | STRETCH LENGTH
-            </text>
-            <path
-              d="M444 130l0 28 8-8 6 13 6-3-6-13 12-2Z"
-              fill="#f5f1e6"
-              stroke="#17232e"
-              stroke-width="2"
-            />
-            <text
-              x="65"
-              y="69"
-              fill="#a8bdc9"
-              font-family="Consolas, monospace"
-              font-size="10"
-              letter-spacing="2"
-            >
-              NUM-LAYOUT PREVIEW
-            </text>
+            <rect id="hero-base" x="196" y="156" width="160" height="112" fill="#2b575c" stroke="#82d2c9" stroke-width="2" />
+            <rect id="hero-preview" x="196" y="156" width="160" height="112" fill="#e989f1" fill-opacity=".09" stroke="#e989f1" stroke-width="2" stroke-dasharray="7 5" />
+            <rect id="hero-handle" x="352" y="152" width="8" height="8" fill="#f5f1e6" stroke="#e989f1" stroke-width="1.5" />
+            <path id="hero-dim-x-line" d="M196 292H356" fill="none" stroke="#e989f1" stroke-width="1.5" marker-start="url(#hero-arrow)" marker-end="url(#hero-arrow)" />
+            <text id="hero-x-label" x="276" y="316" text-anchor="middle" fill="#e989f1" font-family="Consolas, monospace" font-size="14">0 µm</text>
+            <path id="hero-dim-y-line" d="M376 156V268" fill="none" stroke="#e989f1" stroke-width="1.5" marker-start="url(#hero-arrow)" marker-end="url(#hero-arrow)" />
+            <text id="hero-y-label" x="382" y="216" fill="#e989f1" font-family="Consolas, monospace" font-size="14">0 µm</text>
+            <rect x="286" y="34" width="250" height="46" rx="6" fill="#243643" stroke="#e989f1" />
+            <text x="302" y="64" fill="#8fa4b2" font-family="Consolas, monospace" font-size="12">X</text>
+            <text id="hero-x-input" x="326" y="66" fill="#f5f1e6" font-family="Consolas, monospace" font-size="16"></text>
+            <text x="406" y="64" fill="#8fa4b2" font-family="Consolas, monospace" font-size="12">Y</text>
+            <text id="hero-y-input" x="430" y="66" fill="#f5f1e6" font-family="Consolas, monospace" font-size="16"></text>
+            <text x="502" y="64" fill="#8fa4b2" font-family="Consolas, monospace" font-size="11">µm</text>
+            <rect id="hero-caret" x="326" y="50" width="2" height="20" fill="#e989f1" />
+            <path id="hero-pointer" d="M0 0v24l6-6 5 12 6-3-5-12 9-2Z" fill="#f5f1e6" stroke="#17232e" stroke-width="2" />
           </svg>
         </div>
       </section>
@@ -176,20 +105,12 @@
             <p class="section-kicker">一个小习惯，一次精确编辑</p>
             <h2>留在当前命令里。<br />把网格换算交给工具。</h2>
           </div>
-          <p>
-            Num-Layout 跟随 Rectangle、Path、Wire、Measurement、Stretch、Move 和
-            Copy 的原有流程。量取或键入数值，确认后继续绘制。
-          </p>
         </div>
         <div class="motion-card">
           <img
             src="../media/overview.gif"
             alt="四个动画示例：拾取尺寸、设置 Path 宽度、创建标尺、放置连续副本。"
           />
-          <p>
-            尺寸拾取 → Path 宽度 → Measurement → Copy。交互版还包含
-            Stretch、Move、Contour 和 Steiner 清理。
-          </p>
         </div>
       </section>
 
@@ -200,9 +121,6 @@
               <p class="section-kicker">九项小工具</p>
               <h2>九个小工具。<br />一个快捷键就能调用。</h2>
             </div>
-            <p>
-              在演示中打开任一工具，可以修改数值、调整速度，或逐步查看它对应的命令流程。
-            </p>
           </div>
           <div class="tool-grid">
             <article class="tool-card">
@@ -267,10 +185,6 @@
         <div class="quick-copy">
           <p class="section-kicker">在 CIW 中加载</p>
           <h2>一个文件。<br />熟悉的快捷键。</h2>
-          <p>
-            运行文件都在 <code>nlayout/</code>。在 Virtuoso
-            中加载主文件，工具栏和快捷键会自动装好。
-          </p>
           <ol class="steps">
             <li>
               <b>01</b
@@ -313,33 +227,15 @@
         </div>
       </section>
 
-      <section class="section principles">
-        <article class="principle">
-          <span class="num">01</span>
-          <h3>量取或键入</h3>
-          <p>尺寸可以从版图上拾取，也可以直接输入已知值。</p>
-        </article>
-        <article class="principle">
-          <span class="num">02</span>
-          <h3>先看结果</h3>
-          <p>洋红色预览会在确认前显示即将产生的变化。</p>
-        </article>
-        <article class="principle">
-          <span class="num">03</span>
-          <h3>继续当前操作</h3>
-          <p>数值输入融入原有绘制、编辑流程，不必来回切换命令。</p>
-        </article>
-      </section>
-
       <section class="closing">
-        <p>先用合成几何试一遍全部工具，再把快捷键带进自己的 Layout 会话。</p>
+        <p>先在试验场里试一遍全部工具，再把快捷键带进自己的 Layout 会话。</p>
         <a class="button primary" href="../demo/index.html">打开交互演示 →</a>
       </section>
     </main>
     <footer class="site-footer">
       <span>定数绘版 · Num-Layout · MIT</span>
       <p>
-        页面中的场景为合成示意，不是实时 Virtuoso 会话。开发过程中使用了
+        开发过程中使用了
         <a href="https://github.com/Arcadia-1/virtuoso-bridge-lite"
           >Virtuoso Bridge Lite</a
         >

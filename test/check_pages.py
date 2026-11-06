@@ -36,7 +36,7 @@ def check_artifact():
         assert "直接看效果！" in readme, name
         assert lab_url in readme, name
     expected = {"index.html", "index.zh-CN.html", "lab.html", "app.js", "style.css",
-                "site.css", "language.js", "guide.html", "guide.zh-CN.html",
+                "site.css", "language.js", "hero.js", "guide.html", "guide.zh-CN.html",
                 "contributing.html", "contributing.zh-CN.html",
                 "publishing.html", "testing.html", "recordings.html", "license.html", ".nojekyll"}
     expected.update("media/" + path.name for path in (ROOT / "docs/media").iterdir()
@@ -106,6 +106,13 @@ def check_browser(channel):
             assert "Num-Layout" in page.locator(".brand").inner_text()
             assert page.locator('.site-nav a.github-link[href="https://github.com/nekomona/Num-Layout"]').count() == 1
             assert page.locator('.site-nav a[href="guide.html"]').inner_text().startswith("Install & guide")
+            page.wait_for_function(
+                "document.querySelector('#hero-x-input')?.textContent.length > 0", timeout=8000
+            )
+            page.wait_for_function(
+                "Number(document.querySelector('#hero-preview').getAttribute('width')) > 160",
+                timeout=8000,
+            )
             page.locator('.site-nav a[href="lab.html"]').click()
             assert page.url.startswith(base + "lab.html")
             page.goto(base + "lab.html?lang=en#copy")

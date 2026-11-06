@@ -191,7 +191,7 @@
       copyCount: "copy count",
       explore: "EXPLORE THE TOOLS <span>01—09</span>",
       chooseTool: "Choose a tool",
-      aside: "Every scene uses synthetic geometry.<br>Explore freely.",
+      aside: "Playground",
       illustrative: "ILLUSTRATIVE DEMO",
       animatedInput: "Animated input",
       play: "▶ Play",
@@ -216,18 +216,8 @@
       preview: "Selection / preview",
       geometry: "Geometry",
       reference: "Read the tool guide ↗",
-      principles: "A SMALL HABIT. A PRECISE EDIT.",
-      principle1: "Pick or type",
-      principle1Copy:
-        "Measure existing geometry, or enter the dimension you already know.",
-      principle2: "See the target",
-      principle2Copy:
-        "Magenta previews show the intended result before confirmation.",
-      principle3: "Stay in the flow",
-      principle3Copy:
-        "Numeric entry works with the native drawing and editing command.",
       footer:
-        'Interactive illustrations, not a live Virtuoso session. Native snapping and command behavior are described in the <a id="footer-guide-link" href="guide.html">guide</a>.',
+        'Snapping and native command details are in the <a id="footer-guide-link" href="guide.html">guide</a>.',
       overview: "Project overview ↗",
       footerBrand: "Num-Layout · MIT",
       noscript:
@@ -261,7 +251,7 @@
       copyCount: "复制数量",
       explore: "探索工具 <span>01—09</span>",
       chooseTool: "选择工具",
-      aside: "所有场景均使用合成几何。<br>请自由体验。",
+      aside: "试验场",
       illustrative: "示意演示",
       animatedInput: "动画输入",
       play: "▶ 播放",
@@ -286,15 +276,8 @@
       preview: "选择 / 预览",
       geometry: "几何",
       reference: "阅读使用指南 ↗",
-      principles: "一个小习惯，一次精确编辑。",
-      principle1: "量取或键入",
-      principle1Copy: "尺寸可以从版图上拾取，也可以直接输入已知值。",
-      principle2: "先看结果",
-      principle2Copy: "洋红色预览会在确认前显示即将产生的变化。",
-      principle3: "继续当前操作",
-      principle3Copy: "不必退出正在使用的绘制或编辑命令。",
       footer:
-        '页面中的场景为合成示意，不是实时 Virtuoso 会话。Virtuoso 的捕捉和命令行为见 <a id="footer-guide-link" href="guide.zh-CN.html">使用指南</a>。',
+        'Virtuoso 的捕捉和命令行为见 <a id="footer-guide-link" href="guide.zh-CN.html">使用指南</a>。',
       overview: "项目概览 ↗",
       footerBrand: "定数绘版 · Num-Layout · MIT",
       noscript:
@@ -514,13 +497,6 @@
     $("legend-preview").textContent = ui("preview");
     $("legend-geometry").textContent = ui("geometry");
     $("reference-label").textContent = ui("reference");
-    $("principles-eyebrow").textContent = ui("principles");
-    $("principle-one-title").textContent = ui("principle1");
-    $("principle-one-copy").textContent = ui("principle1Copy");
-    $("principle-two-title").textContent = ui("principle2");
-    $("principle-two-copy").textContent = ui("principle2Copy");
-    $("principle-three-title").textContent = ui("principle3");
-    $("principle-three-copy").textContent = ui("principle3Copy");
     $("footer-note").innerHTML = ui("footer");
     $("overview-link").textContent = ui("overview");
     $("overview-link").href =

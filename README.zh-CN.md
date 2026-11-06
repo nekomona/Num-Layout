@@ -35,7 +35,7 @@
 </p>
 
 **尺寸拾取 → Path 宽度 → Measurement → Copy。** 四个面板依次播放，切换时停顿一秒。
-动画使用合成几何，只用于说明操作。打开
+动画取自试验场，只用于说明操作。打开
 [交互演示](docs/demo/index.html) 可以修改数值、调整速度，逐步查看全部工具。
 站点可直接打开 HTML 文件运行；[本地预览说明](docs/numeric_assist_guide.zh-CN.md#交互演示)
 和 [Pages 部署](docs/PUBLISHING.md) 见单独文档。
