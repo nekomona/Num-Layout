@@ -1,4 +1,4 @@
-"""Deploy Numeric Assist and its icons together, then load the installed script."""
+"""Deploy NLayout and its icons together, then load the installed script."""
 
 import argparse
 from datetime import datetime, timezone
@@ -54,7 +54,7 @@ def main():
     result = VirtuosoClient.from_tunnel(ssh).execute_skill(f'load("{escaped}")')
     if not result.ok:
         raise RuntimeError(str(result.errors))
-    print(f"Loaded Numeric Assist: {result.output}")
+    print(f"Loaded NLayout: {result.output}")
     if result.warnings:
         print(f"Warnings: {result.warnings}")
 

@@ -1,4 +1,4 @@
-"""Create an isolated three-level layout for Numeric Assist hierarchy checks.
+"""Create an isolated three-level layout for NLayout hierarchy checks.
 
 The script refuses to replace any existing cells and never edits user layouts.
 Run it with a virtual environment and configured bridge profile.

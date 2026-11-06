@@ -1,11 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 360" role="img" aria-labelledby="title description">
-  <title id="title">Numeric Layout Assist — Precision, at your cursor.</title>
+  <title id="title">NumLayoutPlug (NLayout) · 定数绘版 — Precision, at your cursor.</title>
   <desc id="description">A layout rectangle expands to a magenta numeric preview beside the J, Shift+J, and N keys.</desc>
   <defs><pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" fill="none" stroke="#334753" stroke-width=".7"/></pattern></defs>
   <rect width="1280" height="360" rx="14" fill="#17232e"/>
   <rect x="735" y="28" width="515" height="304" fill="url(#grid)"/>
   <circle cx="49" cy="46" r="4" fill="#9fd5a9"/>
-  <text x="65" y="51" fill="#a7bac7" font-family="Arial,sans-serif" font-size="14" letter-spacing="3">NUMERIC LAYOUT ASSIST</text>
+  <text x="65" y="51" fill="#a7bac7" font-family="Arial,sans-serif" font-size="14" letter-spacing="2">NUMLAYOUTPLUG</text>
+  <text x="235" y="51" fill="#859daa" font-family="Arial,sans-serif" font-size="13">定数绘版 · NLAYOUT</text>
   <text x="44" y="137" fill="#f4f1e8" font-family="Arial,sans-serif" font-weight="600" font-size="58" letter-spacing="-2">Precision,</text>
   <text x="44" y="204" fill="#d9b6f0" font-family="Arial,sans-serif" font-weight="600" font-size="58" letter-spacing="-2">at your cursor.</text>
   <text x="47" y="244" fill="#afc1cd" font-family="Arial,sans-serif" font-size="18">Pick a dimension. Type a value. See the result.</text>

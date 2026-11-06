@@ -29,6 +29,11 @@ class Links(HTMLParser):
 
 
 def check_artifact():
+    for name in ("README.md", "README.zh-CN.md"):
+        readme = (ROOT / name).read_text(encoding="utf-8")
+        assert "Try it out first!" in readme, name
+        assert "直接看效果！" in readme, name
+        assert "https://YOUR_GITHUB_USERNAME.github.io/NumLayoutPlug/" in readme, name
     expected = {"index.html", "index.zh-CN.html", "lab.html", "app.js", "style.css",
                 "site.css", "language.js", "guide.html", "guide.zh-CN.html",
                 "contributing.html", "contributing.zh-CN.html",
@@ -96,6 +101,7 @@ def check_browser(channel):
             response = page.goto(base + "?lang=en")
             assert response.status == 200
             assert "Precision" in page.locator("h1").inner_text()
+            assert "NumLayoutPlug" in page.locator(".brand").inner_text()
             page.locator('.site-nav a[href="lab.html"]').click()
             assert page.url.startswith(base + "lab.html")
             page.goto(base + "lab.html?lang=en#copy")
@@ -106,11 +112,11 @@ def check_browser(channel):
             assert page.url == base + "guide.html"
             assert page.locator("#installation").count() == 1
             assert page.locator('.topbar .language-switch a[href="guide.zh-CN.html"]').count() == 1
-            page.locator('.guide a[href="guide.zh-CN.html"][data-language-choice="zh"]').click()
+            page.locator('.topbar .language-switch a[href="guide.zh-CN.html"]').click()
             assert page.url == base + "guide.zh-CN.html"
-            assert page.locator("h1").inner_text() == "Numeric Layout Assist 使用指南"
+            assert page.locator("h1").inner_text() == "定数绘版使用指南"
             assert page.locator("#安装").count() == 1
-            page.locator('.guide a[href="guide.html"][data-language-choice="en"]').click()
+            page.locator('.topbar .language-switch a[href="guide.html"]').click()
             assert page.url == base + "guide.html"
             page.goto(base + "guide.html?lang=zh-CN")
             page.wait_for_url(base + "guide.zh-CN.html?lang=zh-CN")
@@ -132,15 +138,16 @@ def check_browser(channel):
             page.goto(base)
             page.wait_for_url(base + "index.zh-CN.html")
             assert "精确" in page.locator("h1").inner_text()
+            assert "定数绘版" in page.locator(".brand").inner_text()
             page.goto(base + "guide.html")
             page.wait_for_url(base + "guide.zh-CN.html")
-            assert page.locator("h1").inner_text() == "Numeric Layout Assist 使用指南"
+            assert page.locator("h1").inner_text() == "定数绘版使用指南"
             page.goto(base + "contributing.html")
             page.wait_for_url(base + "contributing.zh-CN.html")
-            assert page.locator("h1").inner_text() == "为 Numeric Layout Assist 做贡献"
+            assert page.locator("h1").inner_text() == "为定数绘版做贡献"
             page.locator('.topbar a[href="contributing.html"]').click()
             page.wait_for_url(base + "contributing.html")
-            assert page.locator("h1").inner_text() == "Contributing to Numeric Layout Assist"
+            assert page.locator("h1").inner_text() == "Contributing to NumLayoutPlug"
             assert page.evaluate("localStorage.getItem('numeric-layout-assist-language')") == "en"
             context.close()
             browser.close()

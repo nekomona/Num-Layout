@@ -1,9 +1,9 @@
-# Testing Numeric Assist
+# Testing NLayout
 
 Run commands from the repository root using a virtual environment. Offline
 tests use Python's standard library. Live checks additionally require the
 installed `virtuoso-bridge` package, working bridge configuration, a running
-Virtuoso session, and Numeric Assist loaded from `src/numeric_assist.il` with
+Virtuoso session, and NLayout loaded from `src/numeric_assist.il` with
 its sibling runtime assets, or from an installation created by `deploy.py`.
 
 ## Offline tests
@@ -29,7 +29,7 @@ technology. Choose a valid visible drawing layer. Do not use a design library.
 Set the following in the shell that launches the test scripts:
 
 ```powershell
-$env:VBN_TEST_LIB = "NUMERIC_ASSIST_TESTS"
+$env:VBN_TEST_LIB = "NLAYOUT_TESTS"
 $env:VBN_TEST_LAYER = "M1"
 ```
 

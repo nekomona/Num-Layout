@@ -1,6 +1,10 @@
 <p align="center">
-  <img src="docs/media/banner.svg" alt="Numeric Layout Assist — 光标即精确。" width="100%">
+  <img src="docs/media/banner.svg" alt="定数绘版 — 光标即精确。" width="100%">
 </p>
+
+<h3 align="center">
+  <a href="https://YOUR_GITHUB_USERNAME.github.io/NumLayoutPlug/">▶ <strong>Try it out first!</strong> &nbsp;·&nbsp; <strong>直接看效果！</strong></a>
+</h3>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-6b45b9?style=flat-square" alt="MIT 许可证"></a>
@@ -20,7 +24,7 @@
   <a href="CONTRIBUTING.zh-CN.md">参与贡献</a>
 </p>
 
-为 **Virtuoso Layout** 的常用命令补上精确数值输入。尺寸可以从版图上拾取，也可以直接键入；
+**定数绘版（NumLayoutPlug，简称 NLayout）** 为 **Virtuoso Layout** 的常用命令补上精确数值输入。尺寸可以从版图上拾取，也可以直接键入；
 提交之前，结果就显示在光标旁。**J** 用于数值输入，**Shift+J** 用于绝对定位和 Contour，
 **N** 用于设置 Copy 数量。
 
@@ -50,7 +54,7 @@
 | **Contour** | 以指定 pivot 为基准，向内或向外调整矩形 | [GIF](docs/media/contour.gif) · [试用](docs/demo/index.html#contour) |
 | **Steiner 清理** | 删除当前版图中的不可见 Steiner 对象 | [GIF](docs/media/cleanup.gif) · [试用](docs/demo/index.html#cleanup) |
 
-工具栏的标尺按钮用来开关 Numeric Assist。完整命令说明、安装方法、网格处理和键位恢复见
+工具栏的标尺按钮用来开关 NLayout。完整命令说明、安装方法、网格处理和键位恢复见
 **[使用指南](docs/numeric_assist_guide.zh-CN.md)**。
 
 ## 致谢

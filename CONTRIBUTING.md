@@ -1,8 +1,6 @@
-# Contributing to Numeric Layout Assist
+# Contributing to NumLayoutPlug
 
-<a href="CONTRIBUTING.md" data-language-choice="en">English</a> · <a href="CONTRIBUTING.zh-CN.md" data-language-choice="zh">简体中文</a>
-
-Thanks for helping make Numeric Layout Assist better. Bug reports, focused fixes,
+Thanks for helping make NumLayoutPlug (NLayout) better. Bug reports, focused fixes,
 tests, documentation, and new examples are all welcome.
 
 ## Start a discussion first

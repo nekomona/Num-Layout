@@ -172,11 +172,11 @@
   ];
   const UI = {
     en: {
-      title: "Numeric Layout Assist · Interactive lab",
+      title: "NLayout · Interactive lab",
       description:
-        "Explore Numeric Layout Assist: interactive illustrations of precise widths, positions, copies, and contours in Virtuoso Layout.",
+        "Explore NumLayoutPlug (NLayout): interactive illustrations of precise widths, positions, copies, and contours in Virtuoso Layout.",
       skip: "Skip to demonstration",
-      home: "Numeric Layout Assist home",
+      home: "NumLayoutPlug home",
       resources: "Resources",
       language: "Language",
       guide: "User guide ↗",
@@ -229,6 +229,7 @@
       footer:
         'Interactive illustrations, not a live Virtuoso session. Native snapping and command behavior are described in the <a id="footer-guide-link" href="guide.html">guide</a>.',
       overview: "Project overview ↗",
+      footerBrand: "NLayout · NumLayoutPlug · MIT",
       noscript:
         'Enable JavaScript for interactive demonstrations, or read the <a href="guide.html">complete user guide</a>.',
       workspace: "Interactive tool demonstrations",
@@ -242,11 +243,11 @@
       wholeNumber: " as a whole number",
     },
     zh: {
-      title: "Numeric Layout Assist · 交互演示",
+      title: "NLayout · 交互演示",
       description:
-        "体验 Numeric Layout Assist：在 Virtuoso Layout 中精确输入宽度、位置、副本数量和轮廓偏移的交互演示。",
+        "体验定数绘版（NumLayoutPlug，NLayout）：在 Virtuoso Layout 中精确输入宽度、位置、副本数量和轮廓偏移的交互演示。",
       skip: "跳到演示",
-      home: "Numeric Layout Assist 首页",
+      home: "定数绘版首页",
       resources: "资源",
       language: "语言",
       guide: "使用指南 ↗",
@@ -295,6 +296,7 @@
       footer:
         '页面中的场景为合成示意，不是实时 Virtuoso 会话。Virtuoso 的捕捉和命令行为见 <a id="footer-guide-link" href="guide.zh-CN.html">使用指南</a>。',
       overview: "项目概览 ↗",
+      footerBrand: "NLayout · 定数绘版 · MIT",
       noscript:
         '启用 JavaScript 以运行交互演示，或阅读<a href="guide.zh-CN.html">完整使用指南</a>。',
       workspace: "交互式工具演示",
@@ -471,6 +473,8 @@
     $("page-description").setAttribute("content", ui("description"));
     $("skip-link").textContent = ui("skip");
     $("brand").setAttribute("aria-label", ui("home"));
+    $("brand").innerHTML =
+      `<span class="brand-mark">N<span>↗</span></span> NLayout <span class="brand-light">${isZh() ? "定数绘版" : "NumLayoutPlug"}</span>`;
     $("resource-nav").setAttribute("aria-label", ui("resources"));
     $("language-switch").setAttribute("aria-label", ui("language"));
     document.querySelectorAll("[data-language]").forEach((button) => {
@@ -517,6 +521,7 @@
     $("overview-link").href = isZh()
       ? "../../README.zh-CN.md"
       : "../../README.md";
+    $("footer-brand").textContent = ui("footerBrand");
     const noscript = document.querySelector("noscript");
     if (noscript) noscript.innerHTML = ui("noscript");
     $("workspace").setAttribute("aria-label", ui("workspace"));

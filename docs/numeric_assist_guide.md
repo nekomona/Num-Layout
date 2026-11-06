@@ -1,10 +1,8 @@
-# Numeric Layout Assist — user guide
-
-<a href="numeric_assist_guide.md" data-language-choice="en">English</a> · <a href="numeric_assist_guide.zh-CN.md" data-language-choice="zh">简体中文</a>
+# NumLayoutPlug — user guide
 
 [Project overview](../README.md) · [Interactive demonstrations](demo/index.html) · [Tests](../test/README.md)
 
-Numeric Layout Assist adds numeric entry and geometry picking to native Virtuoso
+NumLayoutPlug (NLayout) adds numeric entry and geometry picking to native Virtuoso
 Layout commands. It targets Virtuoso IC23.1; native form fields and callbacks
 may differ on other releases.
 
@@ -60,7 +58,7 @@ inherits DISPLAY and XAUTHORITY from Virtuoso.
 
 ## Toolbar and previews
 
-The ruler icon enables or disables Numeric Assist. Its pressed state means
+The ruler icon enables or disables NLayout. Its pressed state means
 that the assist is enabled. The routing-node and broom icon deletes invisible
 Steiners from the edited layout, including during edit-in-place. It reports
 the removed count and leaves saving to the user. The toolbar is registered
@@ -117,7 +115,7 @@ text normally. A second comma or a second dot in the same component is ignored.
 | Shift+J Move/Copy | Target position (10,20) | Target X=10; Y unchanged | Target Y=20; X unchanged |
 
 For **Shift+J Move/Copy**, the target is the native command's reference point.
-When no reference point is recorded, Numeric Assist uses the selected objects'
+When no reference point is recorded, NLayout uses the selected objects'
 combined bounding-box center. Coordinates use the displayed window's frame,
 including during edit-in-place. A **single number** changes only X or Y,
 selected by mouse direction from the reference point; the hint identifies the
@@ -174,7 +172,7 @@ Canceling either assist, entering N again, or leaving J resets the count to
 clears N's digits; another Escape closes numeric entry while keeping native
 Copy active.
 
-Outside Copy, N retains its previous native binding. Turning Numeric Assist
+Outside Copy, N retains its previous native binding. Turning NLayout
 off also restores N's native behavior. Uninstalling restores the prior N
 enterfunction binding; the normal N binding is not replaced.
 
@@ -182,7 +180,7 @@ enterfunction binding; the normal N binding is not replaced.
 
 After the hotkey, type `0`–`9`, `.`, `,`, `-`, or Backspace as appropriate for the mode. The current input and mode
 appear next to the cursor. The result contour appears while a valid number is
-pending. Numeric Assist captures Virtuoso's physical dot binding during input
+pending. NLayout captures Virtuoso's physical dot binding during input
 and restores its original magnifier binding when the assist closes.
 Click a shape edge instead to use its length. A second parallel
 edge changes the number to the distance between the edges. A perpendicular
@@ -192,7 +190,7 @@ are available too.
 For a wire path segment, clicking its centerline or terminal uses the wire's
 physical width. Clicking a side uses that side's length; clicking a second
 parallel side uses the spacing between the sides. The yellow hover line and
-magenta selection arrow show the exact feature being measured. Numeric Assist
+magenta selection arrow show the exact feature being measured. NLayout
 uses the raw mouse position for wire picking so native Wire snapping does not
 turn a side click into a centerline click.
 
@@ -212,7 +210,7 @@ The edge under the cursor is yellow. Selected edges and a length arrow are
 magenta. Outside Contour, press **Enter**, **Space**, the same hotkey again, or
 click empty canvas to confirm. Escape while
 edges are selected returns to number entry. Escape with digits clears them;
-Escape with an empty entry closes Numeric Assist and leaves the native command
+Escape with an empty entry closes NLayout and leaves the native command
 active. A click used to pick an edge or confirm a number is consumed by Numeric
 Assist and does not add a point to the native command.
 
@@ -238,7 +236,7 @@ uses the active edited cell's coordinates, keeping it at the requested position.
 
 For **Copy**, select objects and start native Copy. Press J for relative input
 or Shift+J for absolute position. A scalar relative distance follows the
-Copy form's snap mode. If Copy has no entered reference point, Numeric Assist
+Copy form's snap mode. If Copy has no entered reference point, NLayout
 uses the center of the selected objects' combined bounding box as the direction
 origin. Confirmation uses the native Copy form's X/Y fields in Pitch mode and
 its Apply action, including the current Single, Step, or Array settings.
@@ -267,7 +265,7 @@ Move and Copy J or Shift+J, and both Stretch displacement modes, follow the nati
 segment snap mode when choosing displacement direction: orthogonal, diagonal
 (45-degree increments), or any angle. Horizontal and vertical modes are also
 respected when offered by the form. Change the snap mode in the native form;
-Numeric Assist reads it when drawing the preview and applying the number.
+NLayout reads it when drawing the preview and applying the number.
 
 The assist snaps target coordinates to the technology manufacturing grid. It
 sets rectangle extents, selected path points, and straight path/ruler endpoints

@@ -1,8 +1,6 @@
-# 为 Numeric Layout Assist 做贡献
+# 为定数绘版做贡献
 
-<a href="CONTRIBUTING.md" data-language-choice="en">English</a> · <a href="CONTRIBUTING.zh-CN.md" data-language-choice="zh">简体中文</a>
-
-欢迎提交问题报告、范围明确的修复、测试、文档和新示例。
+欢迎为定数绘版（NumLayoutPlug，简称 NLayout）提交问题报告、范围明确的修复、测试、文档和新示例。
 
 ## 先讨论较大的改动
 

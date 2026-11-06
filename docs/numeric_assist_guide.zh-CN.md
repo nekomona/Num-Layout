@@ -1,10 +1,8 @@
-# Numeric Layout Assist 使用指南
-
-<a href="numeric_assist_guide.md" data-language-choice="en">English</a> · <a href="numeric_assist_guide.zh-CN.md" data-language-choice="zh">简体中文</a>
+# 定数绘版使用指南
 
 [项目概览](../README.zh-CN.md) · [交互演示](demo/index.html) · [测试](../test/README.md) · [参与贡献](../CONTRIBUTING.zh-CN.md)
 
-Numeric Layout Assist 把数值输入和几何拾取接入 Virtuoso Layout 的常用命令。
+定数绘版（NumLayoutPlug，简称 NLayout）把数值输入和几何拾取接入 Virtuoso Layout 的常用命令。
 当前按 Virtuoso IC23.1 适配；其他版本的字段名称和回调行为可能不同。
 
 本页首次打开时会按浏览器语言选择中英文。也可以用右上角的 **EN / 中文** 手动切换，
@@ -55,7 +53,7 @@ Wire 刷新辅助程序依赖 GUI 主机上的 Python 3、libX11 和 XTest 扩�
 
 ## 工具栏与预览
 
-工具栏上的标尺按钮用于开关 Numeric Assist。按钮按下时，辅助功能处于启用状态。
+工具栏上的标尺按钮用于开关 NLayout。按钮按下时，辅助功能处于启用状态。
 路由节点加扫帚图标用于清除当前版图中的不可见 Steiner，原地编辑（edit-in-place）时也可使用。
 清理完成后会报告删除数量；是否保存 cellview 仍由用户决定。工具栏注册在 Layout
 会话的 **Window > Toolbars** 中。
@@ -108,7 +106,7 @@ list(vbnWireRefreshBusy vbnWireRefreshStatus)
 | Shift+J Move/Copy | 目标位置 (10,20) | 目标 X=10，Y 不变 | 目标 Y=20，X 不变 |
 
 使用 **Shift+J Move/Copy** 时，目标位置以当前命令的参考点为基准。若命令尚未记录参考点，
-Numeric Assist 会使用所选对象合并包围盒的中心。坐标以当前显示窗口为准，原地编辑时也一样。
+NLayout 会使用所选对象合并包围盒的中心。坐标以当前显示窗口为准，原地编辑时也一样。
 只输入一个数值时，只会修改 X 或 Y；具体修改哪个轴，由指针相对参考点的方向决定，光标提示会标出当前轴。
 绝对坐标可以为负。
 
@@ -145,13 +143,13 @@ N 仍然只接受整数；Path/Wire 宽度和 Contour 偏移只接受单值。�
 
 取消任一辅助输入、再次进入 N 或离开 J，都会把数量重置为 **1**；若通过 J 确认，重置发生在放置之后。
 Escape 会先清除 N 中的数字，再按一次则关闭数值输入，Copy 仍保持活动。Copy 之外，N 保持原有绑定；
-关闭 Numeric Assist 同样会恢复默认行为。卸载时会恢复之前的 N 输入函数（enter function）绑定，
+关闭 NLayout 同样会恢复默认行为。卸载时会恢复之前的 N 输入函数（enter function）绑定，
 正常 N 绑定不会被替换。
 
 ### J 数值输入
 
 按下快捷键后，根据当前模式输入 `0`–`9`、`.`、`,`、`-` 或 Backspace。当前数值和模式会显示在指针旁；
-只要有合法数值等待确认，就会显示结果轮廓。输入期间，Numeric Assist 接管 Virtuoso 的点输入绑定，
+只要有合法数值等待确认，就会显示结果轮廓。输入期间，NLayout 接管 Virtuoso 的点输入绑定，
 退出后再恢复原来的放大镜绑定。
 
 也可以直接点击图形边，用该边的长度作为数值。再选一条平行边，数值会改为两条边的间距；
@@ -170,7 +168,7 @@ cellview 的坐标。Contour 也可以使用实例内部的矩形作为 pivot；
 
 指针所在边显示为黄色，选中的边和长度箭头显示为洋红色。Contour 之外，可用 **Enter**、**Space**、
 再次按同一快捷键或点击空白画布确认。已选边时按 Escape 会回到数值输入；有数字时按 Escape 会清除数字；
-输入为空时按 Escape 会关闭 Numeric Assist，当前命令继续运行。用于拾取边或确认数值的点击由 Numeric Assist
+输入为空时按 Escape 会关闭 NLayout，当前命令继续运行。用于拾取边或确认数值的点击由 NLayout
 处理，不会再让当前命令添加点。
 
 设置绝对 Stretch 长度时，要在按 J 之前用 Stretch 选中一条**边或端点**。若选中的是整体或多个对象，
@@ -186,7 +184,7 @@ Wire 命令仍保持活动，后续点沿用新宽度。
 以保持指定位置。
 
 对于 **Copy**，先选对象并启动 Copy。按 J 输入相对位移，按 Shift+J 输入绝对位置。单值相对距离遵循
-Copy 表单的捕捉模式。若 Copy 尚未记录参考点，Numeric Assist 会把所选对象合并包围盒的中心作为方向原点。
+Copy 表单的捕捉模式。若 Copy 尚未记录参考点，NLayout 会把所选对象合并包围盒的中心作为方向原点。
 确认时使用 Copy 表单 Pitch 模式下的 X/Y 字段和 Apply 动作，并保留当前的 Single、Step 或 Array 设置。
 
 ## 为矩形做 Contour
@@ -202,7 +200,7 @@ Copy 表单的捕捉模式。若 Copy 尚未记录参考点，Numeric Assist 会
 则只能选择向外。每次 Escape 回退一个阶段；处在数值阶段时，第一次 Escape 只清除数字，再按才退出。
 
 Move、Copy 的 J/Shift+J，以及 Stretch 的两种位移模式，都会跟随当前命令的分段捕捉方式：正交、
-45° 对角或任意角度。表单提供水平或垂直模式时也会遵循。捕捉模式请在 Virtuoso 表单中修改；Numeric Assist
+45° 对角或任意角度。表单提供水平或垂直模式时也会遵循。捕捉模式请在 Virtuoso 表单中修改；NLayout
 绘制预览和应用数值时会读取这项设置。
 
 辅助功能会把目标坐标吸附到工艺制造网格。Stretch 完成后，它会根据绝对目标坐标设置矩形范围、
