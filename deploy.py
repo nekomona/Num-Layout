@@ -8,7 +8,7 @@ import shlex
 
 from virtuoso_bridge import SSHClient, VirtuosoClient
 
-SOURCE_ROOT = Path(__file__).resolve().parent / "src"
+SOURCE_ROOT = Path(__file__).resolve().parent / "nlayout"
 
 
 def main():

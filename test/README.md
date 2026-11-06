@@ -3,7 +3,7 @@
 Run commands from the repository root using a virtual environment. Offline
 tests use Python's standard library. Live checks additionally require the
 installed `virtuoso-bridge` package, working bridge configuration, a running
-Virtuoso session, and Num-Layout loaded from `src/numeric_assist.il` with
+Virtuoso session, and Num-Layout loaded from `nlayout/numeric_assist.il` with
 its sibling runtime assets, or from an installation created by `deploy.py`.
 
 ## Offline tests
@@ -19,6 +19,8 @@ live input and do not require Virtuoso or an X server.
 For the documentation website, animation capture, and browser checks, see
 [DEMO_MEDIA.md](DEMO_MEDIA.md). These checks use synthetic geometry and run
 separately from the native plugin tests.
+Release packaging is covered by `test_package_release.py`; see
+[Pages deployment](../docs/PUBLISHING.md#release-archives) for the tag workflow.
 The Pages artifact and deployment checks are described in
 [Pages deployment](../docs/PUBLISHING.md).
 
@@ -40,7 +42,7 @@ The bridge reads its own environment/profile configuration independently.
 Keep credentials and host configuration outside the tracked tree.
 
 Verify connectivity with `virtuoso-bridge status`, then load the plugin using
-`python deploy.py`, which deploys the contents of `src/`. Keep the session idle
+`python deploy.py`, which deploys the contents of `nlayout/`. Keep the session idle
 before starting a live check. Run
 one script at a time: scripts open layout windows, run native commands, and
 change selection or form state. Cell-creation checks refuse existing names;

@@ -4,7 +4,7 @@ from pathlib import Path
 
 from PIL import Image, ImageDraw
 
-ROOT = Path(__file__).resolve().parents[1] / "src" / "icons"
+ROOT = Path(__file__).resolve().parents[1] / "nlayout" / "icons"
 SCALE = 4
 
 

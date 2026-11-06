@@ -68,6 +68,26 @@ The GIFs are committed, reviewed assets. Deployment does not record a browser
 session or contact Virtuoso; regenerate animations separately using
 [the media instructions](../test/DEMO_MEDIA.md).
 
+## Release archives
+
+Pushing a new tag triggers the GitHub `Publish Release` workflow and the GitLab
+`package_release` and `release` jobs. Both platforms use
+`tools/package_release.py` to create:
+
+- `nlayout-<tag>.tar.gz`, containing the complete `nlayout/` runtime directory.
+- `nlayout-<tag>.tar.gz.sha1`, containing the SHA1 digest and archive filename.
+
+The archive is deterministic, excludes `__pycache__` and `.pyc` files, and stores
+paths beneath a top-level `nlayout/` directory. Both files are attached to the
+same GitHub or GitLab release. Create the same files locally with:
+
+```sh
+python tools/package_release.py --tag v1.2.3 --output-dir artifacts/release
+```
+
+The script also writes `artifacts/release/release.env` for the CI jobs. Verify a
+download by comparing its SHA1 value with the attached `.sha1` file.
+
 ## Build locally
 
 From the repository root:

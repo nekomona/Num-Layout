@@ -1,6 +1,8 @@
 stages:
   - build
   - deploy
+  - package
+  - release
 
 validate_pages:
   stage: build
@@ -28,3 +30,40 @@ pages:
       - public/
   only:
     - main
+
+package_release:
+  stage: package
+  image: python:3.12-slim
+  rules:
+    - if: '$CI_COMMIT_TAG'
+  script:
+    - python -m unittest test.test_package_release
+    - python tools/package_release.py --tag "$CI_COMMIT_TAG" --output-dir artifacts/release
+  artifacts:
+    paths:
+      - artifacts/release/
+    reports:
+      dotenv: artifacts/release/release.env
+    expire_in: 1 year
+
+release:
+  stage: release
+  image: alpine:3.20
+  needs:
+    - job: package_release
+      artifacts: true
+  rules:
+    - if: '$CI_COMMIT_TAG'
+  script:
+    - test -f "$ARCHIVE_PATH"
+    - test -f "$CHECKSUM_PATH"
+  release:
+    tag_name: $CI_COMMIT_TAG
+    name: "Num-Layout $CI_COMMIT_TAG"
+    description: "Deterministic Num-Layout runtime archive and SHA1 checksum for $CI_COMMIT_TAG."
+    assets:
+      links:
+        - name: "$ARCHIVE_FILE"
+          url: "$CI_PROJECT_URL/-/jobs/artifacts/$CI_COMMIT_TAG/raw/$ARCHIVE_PATH?job=package_release"
+        - name: "$CHECKSUM_FILE"
+          url: "$CI_PROJECT_URL/-/jobs/artifacts/$CI_COMMIT_TAG/raw/$CHECKSUM_PATH?job=package_release"

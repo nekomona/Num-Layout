@@ -1,7 +1,7 @@
 """Check XTest refresh and input-interruption behavior without live input."""
 
 import unittest
-from src.wire_refresh import X11, refresh
+from nlayout.wire_refresh import X11, refresh
 
 
 class FakeX11:

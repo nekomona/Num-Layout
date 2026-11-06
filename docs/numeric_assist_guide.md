@@ -17,10 +17,10 @@ switch explicitly; the choice is remembered across the home page, guide, and lab
 
 ## Installation
 
-The deployable runtime files are in `src/`. Keep their relative paths intact:
+The deployable runtime files are in `nlayout/`. Keep their relative paths intact:
 
 ```text
-src/
+nlayout/
   numeric_assist.il
   numeric_assist.drf
   wire_refresh.py
@@ -32,7 +32,7 @@ src/
 To load directly from a checkout, use its absolute path in the Virtuoso CIW:
 
 ```skill
-load("/path/to/numeric-assist/src/numeric_assist.il")
+load("/path/to/numeric-assist/nlayout/numeric_assist.il")
 ```
 
 The script installs its bindings and toolbar when loaded. To load it at startup,
@@ -48,7 +48,7 @@ python deploy.py
 python deploy.py --remote-dir /path/to/numeric-assist
 ```
 
-The deployment helper uploads the contents of `src/` into the installation
+The deployment helper uploads the contents of `nlayout/` into the installation
 directory, checks their hashes, backs up the installed `.il`, and loads the
 plugin through the bridge. For example, `--remote-dir /opt/numeric-assist`
 installs `/opt/numeric-assist/numeric_assist.il`, with the helper, display
@@ -335,9 +335,9 @@ animations or capture a real, isolated Virtuoso session.
 
 ## Repository layout
 
-`src/` contains the SKILL program and all deployed runtime assets. `deploy.py`
+`nlayout/` contains the SKILL program and all deployed runtime assets. `deploy.py`
 at the root installs them. `tools/generate_icons.py` regenerates the icons in
-`src/icons/` and requires Pillow. `docs/` contains public usage documentation.
+`nlayout/icons/` and requires Pillow. `docs/` contains public usage documentation.
 `docs/demo/` contains the interactive illustrations, and `docs/media/` contains
 reviewed documentation assets. `test/` contains test scripts and manual checks. Local agent instructions
 belong in `.local/agent/`; screenshots,

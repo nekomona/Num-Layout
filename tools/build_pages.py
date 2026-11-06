@@ -56,7 +56,7 @@ def main():
         "docs/demo/app.js": "app.js",
         "LICENSE": "license.html",
         # The language badge leads to the installation instructions on the site.
-        "src/numeric_assist.il": "guide.html#installation",
+        "nlayout/numeric_assist.il": "guide.html#installation",
     })
     mapping.update({path.relative_to(ROOT).as_posix(): "media/" + path.name for path in media})
 

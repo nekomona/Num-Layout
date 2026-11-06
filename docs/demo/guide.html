@@ -17,8 +17,8 @@ switch explicitly; the choice is remembered across the home page, guide, and lab
 <a href="#contour-a-rectangle">Contour</a> · <a href="#interactive-demonstrations">Interactive demos</a> ·
 <a href="#repository-layout">Repository layout</a></p>
 <h2 id="installation">Installation</h2>
-<p>The deployable runtime files are in <code>src/</code>. Keep their relative paths intact:</p>
-<pre><code class="language-text">src/
+<p>The deployable runtime files are in <code>nlayout/</code>. Keep their relative paths intact:</p>
+<pre><code class="language-text">nlayout/
   numeric_assist.il
   numeric_assist.drf
   wire_refresh.py
@@ -27,7 +27,7 @@ switch explicitly; the choice is remembered across the home page, guide, and lab
     remove_steiners.png
 </code></pre>
 <p>To load directly from a checkout, use its absolute path in the Virtuoso CIW:</p>
-<pre><code class="language-skill">load(&quot;/path/to/numeric-assist/src/numeric_assist.il&quot;)
+<pre><code class="language-skill">load(&quot;/path/to/numeric-assist/nlayout/numeric_assist.il&quot;)
 </code></pre>
 <p>The script installs its bindings and toolbar when loaded. To load it at startup,
 add that line to your own <code>.cdsinit</code>. Run <code>vbnUninstall()</code> in CIW to restore the
@@ -38,7 +38,7 @@ configure its SSH and GUI roles. From this repository, run:</p>
 # Optional: choose an absolute directory on the remote host.
 python deploy.py --remote-dir /path/to/numeric-assist
 </code></pre>
-<p>The deployment helper uploads the contents of <code>src/</code> into the installation
+<p>The deployment helper uploads the contents of <code>nlayout/</code> into the installation
 directory, checks their hashes, backs up the installed <code>.il</code>, and loads the
 plugin through the bridge. For example, <code>--remote-dir /opt/numeric-assist</code>
 installs <code>/opt/numeric-assist/numeric_assist.il</code>, with the helper, display
@@ -411,9 +411,9 @@ form callbacks, and pointer-refresh behavior must be checked in Virtuoso.</p>
 <p>See <a href="../../test/DEMO_MEDIA.md">demo recording instructions</a> to regenerate the
 animations or capture a real, isolated Virtuoso session.</p>
 <h2 id="repository-layout">Repository layout</h2>
-<p><code>src/</code> contains the SKILL program and all deployed runtime assets. <code>deploy.py</code>
+<p><code>nlayout/</code> contains the SKILL program and all deployed runtime assets. <code>deploy.py</code>
 at the root installs them. <code>tools/generate_icons.py</code> regenerates the icons in
-<code>src/icons/</code> and requires Pillow. <code>docs/</code> contains public usage documentation.
+<code>nlayout/icons/</code> and requires Pillow. <code>docs/</code> contains public usage documentation.
 <code>docs/demo/</code> contains the interactive illustrations, and <code>docs/media/</code> contains
 reviewed documentation assets. <code>test/</code> contains test scripts and manual checks. Local agent instructions
 belong in <code>.local/agent/</code>; screenshots,

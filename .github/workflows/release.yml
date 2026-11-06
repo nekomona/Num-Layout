@@ -1,0 +1,34 @@
+name: Publish Release
+
+on:
+  push:
+    tags: ["*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Test release packaging
+        run: python -m unittest test.test_package_release
+      - name: Package runtime
+        run: python tools/package_release.py --tag "$GITHUB_REF_NAME" --output-dir artifacts/release
+      - name: Create or update GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          source artifacts/release/release.env
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$ARCHIVE_PATH" "$CHECKSUM_PATH" --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" "$ARCHIVE_PATH" "$CHECKSUM_PATH" \
+              --title "Num-Layout $GITHUB_REF_NAME" --generate-notes
+          fi

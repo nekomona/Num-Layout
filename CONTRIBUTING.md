@@ -18,7 +18,7 @@ library.
 
 | Path | Purpose |
 | --- | --- |
-| `src/` | Runtime files deployed to Virtuoso; keep their relative paths intact |
+| `nlayout/` | Runtime files deployed to Virtuoso; keep their relative paths intact |
 | `docs/` | Public README, user guides, publishing notes, and demo media |
 | `test/` | Offline tests, live-verification scripts, and manual checks |
 | `tools/` | Documentation and icon generators |

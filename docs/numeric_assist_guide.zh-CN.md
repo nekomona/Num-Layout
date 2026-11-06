@@ -15,10 +15,10 @@
 
 ## 安装
 
-部署所需的文件都在 `src/` 中，移动或上传时请保留原来的目录结构：
+部署所需的文件都在 `nlayout/` 中，移动或上传时请保留原来的目录结构：
 
 ```text
-src/
+nlayout/
   numeric_assist.il
   numeric_assist.drf
   wire_refresh.py
@@ -30,7 +30,7 @@ src/
 从代码仓库直接加载时，在 Virtuoso CIW 中使用绝对路径：
 
 ```skill
-load("/path/to/numeric-assist/src/numeric_assist.il")
+load("/path/to/numeric-assist/nlayout/numeric_assist.il")
 ```
 
 加载后会自动安装键位和工具栏。若希望启动 Virtuoso 时自动加载，可把同一行加入
@@ -44,7 +44,7 @@ python deploy.py
 python deploy.py --remote-dir /path/to/numeric-assist
 ```
 
-部署脚本会通过 bridge 完成以下工作：上传 `src/`、校验文件哈希、备份已有的 `.il`，
+部署脚本会通过 bridge 完成以下工作：上传 `nlayout/`、校验文件哈希、备份已有的 `.il`，
 再加载插件。例如指定 `--remote-dir /opt/numeric-assist` 时，主文件会安装到
 `/opt/numeric-assist/numeric_assist.il`，辅助脚本、显示资源和 `icons/` 放在同一目录。
 
@@ -261,8 +261,8 @@ python -m http.server 8000 --bind 127.0.0.1
 
 ## 仓库结构
 
-`src/` 包含 SKILL 程序和全部部署资源；根目录的 `deploy.py` 负责安装。
-`tools/generate_icons.py` 用于重新生成 `src/icons/` 中的图标，需要 Pillow。`docs/` 保存公开文档，
+`nlayout/` 包含 SKILL 程序和全部部署资源；根目录的 `deploy.py` 负责安装。
+`tools/generate_icons.py` 用于重新生成 `nlayout/icons/` 中的图标，需要 Pillow。`docs/` 保存公开文档，
 `docs/demo/` 是交互演示，`docs/media/` 是审核后的图片和动画。`test/` 包含测试脚本与手工检查步骤。
 本地 agent 指令放在 `.local/agent/`，截图、验证报告和其他测试输出放在 `artifacts/`；这两个目录都被 Git 忽略。
 

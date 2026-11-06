@@ -9,7 +9,7 @@
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-6b45b9?style=flat-square" alt="MIT 许可证"></a>
   <a href="docs/numeric_assist_guide.zh-CN.md"><img src="https://img.shields.io/badge/Virtuoso-IC23.1-527c79?style=flat-square" alt="Virtuoso IC23.1"></a>
-  <a href="src/numeric_assist.il"><img src="https://img.shields.io/badge/built_with-SKILL-bb667f?style=flat-square" alt="使用 SKILL 构建"></a>
+  <a href="nlayout/numeric_assist.il"><img src="https://img.shields.io/badge/built_with-SKILL-bb667f?style=flat-square" alt="使用 SKILL 构建"></a>
 </p>
 
 <p align="center">
