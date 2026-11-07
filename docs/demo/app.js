@@ -136,16 +136,16 @@
     {
       id: "contour",
       name: "Contour",
-      category: "OFFSET A BOUNDARY",
+      category: "SURROUND A TARGET",
       key: "Idle selection → Shift+J",
       description:
-        "Resize a selected rectangle around a pivot. Set the offset, pick the pivot, then choose inside or outside.",
+        "Select frame A, set the offset, then pick target B. A is resized to surround B at that distance.",
       anchor: "contour-a-rectangle",
       fields: [
-        numeric("value", "Offset", 2, 0.5, 3, "Scene range: 0.5–3 µm"),
+        numeric("value", "Offset", 2, 0.5, 2.5, "Scene range: 0.5–2.5 µm"),
         choice("side", "Direction", "outside", [
-          ["outside", "Outside"],
-          ["inside", "Inside"],
+          ["outside", "Outside · around B"],
+          ["inside", "Inside · within B"],
         ]),
       ],
     },
@@ -376,12 +376,16 @@
     },
     contour: {
       name: "轮廓偏移",
-      category: "偏移边界",
-      description: "以 pivot 为基准调整矩形：先定偏移，再选 pivot 和内外方向。",
+      category: "包围目标",
+      description:
+        "先选要被调整的外框 A，输入偏移量后选择目标矩形/边 B；A 会按该距离包围 B。",
       anchor: "为矩形做-contour",
       fields: {
-        value: { label: "偏移量", hint: "场景范围：0.5–3 µm" },
-        side: { label: "方向", options: { outside: "外侧", inside: "内侧" } },
+        value: { label: "偏移量", hint: "场景范围：0.5–2.5 µm" },
+        side: {
+          label: "方向",
+          options: { outside: "外侧（包围 B）", inside: "内侧（缩入 B）" },
+        },
       },
     },
     cleanup: {
@@ -455,7 +459,7 @@
     document.title = ui("title");
     $("page-description").setAttribute("content", ui("description"));
     $("skip-link").textContent = ui("skip");
-    const brandMark = '<span class="brand-mark" aria-hidden="true">J</span>';
+    const brandMark = document.querySelector('#brand .brand-mark').outerHTML;
     const homeHref =
       document
         .getElementById(isZh() ? "home-zh" : "home-en")
@@ -814,36 +818,36 @@
     contour: [
       phase(
         "start",
-        "Select rectangle",
-        "Select one rectangle with no native drawing command active.",
-        [20, 10],
+        "Select A",
+        "Click rectangle A, the frame that will be resized. No native command is active.",
+        [15, 11],
         { select: true },
       ),
       phase(
         "input",
         "Enter offset",
-        "Shift+J → type a positive offset → Enter to choose a pivot.",
-        [34, 20],
+        "Shift+J → type the offset → Enter. Next you pick target rectangle B.",
+        [36, 20],
         { input: "value", key: "Shift+J", confirm: true },
       ),
       phase(
         "pivot",
-        "Pick pivot",
-        "Shift+J selects a pivot rectangle. You can also pick four bounding edges with J.",
-        [20, 15],
+        "Pick target rectangle / edge",
+        "Shift+J → click target rectangle B. Press J to pick four bounding edges instead.",
+        [25, 15],
         { key: "Shift+J", select: true, confirm: true, hover: true },
       ),
       phase(
         "side",
         "Choose side",
-        "Move inside or outside the pivot to choose the contour direction.",
-        [34, 18],
+        "Move outside B to make A surround it, or inside B to shrink A within it.",
+        [34, 17],
       ),
       phase(
         "confirm",
-        "Resize rectangle",
-        "Enter resizes the selected rectangle around the chosen pivot.",
-        [34, 18],
+        "Apply frame",
+        "Enter makes A the previewed frame around B at the offset distance.",
+        [34, 17],
         { confirm: true },
       ),
     ],
@@ -913,11 +917,14 @@
       ["放置副本", "按 Enter 后，副本会按该间距的连续倍数放置。"],
     ],
     contour: [
-      ["选择矩形", "没有正在运行的绘图命令时，选择一个矩形。"],
-      ["输入偏移", "Shift+J → 输入正偏移 → Enter，随后选择 pivot。"],
-      ["选择 pivot", "Shift+J 选择 pivot 矩形；也可用 J 选择四条边界边。"],
-      ["选择方向", "将指针移到 pivot 内侧或外侧，选择轮廓方向。"],
-      ["调整矩形", "按 Enter 围绕所选 pivot 调整矩形。"],
+      ["选择矩形 A", "没有正在运行的绘图命令时，点击要被调整的外框矩形 A。"],
+      ["输入偏移量", "Shift+J → 输入偏移量 → Enter；下一步选择目标矩形 B。"],
+      [
+        "选择包围目标矩形/边",
+        "Shift+J → 点击目标矩形 B；也可按 J 拾取四条边界边。",
+      ],
+      ["选择内外方向", "指针移到 B 外侧，A 将包围 B；移到 B 内侧，A 将缩进 B 内部。"],
+      ["应用外框", "按 Enter，A 变成预览外框，在偏移距离上包围 B。"],
     ],
     cleanup: [
       ["检查版图", "Steiner 通常不可见；这里显示标记以便说明。"],
@@ -949,7 +956,7 @@
       ["side", "confirm"].includes(p.id) &&
       values.side === "inside"
     )
-      return [24, 11];
+      return [26, 12.5];
     return p.point;
   }
   function phaseSpec(index = step) {
@@ -1321,18 +1328,73 @@
           `数量 = ${n}；尚未放置副本`,
         );
     } else if (tool.id === "contour") {
+      // Two rectangles: A is the frame being resized, B is the target it must surround.
+      const A = { x: 10, y: 5, w: 22, h: 13 };
+      const B = { x: 21, y: 9, w: 8, h: 6 };
       const inside = done
         ? values.side === "inside"
-        : point[0] > 11 && point[0] < 29 && point[1] > 6 && point[1] < 15;
+        : point[0] > B.x &&
+          point[0] < B.x + B.w &&
+          point[1] > B.y &&
+          point[1] < B.y + B.h;
       const d = inside ? -v : v;
-      const hovering = id === "pivot" && a.arrived;
-      const source = rect(11, 6, 18, 9, {
-        color: hovering ? (a.selected ? C.magenta : C.yellow) : C.geometry,
-        opacity: done ? 0.25 : 1,
+      const frame = {
+        x: B.x - d,
+        y: B.y - d,
+        w: B.w + 2 * d,
+        h: B.h + 2 * d,
+      };
+      const framed = after("pivot") || (id === "pivot" && a.confirmed);
+      const pickedB = after("pivot") || (id === "pivot" && a.selected);
+      const hoveringA = id === "start" && a.arrived;
+      const hoveringB = id === "pivot" && a.arrived;
+      const outline = (r, color, pad = 3, dash = "") =>
+        `<rect x="${X(r.x) - pad}" y="${Y(r.y + r.h) - pad}" width="${r.w * 15 + 2 * pad}" height="${r.h * 15 + 2 * pad}" fill="none" stroke="${color}" stroke-width="2"${dash ? ` stroke-dasharray="${dash}"` : ""}/>`;
+      const source = done ? frame : A;
+      s += `<g data-role="contour-frame">${rect(source.x, source.y, source.w, source.h, {
+        color: C.geometry,
+        fill: C.fill,
+      })}</g>`;
+      if (selected || hoveringA)
+        s += outline(source, selected ? C.magenta : C.yellow);
+      s += text(
+        X(source.x) + 3,
+        Y(source.y + source.h) - 8,
+        "A",
+        selected ? C.magenta : C.text,
+        14,
+      );
+      // B: dashed ghost target; picking it fixes the target and previews the frame.
+      const target = rect(B.x, B.y, B.w, B.h, {
+        color: C.yellow,
+        fill: "none",
+        dash: pickedB ? "" : "6 5",
       });
-      s += hovering ? hover(source) : source;
-      if (after("pivot") || (id === "pivot" && a.confirmed))
-        s += rect(11 - d, 6 - d, 18 + 2 * d, 9 + 2 * d, previewStyle);
+      s += `<g data-role="contour-target">${hoveringB ? hover(target) : target}</g>`;
+      if (hoveringB) s += outline(B, C.yellow, 2, "2 3");
+      s += text(X(B.x) + 3, Y(B.y + B.h) - 8, "TARGET B", C.yellow, 13);
+      // Preview: A becomes B expanded (outside) or shrunk (inside) by the offset.
+      if (framed && !done)
+        s += `<g data-role="contour-preview">${rect(frame.x, frame.y, frame.w, frame.h, {
+          color: C.magenta,
+          fill: "#e989f115",
+          dash: "8 5",
+        })}</g>`;
+      if (framed) {
+        const inner = Math.min(B.x + B.w, frame.x + frame.w);
+        const outer = Math.max(B.x + B.w, frame.x + frame.w);
+        const ruleY = B.y + B.h / 2;
+        const color = done ? C.geometry : C.magenta;
+        const labelX = Math.max(X(outer), X(source.x + source.w)) + 9;
+        s +=
+          line(X(inner), Y(ruleY), X(outer), Y(ruleY), color, 1.4) +
+          line(X(inner), Y(ruleY) - 4, X(inner), Y(ruleY) + 4, color, 1.4) +
+          line(X(outer), Y(ruleY) - 4, X(outer), Y(ruleY) + 4, color, 1.4) +
+          (labelX > X(outer) + 20
+            ? line(X(outer) + 4, Y(ruleY), labelX - 8, Y(ruleY), color, 1.2, "4 3")
+            : "") +
+          text(labelX, Y(ruleY) + 5, `${f(v)} µm`, color, 14);
+      }
       if (id === "input" && a.activated)
         label = a.confirmed
           ? `PIVOT EDGE  ${f(v)}  [0/4 edges]`
@@ -1341,16 +1403,18 @@
         label = a.confirmed
           ? `CONTOUR OUTSIDE  ${f(v)}`
           : `PIVOT ${a.activated ? "RECT" : "EDGE"}  ${f(v)}  [0/4 edges]`;
-      if (["side", "confirm"].includes(id) && !done) {
-        const inside =
-          point[0] > 11 && point[0] < 29 && point[1] > 6 && point[1] < 15;
+      if (["side", "confirm"].includes(id) && !done)
         label = `CONTOUR ${inside ? "INSIDE" : "OUTSIDE"}  ${f(v)}`;
-      }
-      if (after("pivot"))
-        result = tr(
-          `${values.side} offset: ${f(v)} µm · pivot can also be four edges`,
-          `${values.side === "inside" ? "向内" : "向外"}偏移：${f(v)} µm · pivot 也可以取四条边`,
-        );
+      if (framed)
+        result = done
+          ? tr(
+              `Frame applied: A ${inside ? "sits inside" : "surrounds"} B at ${f(v)} µm`,
+              `外框已应用：A ${inside ? "位于 B 内侧" : "包围 B"}，间距 ${f(v)} µm`,
+            )
+          : tr(
+              `Preview: A ${inside ? "inside" : "around"} B at ${f(v)} µm · Enter applies the frame`,
+              `预览：A 在 B ${inside ? "内侧" : "外侧"} ${f(v)} µm · 按 Enter 应用外框`,
+            );
     } else {
       s +=
         rect(5, 5, 10, 4) +

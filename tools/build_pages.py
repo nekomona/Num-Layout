@@ -101,6 +101,7 @@ def main():
                 home_href="index.html" if lang == "en" else "index.zh-CN.html",
                 lab_href="lab.html",
                 language_script="language.js",
+                logo_href="media/Num-Layout-icon.svg",
             ),
             encoding="utf-8",
         )
@@ -115,6 +116,7 @@ def main():
             home_href="index.html",
             lab_href="lab.html",
             language_script="language.js",
+            logo_href="media/Num-Layout-icon.svg",
         ),
         encoding="utf-8",
     )

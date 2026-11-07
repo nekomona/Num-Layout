@@ -249,23 +249,23 @@ its Apply action, including the current Single, Step, or Array settings.
 
 ## Contour a rectangle
 
-Select one rectangle with no active command, then press Shift+J. Enter a positive
-offset, or measure an edge or the spacing between parallel edges. Press Enter
-or Space to advance. Phase two starts in **edge** mode: click four edges that
-define two distinct X and two distinct Y boundaries. Press **Shift+J** for
-**rectangle** mode; a rectangle takes priority over its edge at the pointer.
-Press **J** to return to edge-only picking. Switching modes preserves the
-current edge or pivot selection. A new rectangle pick replaces the edge set.
-The source rectangle's original boundary is also a valid pivot. Rectangle
-picks tolerate a small distance from the displayed boundary, and confirmation
-rebuilds a four-edge pivot from the selected edges. The edge segments may stop
-short of the corners. Only Enter or Space advances
-to phase three after a valid pivot is selected. Move the cursor
-inside or outside the pivot to preview the result, then click or confirm again
-to resize and move the initially selected rectangle. The offset applies to
-all four sides. If an inset would collapse either dimension, only outside is
-available. Each Escape returns one phase; from the number phase, Escape
-clears the number before exiting.
+Select the frame rectangle A with no active command, then press Shift+J. Enter a
+positive offset, or measure an edge or the spacing between parallel edges. Press
+Enter or Space to advance. Phase two picks the target rectangle B: it starts in
+**edge** mode, where you click four edges that define two distinct X and two
+distinct Y boundaries. Press **Shift+J** for **rectangle** mode; a rectangle
+takes priority over its edge at the pointer. Press **J** to return to edge-only
+picking. Switching modes preserves the current edge or pivot selection. A new
+rectangle pick replaces the edge set. The source rectangle's original boundary
+is also a valid pivot. Rectangle picks tolerate a small distance from the
+displayed boundary, and confirmation rebuilds a four-edge pivot from the
+selected edges. The edge segments may stop short of the corners. Only Enter or
+Space advances to phase three after a valid target is selected. Move the cursor
+outside B to preview A surrounding B, or inside B to preview A shrunk within it;
+click or confirm again to apply the frame. A becomes that box around B, offset
+by the entered distance on all four sides. If an inset would collapse either
+dimension, only outside is available. Each Escape returns one phase; from the
+number phase, Escape clears the number before exiting.
 
 Move and Copy J or Shift+J, and both Stretch displacement modes, follow the native command's current
 segment snap mode when choosing displacement direction: orthogonal, diagonal
@@ -331,7 +331,7 @@ controls.
 | [Stretch](demo/index.html#stretch) | Set a partial selection's final X extent | [Watch](media/stretch.gif) |
 | [Move](demo/index.html#move) | Compare relative delta with absolute position | [Watch](media/move.gif) |
 | [Copy](demo/index.html#copy) | Set N, then use J for Step displacement | [Watch](media/copy.gif) |
-| [Contour](demo/index.html#contour) | Switch inside/outside around a pivot | [Watch](media/contour.gif) |
+| [Contour](demo/index.html#contour) | Pick frame A, then target B; A surrounds B at the offset | [Watch](media/contour.gif) |
 | [Steiner cleanup](demo/index.html#cleanup) | Remove synthetic Steiner markers while retaining shapes | [Watch](media/cleanup.gif) |
 
 See [demo recording instructions](../test/DEMO_MEDIA.md) to regenerate the

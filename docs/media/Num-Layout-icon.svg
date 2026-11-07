@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" role="img" aria-labelledby="flatLogoTitle flatLogoDesc">
+  <title id="flatLogoTitle">Num-Layout · J 键帽（扁平版）</title>
+  <desc id="flatLogoDesc">扁平纯色键帽标志：紫色键身、奶油色顶面、深紫 J 与洋红侧条，透明背景。</desc>
+  <g transform="rotate(-7 200 202)">
+    <rect x="62" y="96" width="276" height="246" rx="48" fill="#4a2d86"/>
+    <rect x="62" y="78" width="276" height="246" rx="48" fill="#6b45b9"/>
+    <rect x="321" y="126" width="12" height="122" rx="6" fill="#e989f1"/>
+    <path d="M130 92 L270 92 Q296 92 295 118 L307 256 Q309 282 283 282 L117 282 Q91 282 93 256 L105 118 Q104 92 130 92 Z" fill="#f6f0e3"/>
+    <path d="M256 122 L256 206 A54 54 0 0 1 148 206 L182 206 A20 20 0 0 0 222 206 L222 122 Z" fill="#4a2d86"/>
+  </g>
+</svg>

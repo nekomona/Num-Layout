@@ -51,7 +51,7 @@
 | **Stretch** | 设置局部选择的最终尺寸，或平移整个对象 | [GIF](docs/media/stretch.gif) · [试用](docs/demo/index.html#stretch) |
 | **Move** | 按相对距离移动，或把参考点放到绝对坐标 | [GIF](docs/media/move.gif) · [试用](docs/demo/index.html#move) |
 | **Copy + count** | 设置副本数量和间距，预览每个 Step 目标 | [GIF](docs/media/copy.gif) · [试用](docs/demo/index.html#copy) |
-| **Contour** | 以指定 pivot 为基准，向内或向外调整矩形 | [GIF](docs/media/contour.gif) · [试用](docs/demo/index.html#contour) |
+| **Contour** | 先选外框 A，设定偏移量，再选目标矩形/边 B；A 按该距离包围 B | [GIF](docs/media/contour.gif) · [试用](docs/demo/index.html#contour) |
 | **Steiner 清理** | 删除当前版图中的不可见 Steiner 对象 | [GIF](docs/media/cleanup.gif) · [试用](docs/demo/index.html#cleanup) |
 
 工具栏的标尺按钮用来开关 Num-Layout。完整命令说明、安装方法、网格处理和键位恢复见

@@ -182,6 +182,16 @@ def main():
         assert "four bounding edges" in page.locator("#scene-description").inner_text()
         show("contour", "side")
         assert balloon() == "CONTOUR OUTSIDE  2"
+        # A changes to the offset boundary of B; B stays fixed after confirmation.
+        for side, inset in (("outside", -30), ("inside", 30)):
+            show("contour", "confirm", 1, {"side": side, "value": 2})
+            frame = page.locator('[data-role="contour-frame"] rect').first
+            target = page.locator('[data-role="contour-target"] rect').first
+            for axis in ("x", "y"):
+                assert float(frame.get_attribute(axis)) == float(target.get_attribute(axis)) + inset
+            for dimension in ("width", "height"):
+                assert float(frame.get_attribute(dimension)) == float(target.get_attribute(dimension)) - 2 * inset
+            assert page.locator('[data-role="contour-preview"]').count() == 0
         for mode in ("relative", "absolute"):
             show("move", "confirm", 0, {"mode": mode})
             a = state()["animation"]

@@ -193,15 +193,17 @@ Copy 表单的捕捉模式。若 Copy 尚未记录参考点，Num-Layout 会把�
 
 ## 为矩形做 Contour
 
-确保没有活动命令，选中一个矩形后按 Shift+J。输入正的偏移量，或拾取一条边、两条平行边的间距。按 Enter
-或 Space 进入下一阶段。第二阶段默认选择单边（edge）：按顺时针或逆时针点击四条边，定义两个不同的 X 边界
-和两个不同的 Y 边界。按 **Shift+J** 切换到矩形（rectangle）模式；若指针下同时有矩形和边，矩形优先。
-按 **J** 回到只选边的模式。切换模式会保留当前边或 pivot；重新选一个矩形则会替换已选边集合。源矩形的原边界
-也可以作为 pivot。拾取矩形时允许与显示边界有少量距离，确认后会根据选中的边重建四边 pivot，边段不必一直延伸到角点。
+确保没有活动命令，选中要被调整的外框矩形 A 后按 Shift+J。输入正的偏移量，或拾取一条边、两条平行
+边的间距。按 Enter 或 Space 进入下一阶段。第二阶段选择目标矩形 B：默认是单边（edge）模式，点击
+四条边来定义两个不同的 X 边界和两个不同的 Y 边界。按 **Shift+J** 切换到矩形（rectangle）模式；
+若指针下同时有矩形和边，矩形优先。按 **J** 回到只选边的模式。切换模式会保留当前边或 pivot；
+重新选一个矩形则会替换已选边集合。源矩形的原边界也可以作为 pivot。拾取矩形时允许与显示边界有少量
+距离，确认后会根据选中的边重建四边 pivot，边段不必一直延伸到角点。
 
-只有选中有效的 pivot 后，Enter 或 Space 才会进入第三阶段。把指针移到 pivot 内侧或外侧预览结果，
-再点击或确认，即可调整并移动最初选中的矩形。偏移量同时作用于四条边。若向内缩进会使任一维度消失，
-则只能选择向外。每次 Escape 回退一个阶段；处在数值阶段时，第一次 Escape 只清除数字，再按才退出。
+只有选中有效的目标 B 后，Enter 或 Space 才会进入第三阶段。把指针移到 B 外侧，预览 A 包围 B；
+移到 B 内侧，预览 A 缩进 B 内部。再点击或确认，即可应用外框：A 变成以 B 为基准、四边偏移该距离
+的矩形。若向内缩进会使任一维度消失，则只能选择向外。每次 Escape 回退一个阶段；处在数值阶段时，
+第一次 Escape 只清除数字，再按才退出。
 
 Move、Copy 的 J/Shift+J，以及 Stretch 的两种位移模式，都会跟随当前命令的分段捕捉方式：正交、
 45° 对角或任意角度。表单提供水平或垂直模式时也会遵循。捕捉模式请在 Virtuoso 表单中修改；Num-Layout
@@ -257,7 +259,7 @@ python -m http.server 8000 --bind 127.0.0.1
 | [Stretch](demo/index.html#stretch) | 设置局部选择后的最终 X 尺寸 | [观看](media/stretch.gif) |
 | [Move](demo/index.html#move) | 对比相对位移与绝对位置 | [观看](media/move.gif) |
 | [Copy](demo/index.html#copy) | 先设置 N，再用 J 设置 Step 位移 | [观看](media/copy.gif) |
-| [Contour](demo/index.html#contour) | 围绕 pivot 切换向内/向外 | [观看](media/contour.gif) |
+| [Contour](demo/index.html#contour) | 先选外框 A，再选目标 B，A 按偏移量包围 B | [观看](media/contour.gif) |
 | [Steiner 清理](demo/index.html#cleanup) | 删除合成 Steiner 标记，保留图形 | [观看](media/cleanup.gif) |
 
 重新生成动画，或录制真实、隔离的 Virtuoso 会话时，请参阅[演示录制说明](../test/DEMO_MEDIA.md)。

@@ -1,10 +1,11 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="language-current" content="zh"><meta name="language-alternate" content="guide.html">
+<link rel="icon" type="image/svg+xml" href="../media/Num-Layout-icon.svg">
 <title>定数绘版 · 使用指南</title><link rel="stylesheet" href="style.css">
 <style>.guide{max-width:1020px;margin:45px auto;padding:0 28px 60px;line-height:1.85}.guide h1{font-size:38px;line-height:1.25;margin-bottom:24px}.guide h2{font-size:28px;line-height:1.3;margin-top:52px;margin-bottom:18px}.guide h3{font-size:20px;line-height:1.4;margin-top:38px}.guide p,.guide li{font-size:16px}.guide pre{overflow:auto;background:#17232e;color:#dce8f0;padding:22px;border-radius:8px;font-size:13px}.guide code{font-family:Consolas,monospace}.guide table{display:block;overflow:auto;border-collapse:collapse;width:100%;font-size:14px}.guide th,.guide td{text-align:left;border-bottom:1px solid #d9d9d0;padding:12px;min-width:120px}.guide th{background:#ebe7f1}.guide a{color:#6b45b9}.guide img{max-width:100%;height:auto}.guide h2,.guide h3{scroll-margin-top:25px}.language-switch a{padding:6px 9px;border-radius:4px;font-size:12px;line-height:1}.language-switch a[aria-current="page"]{background:#eee8f7}</style>
 <script src="../site/language.js"></script>
-</head><body><header class="topbar"><a class="brand" href="../site/index.zh-CN.html"><span class="brand-mark" aria-hidden="true">J</span> 定数绘版 <span class="brand-light">Num-Layout</span></a><nav><span class="language-switch" aria-label="Language"><a href="guide.html" data-language-choice="en" aria-current="false">EN</a><a href="guide.zh-CN.html" data-language-choice="zh" aria-current="page">中文</a></span><a class="github-link" href="https://github.com/nekomona/Num-Layout" aria-label="Num-Layout on GitHub"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg><span>GitHub ↗</span></a><a href="index.html">交互演示 ↗</a><a href="../../LICENSE">MIT 许可证 ↗</a></nav></header><main class="guide"><h1 id="定数绘版使用指南">定数绘版使用指南</h1>
+</head><body><header class="topbar"><a class="brand" href="../site/index.zh-CN.html"><img class="brand-mark" src="../media/Num-Layout-icon.svg" alt=""> 定数绘版 <span class="brand-light">Num-Layout</span></a><nav><span class="language-switch" aria-label="Language"><a href="guide.html" data-language-choice="en" aria-current="false">EN</a><a href="guide.zh-CN.html" data-language-choice="zh" aria-current="page">中文</a></span><a class="github-link" href="https://github.com/nekomona/Num-Layout" aria-label="Num-Layout on GitHub"><svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg><span>GitHub ↗</span></a><a href="index.html">交互演示 ↗</a><a href="../../LICENSE">MIT 许可证 ↗</a></nav></header><main class="guide"><h1 id="定数绘版使用指南">定数绘版使用指南</h1>
 <p><a href="index.html">项目概览</a> · <a href="../demo/index.html">交互演示</a> · <a href="../../test/README.md">测试</a> · <a href="../../CONTRIBUTING.zh-CN.md">参与贡献</a></p>
 <p>定数绘版（Num-Layout）把数值输入和几何拾取接入 Virtuoso Layout 的常用命令。
 当前按 Virtuoso IC23.1 适配；其他版本的字段名称和回调行为可能不同。</p>
@@ -237,14 +238,16 @@ Wire 命令仍保持活动，后续点沿用新宽度。</p>
 Copy 表单的捕捉模式。若 Copy 尚未记录参考点，Num-Layout 会把所选对象合并包围盒的中心作为方向原点。
 确认时使用 Copy 表单 Pitch 模式下的 X/Y 字段和 Apply 动作，并保留当前的 Single、Step 或 Array 设置。</p>
 <h2 id="为矩形做-contour">为矩形做 Contour</h2>
-<p>确保没有活动命令，选中一个矩形后按 Shift+J。输入正的偏移量，或拾取一条边、两条平行边的间距。按 Enter
-或 Space 进入下一阶段。第二阶段默认选择单边（edge）：按顺时针或逆时针点击四条边，定义两个不同的 X 边界
-和两个不同的 Y 边界。按 <strong>Shift+J</strong> 切换到矩形（rectangle）模式；若指针下同时有矩形和边，矩形优先。
-按 <strong>J</strong> 回到只选边的模式。切换模式会保留当前边或 pivot；重新选一个矩形则会替换已选边集合。源矩形的原边界
-也可以作为 pivot。拾取矩形时允许与显示边界有少量距离，确认后会根据选中的边重建四边 pivot，边段不必一直延伸到角点。</p>
-<p>只有选中有效的 pivot 后，Enter 或 Space 才会进入第三阶段。把指针移到 pivot 内侧或外侧预览结果，
-再点击或确认，即可调整并移动最初选中的矩形。偏移量同时作用于四条边。若向内缩进会使任一维度消失，
-则只能选择向外。每次 Escape 回退一个阶段；处在数值阶段时，第一次 Escape 只清除数字，再按才退出。</p>
+<p>确保没有活动命令，选中要被调整的外框矩形 A 后按 Shift+J。输入正的偏移量，或拾取一条边、两条平行
+边的间距。按 Enter 或 Space 进入下一阶段。第二阶段选择目标矩形 B：默认是单边（edge）模式，点击
+四条边来定义两个不同的 X 边界和两个不同的 Y 边界。按 <strong>Shift+J</strong> 切换到矩形（rectangle）模式；
+若指针下同时有矩形和边，矩形优先。按 <strong>J</strong> 回到只选边的模式。切换模式会保留当前边或 pivot；
+重新选一个矩形则会替换已选边集合。源矩形的原边界也可以作为 pivot。拾取矩形时允许与显示边界有少量
+距离，确认后会根据选中的边重建四边 pivot，边段不必一直延伸到角点。</p>
+<p>只有选中有效的目标 B 后，Enter 或 Space 才会进入第三阶段。把指针移到 B 外侧，预览 A 包围 B；
+移到 B 内侧，预览 A 缩进 B 内部。再点击或确认，即可应用外框：A 变成以 B 为基准、四边偏移该距离
+的矩形。若向内缩进会使任一维度消失，则只能选择向外。每次 Escape 回退一个阶段；处在数值阶段时，
+第一次 Escape 只清除数字，再按才退出。</p>
 <p>Move、Copy 的 J/Shift+J，以及 Stretch 的两种位移模式，都会跟随当前命令的分段捕捉方式：正交、
 45° 对角或任意角度。表单提供水平或垂直模式时也会遵循。捕捉模式请在 Virtuoso 表单中修改；Num-Layout
 绘制预览和应用数值时会读取这项设置。</p>
@@ -321,7 +324,7 @@ Stretch 的结果。指定的斜向长度可能会落到最近的网格坐标。
 </tr>
 <tr>
 <td><a href="../demo/index.html#contour">Contour</a></td>
-<td>围绕 pivot 切换向内/向外</td>
+<td>先选外框 A，再选目标 B，A 按偏移量包围 B</td>
 <td><a href="../media/contour.gif">观看</a></td>
 </tr>
 <tr>

@@ -53,7 +53,7 @@ and [Pages deployment](docs/PUBLISHING.md) are documented separately.
 | **Stretch** | Set a partial selection's final extent or move a whole selection | [GIF](docs/media/stretch.gif) · [Try it](docs/demo/index.html#stretch) |
 | **Move** | Use a relative displacement or absolute position | [GIF](docs/media/move.gif) · [Try it](docs/demo/index.html#move) |
 | **Copy + count** | Set the count and pitch, then preview every Step target | [GIF](docs/media/copy.gif) · [Try it](docs/demo/index.html#copy) |
-| **Contour** | Resize a rectangle inside or outside a chosen pivot | [GIF](docs/media/contour.gif) · [Try it](docs/demo/index.html#contour) |
+| **Contour** | Pick frame A, set an offset, then pick target B; A is resized to surround B | [GIF](docs/media/contour.gif) · [Try it](docs/demo/index.html#contour) |
 | **Steiner cleanup** | Remove invisible Steiner objects from the edited layout | [GIF](docs/media/cleanup.gif) · [Try it](docs/demo/index.html#cleanup) |
 
 The ruler toolbar button toggles Num-Layout. Full command behavior,
